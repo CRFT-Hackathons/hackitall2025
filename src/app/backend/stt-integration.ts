@@ -1,8 +1,12 @@
 "use server";
 
 import { SpeechClient } from "@google-cloud/speech";
+import { formalizeText } from "./formalizeText";
 
-export async function transcribeAudio(audioContent: string) {
+export async function transcribeAudio(
+  audioContent: string,
+  languageCode: string
+) {
   try {
     const client = new SpeechClient({
       credentials: {
@@ -13,13 +17,13 @@ export async function transcribeAudio(audioContent: string) {
     });
 
     const audio = {
-      content: audioContent, // Base64 encoded audio
+      content: audioContent, // Base64
     };
 
     const config = {
       encoding: "WEBM_OPUS" as const,
       sampleRateHertz: 48000,
-      languageCode: "en-US",
+      languageCode: languageCode,
       enableAutomaticPunctuation: true,
     };
 
@@ -36,7 +40,7 @@ export async function transcribeAudio(audioContent: string) {
       .map((result) => result.alternatives?.[0]?.transcript)
       .join("\n");
 
-    return transcription;
+    return await formalizeText(transcription, languageCode);
   } catch (error) {
     console.error("STT Error:", error);
     return null;

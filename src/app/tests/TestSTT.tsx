@@ -3,6 +3,7 @@
 
 import { useState, useRef } from "react";
 import { transcribeAudio } from "../backend/stt-integration";
+import { formalizeText } from "../backend/formalizeText";
 
 export default function TestSTTButton() {
   const [isRecording, setIsRecording] = useState(false);
@@ -25,13 +26,13 @@ export default function TestSTTButton() {
         setIsLoading(true);
         try {
           const audioBlob = new Blob(audioChunks.current, {
-            type: "audio/webm; codecs=opus",
+            type: "audio/webm",
           });
           const reader = new FileReader();
 
           reader.onloadend = async () => {
             const base64Audio = (reader.result as string).split(",")[1];
-            const transcription = await transcribeAudio(base64Audio);
+            const transcription = await transcribeAudio(base64Audio, "ro-RO");
 
             if (transcription) {
               setTranscript(transcription);
@@ -68,8 +69,19 @@ export default function TestSTTButton() {
     }
   };
 
+  const testFormalize = async () => {
+    console.log("HERE");
+    console.log(
+      await formalizeText(
+        "sa merem la marie si se vedem c e pe coaieee acolo ca e brrrrrr frumos afara",
+        "ro-RO"
+      )
+    );
+  };
+
   return (
     <div className="p-4 space-y-4 border rounded-lg max-w-md">
+      <button onClick={testFormalize}>FORMALIZE</button>
       <button
         onClick={isRecording ? stopRecording : startRecording}
         disabled={isLoading}

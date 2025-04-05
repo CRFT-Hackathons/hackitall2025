@@ -23,6 +23,12 @@ importers:
       '@google-cloud/text-to-speech':
         specifier: ^6.0.1
         version: 6.0.1
+      '@google/genai':
+        specifier: ^0.7.0
+        version: 0.7.0
+      '@google/generative-ai':
+        specifier: ^0.24.0
+        version: 0.24.0
       '@hookform/resolvers':
         specifier: ^3.9.0
         version: 3.9.0(react-hook-form@7.53.1(react@19.0.0-rc-69d4b800-20241021))
@@ -595,6 +601,14 @@ packages:
   '@google-cloud/text-to-speech@6.0.1':
     resolution: {integrity: sha512-d9BLvmrAHTc1is38VdFxFLORvkzhDcfBz4h+j6Af21znj5pMlomX8VV7vD0SyRznORAXcwUaBDQ7zvCfChSA1A==}
     engines: {node: '>=18'}
+
+  '@google/genai@0.7.0':
+    resolution: {integrity: sha512-r+Fwj/emnXZN5R+4JCxDXboY4AGTmTn7+Wnori5dgyJiStP0P82f9YYL0CVsCnDIumNY2i0UIcZ1zGZdtHJ34w==}
+    engines: {node: '>=18.0.0'}
+
+  '@google/generative-ai@0.24.0':
+    resolution: {integrity: sha512-fnEITCGEB7NdX0BhoYZ/cq/7WPZ1QS5IzJJfC3Tg/OwkvBetMiVJciyaan297OvE4B9Jg1xvo0zIazX/9sGu1Q==}
+    engines: {node: '>=18.0.0'}
 
   '@grpc/grpc-js@1.13.2':
     resolution: {integrity: sha512-nnR5nmL6lxF8YBqb6gWvEgLdLh/Fn+kvAdX5hUOnt48sNSb0riz/93ASd2E5gvanPA41X6Yp25bIfGRp1SMb2g==}
@@ -3083,6 +3097,18 @@ packages:
   wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
 
+  ws@8.18.1:
+    resolution: {integrity: sha512-RKW2aJZMXeMxVpnZ6bck+RswznaxmzdULiBr6KY7XkTnW8uvt0iT9H5DkHUChXrc+uurzwa0rVI16n/Xzjdz1w==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
   xstate@5.18.2:
     resolution: {integrity: sha512-hab5VOe29D0agy8/7dH1lGw+7kilRQyXwpaChoMu4fe6rDP+nsHYhDYKfS2O4iXE7myA98TW6qMEudj/8NXEkA==}
 
@@ -3383,6 +3409,18 @@ snapshots:
       google-gax: 5.0.1-rc.0
     transitivePeerDependencies:
       - supports-color
+
+  '@google/genai@0.7.0':
+    dependencies:
+      google-auth-library: 9.15.1
+      ws: 8.18.1
+    transitivePeerDependencies:
+      - bufferutil
+      - encoding
+      - supports-color
+      - utf-8-validate
+
+  '@google/generative-ai@0.24.0': {}
 
   '@grpc/grpc-js@1.13.2':
     dependencies:
@@ -4894,7 +4932,6 @@ snapshots:
       cross-spawn: 7.0.3
       signal-exit: 4.1.0
 
-
   form-data@2.5.3:
     dependencies:
       asynckit: 0.4.0
@@ -5847,6 +5884,8 @@ snapshots:
       strip-ansi: 7.1.0
 
   wrappy@1.0.2: {}
+
+  ws@8.18.1: {}
 
   xstate@5.18.2: {}
 
