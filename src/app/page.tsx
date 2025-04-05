@@ -175,13 +175,11 @@ export default function Home() {
                   </TabsContent>
 
                   <TabsContent value="chat" className="focus:outline-none">
-                    <div className="p-6 rounded-xl bg-slate-50 dark:bg-[#1a1a24] border border-slate-100 dark:border-slate-700/50">
-                      <InterviewChat
-                        candidateName="Candidate"
-                        title="Interview Chat"
-                        className="h-[400px]"
-                      />
-                    </div>
+                    <InterviewChat
+                      candidateName="Candidate"
+                      title="Interview Chat"
+                      className="h-[400px]"
+                    />
                   </TabsContent>
                 </Tabs>
               </div>
