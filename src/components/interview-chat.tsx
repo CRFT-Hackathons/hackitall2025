@@ -234,7 +234,7 @@ export function TwoPersonChat({
       </form>
 
       {/* Controls */}
-      <div className="flex flex-wrap gap-3 justify-between p-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 rounded-b-lg">
+      {/* <div className="flex flex-wrap gap-3 justify-between p-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 rounded-b-lg">
         <button
           onClick={togglePause}
           disabled={timeoutActive || bathroomTimeoutActive}
@@ -266,7 +266,7 @@ export function TwoPersonChat({
             <span>Need a Break</span>
           </button>
         </div>
-      </div>
+      </div> */}
 
       {/* Timeout overlay */}
       <AnimatePresence>

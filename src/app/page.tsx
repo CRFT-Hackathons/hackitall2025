@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AccessibilityPanel from "@/components/accessibility-panel";
 import TimeDisplayButton from "@/components/time-display-button";
-import { TwoPersonChat } from "@/components/interview-chat";
+import { TimeRemaining } from "@/components/time-remaining";
 import {
   Eye,
   Pause,
@@ -14,7 +14,6 @@ import {
   ChevronRight,
   ChevronLeft,
   UserRound,
-  MessageSquare,
 } from "lucide-react";
 
 export default function Home() {
@@ -106,13 +105,6 @@ export default function Home() {
                     >
                       Instructions
                     </TabsTrigger>
-                    <TabsTrigger
-                      value="chat"
-                      className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-indigo-900/30 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300 px-6"
-                    >
-                      <MessageSquare className="h-4 w-4 mr-2" />
-                      Chat
-                    </TabsTrigger>
                   </TabsList>
 
                   <TabsContent
@@ -185,20 +177,6 @@ export default function Home() {
                       </ul>
                     </div>
                   </TabsContent>
-
-                  <TabsContent
-                    value="chat"
-                    className="focus:outline-none"
-                  >
-                    <div className="p-6 rounded-xl bg-slate-50 dark:bg-[#1a1a24] border border-slate-100 dark:border-slate-700/50">
-                      <TwoPersonChat 
-                        user1Name="Interviewer"
-                        user2Name="Candidate"
-                        title="Interview Chat"
-                        className="h-[400px]"
-                      />
-                    </div>
-                  </TabsContent>
                 </Tabs>
               </div>
             </Card>
@@ -246,28 +224,11 @@ export default function Home() {
             </Card>
 
             {/* Time card */}
-            <Card className="p-5 border border-indigo-100 dark:border-indigo-900/50 bg-white dark:bg-[#16161d] rounded-xl">
-              <h3 className="text-lg font-medium mb-4 flex items-center">
-                <div className="w-1 h-6 bg-indigo-500 dark:bg-indigo-400 mr-3 rounded-full"></div>
-                Time Remaining
-              </h3>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center"></div>
-                  <Clock className="h-5 w-5 text-indigo-600 dark:text-indigo-400 mr-2" />
-                  <TimeDisplayButton />
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="rounded-full border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
-                >
-                  <Pause className="h-4 w-4 mr-1 text-indigo-600 dark:text-indigo-400" />
-                  Pause
-                </Button>
-              </div>
-            </Card>
+            <TimeRemaining 
+              initialTime={2700} // 45 minutes
+              className="p-4 border border-indigo-100 dark:border-indigo-900/50 bg-white dark:bg-[#16161d] rounded-xl"
+              showBreakButtons={true}
+            />
 
             {/* Interview details card */}
             <Card className="p-5 border border-indigo-100 dark:border-indigo-900/50 bg-white dark:bg-[#16161d] rounded-xl">

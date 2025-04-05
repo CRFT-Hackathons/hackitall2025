@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,6 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { BreakTimer } from "@/components/break-timer";
 import { Progress } from "@/components/ui/progress";
 import { Pause, Play, RefreshCw } from "lucide-react";
 

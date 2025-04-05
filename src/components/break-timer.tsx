@@ -121,7 +121,7 @@ export function BreakTimer({
               {getIcon()}
             </div>
             <svg className="absolute top-0 left-0 w-24 h-24 -rotate-90" aria-hidden="true">
-              <circle
+              <motion.circle
                 cx="48"
                 cy="48"
                 r="46"
@@ -129,28 +129,51 @@ export function BreakTimer({
                 strokeWidth="2"
                 fill="transparent"
                 strokeDasharray={2 * Math.PI * 46}
-                strokeDashoffset={2 * Math.PI * 46 * (1 - timeLeft / duration)}
-                className="transition-all duration-1000"
+                initial={{ strokeDashoffset: 0 }}
+                animate={{ 
+                  strokeDashoffset: 2 * Math.PI * 46 * (1 - timeLeft / duration)
+                }}
+                transition={{ 
+                  duration: 1,
+                  ease: "linear"
+                }}
               />
             </svg>
           </div>
           <h3 className="text-xl font-light mb-2 text-white">{title}</h3>
           <p className="text-white/60 mb-4 text-sm">{subtitle}</p>
-          <div className="text-4xl font-light mb-8" style={{ color: primaryColor }} aria-live="polite">
+          <motion.div 
+            className="text-4xl font-light mb-8" 
+            style={{ color: primaryColor }} 
+            aria-live="polite"
+            animate={{ 
+              scale: timeLeft <= 10 ? [1, 1.05, 1] : 1,
+              color: timeLeft <= 10 ? [primaryColor, "#ff5555", primaryColor] : primaryColor
+            }}
+            transition={{ 
+              repeat: timeLeft <= 10 ? Infinity : 0, 
+              duration: timeLeft <= 10 ? 0.8 : 0 
+            }}
+          >
             {formatTime(timeLeft)}
-          </div>
+          </motion.div>
 
           {showCancelButton && (
-            <button
+            <motion.button
               onClick={handleCancel}
               className="px-4 py-2 rounded-full text-white/70 hover:text-white/90 border border-white/20 hover:border-white/30 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
               style={{
                 "--tw-ring-color": primaryColor,
                 "--tw-ring-offset-color": backgroundColor,
               } as React.CSSProperties}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
             >
               End Break Early
-            </button>
+            </motion.button>
           )}
         </motion.div>
       )}
