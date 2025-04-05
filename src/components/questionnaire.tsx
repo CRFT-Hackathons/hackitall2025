@@ -16,6 +16,39 @@ import { transcribeAudio } from "../app/backend/stt-integration";
 import { synthesizeSpeech } from "../app/backend/tts-integration";
 import { toast } from "sonner";
 import Image from "next/image";
+import { VoiceRecordingButton } from "./voice-recording-button";
+
+// Add TypeScript definitions for SpeechRecognition
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognitionResult {
+  transcript: string;
+  isFinal: boolean;
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  start(): void;
+  stop(): void;
+  onstart: (event: Event) => void;
+  onend: (event: Event) => void;
+  onresult: (event: SpeechRecognitionEvent) => void;
+}
+
+// Extend Window interface
+declare global {
+  interface Window {
+    SpeechRecognition?: {
+      new(): SpeechRecognition;
+    };
+    webkitSpeechRecognition?: {
+      new(): SpeechRecognition;
+    };
+  }
+}
 
 interface Question {
   id: string | number;
@@ -90,11 +123,62 @@ export function Questionnaire({
   const audioChunks = useRef<Blob[]>([]);
 
   const [isClient, setIsClient] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speechRecognition, setSpeechRecognition] = useState<SpeechRecognition | null>(null);
 
   // Set isClient to true after component mounts to prevent hydration mismatch
   useEffect(() => {
     setIsClient(true);
-  }, []);
+    
+    // Initialize speech recognition if available
+    if (isClient && (window.SpeechRecognition || window.webkitSpeechRecognition)) {
+      const SpeechRecognitionConstructor = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognitionConstructor) {
+        const recognition = new SpeechRecognitionConstructor();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        
+        recognition.onstart = () => {
+          setIsSpeaking(true);
+        };
+        
+        recognition.onend = () => {
+          setIsSpeaking(false);
+        };
+        
+        recognition.onresult = (event: SpeechRecognitionEvent) => {
+          const results = Array.from(event.results);
+          const transcript = results
+            .map(result => result[0])
+            .map(result => result.transcript)
+            .join('');
+          
+          const currentQuestionId = questions[currentIndex]?.id;
+          if (currentQuestionId) {
+            const updatedAnswer = answers[currentQuestionId] ? 
+              `${answers[currentQuestionId]} ${transcript}` : 
+              transcript;
+            
+            setAnswers(prev => ({ ...prev, [currentQuestionId]: updatedAnswer }));
+            onQuestionAnswered?.(currentQuestionId, updatedAnswer);
+          }
+        };
+        
+        setSpeechRecognition(recognition);
+      }
+    }
+    
+    // Clean up speech recognition on unmount
+    return () => {
+      if (speechRecognition) {
+        try {
+          speechRecognition.stop();
+        } catch (error) {
+          console.error("Error stopping speech recognition:", error);
+        }
+      }
+    };
+  }, [isClient]);
 
   // Get current question
   const currentQuestion = questions[currentIndex];
@@ -102,6 +186,7 @@ export function Questionnaire({
   // Notify parent component when current question changes
   useEffect(() => {
     onQuestionChange?.(currentIndex);
+    
     // Sync modal index with current index when current index changes
     setModalIndex(currentIndex);
   }, [currentIndex, onQuestionChange]);
@@ -188,6 +273,16 @@ export function Questionnaire({
     onQuestionAnswered?.(currentQuestion.id, answer);
   };
 
+  const toggleSpeechRecognition = () => {
+    if (!speechRecognition) return;
+    
+    if (isSpeaking) {
+      speechRecognition.stop();
+    } else {
+      speechRecognition.start();
+    }
+  };
+
   const openQuestionModal = (index: number) => {
     setModalIndex(index);
     setCurrentAnswer(answers[questions[index].id] || "");
@@ -198,11 +293,13 @@ export function Questionnaire({
     const questionId = questions[modalIndex].id;
     setAnswers((prev) => ({ ...prev, [questionId]: currentAnswer }));
     onQuestionAnswered?.(questionId, currentAnswer);
-
+    
     // Go to next question or close modal
     if (modalIndex < questions.length - 1) {
       setModalIndex(modalIndex + 1);
       setCurrentAnswer(answers[questions[modalIndex + 1].id] || "");
+      
+      // Sync the main view with the modal navigation
       setCurrentIndex(modalIndex + 1);
     } else {
       setShowModal(false);
@@ -470,33 +567,13 @@ export function Questionnaire({
               )}
 
               <div className="flex flex-wrap gap-3 justify-between">
-                <button
+                <VoiceRecordingButton 
+                  isRecording={isRecording}
+                  isProcessing={isProcessing}
+                  isDisabled={isProcessing || isTtsLoading}
                   onClick={toggleRecording}
-                  disabled={isProcessing || isTtsLoading}
-                  className={`rounded-xl border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-[#1e1e2d] hover:bg-indigo-50 dark:hover:bg-indigo-900/30 px-4 py-2 transition-colors flex items-center ${
-                    isRecording
-                      ? "text-red-600 dark:text-red-400 border-red-200 dark:border-red-800"
-                      : "text-indigo-600 dark:text-indigo-400"
-                  } ${
-                    isProcessing || isTtsLoading
-                      ? "opacity-70 cursor-not-allowed"
-                      : ""
-                  }`}
-                >
-                  {isProcessing ? (
-                    <Loader2 className="h-4 w-4 mr-2 inline-block animate-spin" />
-                  ) : isRecording ? (
-                    <StopCircle className="h-4 w-4 mr-2 inline-block" />
-                  ) : (
-                    <Mic className="h-4 w-4 mr-2 inline-block" />
-                  )}
-                  {isProcessing
-                    ? "Processing..."
-                    : isRecording
-                    ? "Stop Recording"
-                    : "Voice Input"}
-                </button>
-                <button
+                />
+                <button 
                   onClick={() => openQuestionModal(currentIndex)}
                   className="rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 dark:from-indigo-500 dark:to-purple-500 text-white px-4 py-2"
                 >
