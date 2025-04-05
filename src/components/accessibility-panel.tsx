@@ -29,14 +29,27 @@ import {
   MousePointer2,
 } from "lucide-react";
 import { useTheme } from "next-themes";
+import { toast } from "sonner";
 
 export default function AccessibilityPanel() {
   const [fontSize, setFontSize] = useState(16);
   const [speechRate, setSpeechRate] = useState(1);
   const { theme, setTheme } = useTheme();
+  const [open, setOpen] = useState(false);
+
+  const [useDyslexicFont, setUseDyslexicFont] = useState(false);
+  const [useProfanityFilter, setUseProfanityFilter] = useState(false);
+
+  const handleSaveSettings = () => {
+    toast("Settings saved!", {
+      description: "Your settings have been saved successfully.",
+    });
+
+    setOpen(false);
+  };
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button
           variant="outline"
@@ -273,7 +286,8 @@ export default function AccessibilityPanel() {
                 </Label>
                 <Switch
                   id="dyslexicFont"
-                  defaultChecked
+                  checked={useDyslexicFont}
+                  onCheckedChange={setUseDyslexicFont}
                   className="data-[state=checked]:bg-indigo-500 dark:data-[state=checked]:bg-indigo-600"
                 />
               </div>
@@ -299,19 +313,8 @@ export default function AccessibilityPanel() {
                 </Label>
                 <Switch
                   id="profanityFilter"
-                  defaultChecked
-                  className="data-[state=checked]:bg-indigo-500 dark:data-[state=checked]:bg-indigo-600"
-                />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <Label htmlFor="timeoutButton" className="flex items-center">
-                  <div className="w-1 h-4 bg-indigo-500 dark:bg-indigo-400 mr-2 rounded-full"></div>
-                  Timeout Button
-                </Label>
-                <Switch
-                  id="timeoutButton"
-                  defaultChecked
+                  checked={useProfanityFilter}
+                  onCheckedChange={setUseProfanityFilter}
                   className="data-[state=checked]:bg-indigo-500 dark:data-[state=checked]:bg-indigo-600"
                 />
               </div>
@@ -326,7 +329,10 @@ export default function AccessibilityPanel() {
           >
             Reset to Default
           </Button>
-          <Button className="rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 dark:from-indigo-500 dark:to-purple-500 text-white">
+          <Button
+            className="rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 dark:from-indigo-500 dark:to-purple-500 text-white"
+            onClick={handleSaveSettings}
+          >
             Save Settings
           </Button>
         </div>
