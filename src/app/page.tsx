@@ -16,67 +16,211 @@ import {
   MessageSquare,
   Book,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // Sample questions for the interview
-const interviewQuestions = [
+const allInterviewQuestions = [
   {
-    id: "introduce",
-    title: "Tell us about yourself",
+    id: "leadership",
+    title: "Leadership Experience",
     description:
-      "Tell us about a challenging project you worked on and how you overcame obstacles. What skills did you develop during this process?",
+      "Describe a situation where you had to lead a team through a challenging project. What leadership style did you use, how did you motivate your team members, and what was the outcome?",
     required: true,
+    image: "https://media.istockphoto.com/id/1457075312/vector/personal-development-plan-for-career-success-build-specialist-skill-or-competence-to.jpg"
   },
   {
-    id: "teamwork",
-    title: "Teamwork Experience",
+    id: "conflict_resolution",
+    title: "Conflict Resolution",
     description:
-      "Describe a situation where you had to work effectively as part of a team. What was your role in the team and how did you contribute to the team's success?",
+      "Tell us about a time when you faced a significant conflict in a team or workplace. How did you approach the situation, what steps did you take to resolve it, and what was the outcome?",
     required: true,
+    image: "https://www.thebalancemoney.com/conflict-resolution-skills-2063739"
   },
   {
-    id: "technical",
-    title: "Technical Knowledge",
+    id: "problem_solving",
+    title: "Problem-Solving Approach",
     description:
-      "Explain how you would design a scalable web application. What technologies would you choose and why?",
+      "Explain your approach to solving complex problems. Describe a specific example where you used critical thinking and analytical skills to overcome a difficult challenge in your work or studies.",
     required: true,
+    image: "https://asana.com/resources/problem-solving-techniques"
   },
   {
-    id: "challenges",
-    title: "Problem Solving",
+    id: "communication",
+    title: "Communication Skills",
     description:
-      "Tell us about a time when you faced a significant technical challenge. How did you approach it and what was the outcome?",
+      "Describe a situation where effective communication was crucial to success. What communication techniques did you use, what challenges did you face, and how did you ensure your message was understood?",
     required: true,
+    image: "https://www.indeed.com/career-advice/career-development/communication-process"
+  },
+  {
+    id: "adaptability",
+    title: "Adaptability",
+    description:
+      "Tell us about a time when you had to adapt to a significant change or unexpected situation. How did you handle the transition, what strategies did you use to remain effective, and what did you learn?",
+    required: true,
+    image: "https://www.betterup.com/blog/adaptability-skills"
+  },
+  {
+    id: "time_management",
+    title: "Time Management",
+    description:
+      "Describe how you organize your work and manage competing priorities. Give an example of a time when you had multiple deadlines to meet and explain your approach to ensuring all tasks were completed effectively.",
+    required: true,
+    image: "https://www.mindtools.com/pages/article/newHTE_00.htm"
+  },
+  {
+    id: "ethical_dilemma",
+    title: "Ethical Decision Making",
+    description:
+      "Describe an ethical dilemma you faced in your professional or academic life. How did you approach the situation, what factors did you consider, and how did you ultimately resolve it?",
+    required: true,
+    image: "https://ethicsunwrapped.utexas.edu/glossary/ethical-dilemma"
+  },
+  {
+    id: "creativity",
+    title: "Creative Thinking",
+    description:
+      "Give an example of a time when you used creative thinking to solve a problem or improve a process. What was your inspiration, how did you implement your idea, and what was the impact?",
+    required: true,
+    image: "https://www.creativethinking.net/what-is-creative-thinking/"
   },
   {
     id: "goals",
     title: "Career Goals",
     description:
-      "What are your short-term and long-term career goals? How does this position align with those goals?",
-    required: false,
+      "What are your short-term and long-term career goals? How have your past experiences shaped these goals, and what specific steps are you taking to achieve them?",
+    required: true,
+    image: "https://www.thebalancemoney.com/career-planning-4161927"
   },
+  {
+    id: "teamwork",
+    title: "Team Collaboration",
+    description:
+      "Describe a successful team project you worked on. What was your specific role, how did you contribute to the team's success, and what did you learn about effective collaboration?",
+    required: true,
+    image: "https://www.atlassian.com/blog/teamwork"
+  }
 ];
+
+
+// Randomly select 5 questions
+function getRandomQuestions(count = 5) {
+  const shuffled = [...allInterviewQuestions].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+}
 
 export default function Home() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const totalQuestions = interviewQuestions.length;
-  const progress = Math.round(
+  const [questions, setQuestions] = useState<typeof allInterviewQuestions>([]);
+  const [isClient, setIsClient] = useState(false);
+  const [isResumedSession, setIsResumedSession] = useState(false);
+  
+  // Initialize questions on client-side only
+  useEffect(() => {
+    setIsClient(true);
+    
+    // Try to retrieve questions from localStorage
+    const storedQuestions = localStorage.getItem('interviewQuestions');
+    
+    if (storedQuestions) {
+      // If questions exist in localStorage, use them
+      try {
+        const parsedQuestions = JSON.parse(storedQuestions);
+        setQuestions(parsedQuestions);
+        setIsResumedSession(true); // Mark this as a resumed session
+      } catch (error) {
+        // If there's an error parsing, generate new questions
+        const newQuestions = getRandomQuestions();
+        setQuestions(newQuestions);
+        localStorage.setItem('interviewQuestions', JSON.stringify(newQuestions));
+        setIsResumedSession(false);
+      }
+    } else {
+      // If no questions in localStorage, generate new ones for this session
+      const newQuestions = getRandomQuestions();
+      setQuestions(newQuestions);
+      localStorage.setItem('interviewQuestions', JSON.stringify(newQuestions));
+      setIsResumedSession(false);
+    }
+    
+    // Also try to retrieve previous answers if they exist
+    const storedAnswers = localStorage.getItem('interviewAnswers');
+    if (storedAnswers) {
+      try {
+        setAnswers(JSON.parse(storedAnswers));
+      } catch (error) {
+        console.error("Failed to parse stored answers:", error);
+      }
+    }
+    
+    // Retrieve current question index if it exists
+    const storedIndex = localStorage.getItem('currentQuestionIndex');
+    if (storedIndex) {
+      try {
+        setCurrentQuestionIndex(parseInt(storedIndex, 10));
+      } catch (error) {
+        console.error("Failed to parse stored index:", error);
+      }
+    }
+  }, []);
+  
+  // Use client-side questions or an empty array during server rendering
+  const displayQuestions = isClient ? questions : [];
+  
+  const totalQuestions = displayQuestions.length;
+  const progress = totalQuestions > 0 ? Math.round(
     ((currentQuestionIndex + 1) / totalQuestions) * 100
-  );
+  ) : 0;
 
   const handleQuestionAnswered = (id: string | number, answer: string) => {
-    console.log(`Question ${id} answered:`, answer);
-    setAnswers((prev) => ({ ...prev, [id]: answer }));
+    const newAnswers = { ...answers, [id]: answer };
+    setAnswers(newAnswers);
+    
+    // Save answers to localStorage
+    if (isClient) {
+      localStorage.setItem('interviewAnswers', JSON.stringify(newAnswers));
+    }
   };
 
   const handleQuestionChange = (index: number) => {
     setCurrentQuestionIndex(index);
+    
+    // Save current index to localStorage
+    if (isClient) {
+      localStorage.setItem('currentQuestionIndex', index.toString());
+    }
   };
 
   const handleSubmit = (submittedAnswers: Record<string, string>) => {
-    console.log("All answers submitted:", submittedAnswers);
     setAnswers(submittedAnswers);
+    
+    // Save answers to localStorage
+    if (isClient) {
+      localStorage.setItem('interviewAnswers', JSON.stringify(submittedAnswers));
+    }
+    
+    // Optionally clear the stored questions to generate new ones for the next session
+    // localStorage.removeItem('interviewQuestions');
+  };
+
+  // Function to start a new interview with fresh questions
+  const startNewInterview = () => {
+    if (!isClient) return;
+    
+    // Generate new random questions
+    const newQuestions = getRandomQuestions();
+    setQuestions(newQuestions);
+    
+    // Reset answers and current index
+    setAnswers({});
+    setCurrentQuestionIndex(0);
+    setIsResumedSession(false);
+    
+    // Update localStorage
+    localStorage.setItem('interviewQuestions', JSON.stringify(newQuestions));
+    localStorage.removeItem('interviewAnswers');
+    localStorage.setItem('currentQuestionIndex', '0');
   };
 
   return (
@@ -101,6 +245,12 @@ export default function Home() {
             </div>
 
             <div className="flex gap-2">
+              <button
+                onClick={startNewInterview}
+                className="rounded-xl border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-[#1e1e2d] hover:bg-indigo-50 dark:hover:bg-indigo-900/30 px-4 py-2 text-indigo-600 dark:text-indigo-400 transition-colors"
+              >
+                New Interview
+              </button>
               <AccessibilityPanel />
             </div>
           </div>
@@ -148,7 +298,7 @@ export default function Home() {
                     className="space-y-4 focus:outline-none"
                   >
                     <Questionnaire
-                      questions={interviewQuestions}
+                      questions={displayQuestions}
                       onQuestionAnswered={handleQuestionAnswered}
                       onSubmit={handleSubmit}
                       onQuestionChange={handleQuestionChange}
@@ -218,6 +368,15 @@ export default function Home() {
                 </span>
                 <span>{progress}% Complete</span>
               </div>
+              
+              {isClient && (
+                <div className="mt-2 text-xs">
+                  {/* <span className="inline-flex items-center px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                    <span className={`w-2 h-2 mr-1.5 rounded-full ${isResumedSession ? 'bg-amber-500' : 'bg-green-500'}`}></span>
+                    {isResumedSession ? 'Resumed Session' : 'New Session'}
+                  </span> */}
+                </div>
+              )}
             </Card>
 
             {/* Time remaining component */}

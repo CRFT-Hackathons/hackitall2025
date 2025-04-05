@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight, Mic, AlertCircle, Maximize2 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
+import Image from "next/image"
 
 interface Question {
   id: string | number
@@ -52,10 +53,13 @@ export function Questionnaire({
   const [showModal, setShowModal] = useState(false)
   const [modalIndex, setModalIndex] = useState(0)
   const [currentAnswer, setCurrentAnswer] = useState("")
+  const [isClient, setIsClient] = useState(false)
   
-  // Calculate progress percentage
-  //const progress = Math.round(((currentIndex + 1) / questions.length) * 100)
-
+  // Set isClient to true after component mounts to prevent hydration mismatch
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+  
   // Get current question
   const currentQuestion = questions[currentIndex]
 
@@ -144,56 +148,65 @@ export function Questionnaire({
             {currentIndex + 1}
           </span>
           <h3 className="text-xl font-medium text-gray-800 dark:text-gray-200">
-            {currentQuestion.title}
+            {currentQuestion?.title || "Loading questions..."}
           </h3>
         </div>
 
-        <p className="mb-6 text-slate-700 dark:text-slate-300 leading-relaxed">
-          {currentQuestion.description}
-        </p>
+        {currentQuestion ? (
+          <>
+            <p className="mb-6 text-slate-700 dark:text-slate-300 leading-relaxed">
+              {currentQuestion.description}
+            </p>
 
-        {currentQuestion.image && (
-          <div className="mb-6 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
-            <img 
-              src={currentQuestion.image} 
-              alt={`Visual for ${currentQuestion.title}`}
-              className="w-full object-cover max-h-[300px]"
-            />
-          </div>
+            {/* Only render image on client-side to prevent hydration mismatch */}
+            {isClient && currentQuestion.image && (
+              <div className="mb-6 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
+                <img 
+                  src={currentQuestion.image} 
+                  alt={`Visual for ${currentQuestion.title}`}
+                  className="w-full object-cover max-h-[300px]"
+                />
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <textarea
+                className="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#13131b] min-h-[150px] focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-700 focus:outline-none transition-all"
+                placeholder="Type your answer here..."
+                value={answers[currentQuestion.id] || ""}
+                onChange={handleAnswerChange}
+              />
+
+              <div className="flex flex-wrap gap-3 justify-between">
+                <button
+                  onClick={() => {}} // Voice input functionality would go here
+                  className="rounded-xl border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-[#1e1e2d] hover:bg-indigo-50 dark:hover:bg-indigo-900/30 px-4 py-2 text-indigo-600 dark:text-indigo-400 transition-colors"
+                >
+                  <Mic className="h-4 w-4 mr-2 inline-block" />
+                  Voice Input
+                </button>
+                <button 
+                  onClick={() => openQuestionModal(currentIndex)}
+                  className="rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 dark:from-indigo-500 dark:to-purple-500 text-white px-4 py-2"
+                >
+                  <Maximize2 className="h-4 w-4 mr-2 inline-block" />
+                  Expand Question
+                </button>
+              </div>
+            </div>
+          </>
+        ) : (
+          <p className="mb-6 text-slate-700 dark:text-slate-300 leading-relaxed">
+            Loading questions...
+          </p>
         )}
-
-        <div className="space-y-4">
-          <textarea
-            className="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#13131b] min-h-[150px] focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-700 focus:outline-none transition-all"
-            placeholder="Type your answer here..."
-            value={answers[currentQuestion.id] || ""}
-            onChange={handleAnswerChange}
-          />
-
-          <div className="flex flex-wrap gap-3 justify-between">
-            <button
-              onClick={() => {}} // Voice input functionality would go here
-              className="rounded-xl border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-[#1e1e2d] hover:bg-indigo-50 dark:hover:bg-indigo-900/30 px-4 py-2 text-indigo-600 dark:text-indigo-400 transition-colors"
-            >
-              <Mic className="h-4 w-4 mr-2 inline-block" />
-              Voice Input
-            </button>
-            <button 
-              onClick={() => openQuestionModal(currentIndex)}
-              className="rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 dark:from-indigo-500 dark:to-purple-500 text-white px-4 py-2"
-            >
-              <Maximize2 className="h-4 w-4 mr-2 inline-block" />
-              Expand Question
-            </button>
-          </div>
-        </div>
       </div>
 
       {/* Navigation buttons */}
       <div className="grid grid-cols-2 gap-4 mt-6">
         <button
           onClick={handlePrevious}
-          disabled={currentIndex === 0}
+          disabled={currentIndex === 0 || !currentQuestion}
           className="rounded-xl border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-[#1e1e2d] hover:bg-indigo-50 dark:hover:bg-indigo-900/30 px-4 py-2 text-indigo-600 dark:text-indigo-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <ChevronLeft className="h-4 w-4 mr-2 inline-block" />
@@ -201,7 +214,7 @@ export function Questionnaire({
         </button>
         <button
           onClick={handleNext}
-          disabled={!answers[currentQuestion.id] && currentQuestion.required}
+          disabled={(!currentQuestion) || (!answers[currentQuestion.id] && currentQuestion.required)}
           className="rounded-xl border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-[#1e1e2d] hover:bg-indigo-50 dark:hover:bg-indigo-900/30 px-4 py-2 text-indigo-600 dark:text-indigo-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {currentIndex === questions.length - 1 ? "Submit" : "Next Question"}
@@ -227,7 +240,7 @@ export function Questionnaire({
 
       {/* Question Modal */}
       <AnimatePresence>
-        {showModal && (
+        {showModal && questions.length > 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -247,7 +260,7 @@ export function Questionnaire({
                       {modalIndex + 1}
                     </span>
                     <h2 className="text-xl font-medium text-gray-800 dark:text-gray-200">
-                      {questions[modalIndex].title}
+                      {questions[modalIndex]?.title || ""}
                     </h2>
                   </div>
                   <button
@@ -260,25 +273,30 @@ export function Questionnaire({
               </div>
 
               <div className="flex-1 overflow-y-auto p-6">
-                <p className="mb-6 text-slate-700 dark:text-slate-300 leading-relaxed">
-                  {questions[modalIndex].description}
-                </p>
+                {questions[modalIndex] && (
+                  <>
+                    <p className="mb-6 text-slate-700 dark:text-slate-300 leading-relaxed">
+                      {questions[modalIndex].description}
+                    </p>
 
-                {questions[modalIndex].image && (
-                  <div className="mb-6 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
-                    <img 
-                      src={questions[modalIndex].image} 
-                      alt={`Visual for ${questions[modalIndex].title}`}
-                      className="w-full object-cover max-h-[300px]"
-                    />
-                  </div>
-                )}
+                    {/* Only render image if available and on client-side */}
+                    {isClient && questions[modalIndex].image && (
+                      <div className="mb-6 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
+                        <img 
+                          src={questions[modalIndex].image} 
+                          alt={`Visual for ${questions[modalIndex].title}`}
+                          className="w-full object-cover max-h-[300px]"
+                        />
+                      </div>
+                    )}
 
-                {questions[modalIndex].required && (
-                  <div className="flex items-center gap-2 p-3 mb-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-lg text-amber-700 dark:text-amber-400">
-                    <AlertCircle size={16} />
-                    <span className="text-sm">This question requires an answer.</span>
-                  </div>
+                    {questions[modalIndex].required && (
+                      <div className="flex items-center gap-2 p-3 mb-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-lg text-amber-700 dark:text-amber-400">
+                        <AlertCircle size={16} />
+                        <span className="text-sm">This question requires an answer.</span>
+                      </div>
+                    )}
+                  </>
                 )}
 
                 <textarea
@@ -301,7 +319,7 @@ export function Questionnaire({
 
                 <button
                   onClick={modalIndex === questions.length - 1 ? saveModalAnswer : () => navigateModalQuestion('next')}
-                  disabled={!currentAnswer.trim() && questions[modalIndex].required}
+                  disabled={!currentAnswer.trim() && questions[modalIndex]?.required}
                   className="rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 dark:from-indigo-500 dark:to-purple-500 text-white px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {modalIndex === questions.length - 1 ? "Save & Close" : "Next Question"}
