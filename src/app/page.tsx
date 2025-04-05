@@ -106,8 +106,42 @@ export default function Home() {
           {/* Main content area - spans 2 columns on larger screens */}
           <div className="lg:col-span-2 space-y-6">
             {/* Accessibility tools grid */}
-            
-            {/* Main question card with questionnaire component */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-all"
+              >
+                <Volume2 className="h-4 w-4 mr-2 text-indigo-600 dark:text-indigo-400" />
+                <span>Text to Speech</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-all"
+              >
+                <Globe className="h-4 w-4 mr-2 text-indigo-600 dark:text-indigo-400" />
+                <span>Translate</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-all"
+              >
+                <Eye className="h-4 w-4 mr-2 text-indigo-600 dark:text-indigo-400" />
+                <span>Eye Tracking</span>
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="rounded-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 dark:bg-indigo-900/50 dark:hover:bg-indigo-800 dark:text-indigo-300 transition-all"
+              >
+                <Pause className="h-4 w-4 mr-2" />
+                <span>Timeout</span>
+              </Button>
+            </div>
+
+            {/* Main question card */}
             <Card className="overflow-hidden border border-indigo-100 dark:border-indigo-900/50 bg-white dark:bg-[#16161d] relative rounded-xl">
               {/* Unique corner accent */}
               <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-indigo-100 to-transparent dark:from-indigo-900/20 -z-0"></div>
@@ -133,12 +167,42 @@ export default function Home() {
                     value="questions"
                     className="space-y-4 focus:outline-none"
                   >
-                    <Questionnaire 
-                      questions={interviewQuestions}
-                      onQuestionAnswered={handleQuestionAnswered}
-                      onSubmit={handleSubmit}
-                      onQuestionChange={handleQuestionChange}
-                    />
+                    <div className="p-6 rounded-xl bg-slate-50 dark:bg-[#1a1a24] border border-slate-100 dark:border-slate-700/50">
+                      <div className="flex items-center mb-4">
+                        <span className="w-8 h-8 flex items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 font-medium mr-3">
+                          1
+                        </span>
+                        <h3 className="text-xl font-medium">
+                          Tell us about yourself
+                        </h3>
+                      </div>
+
+                      <p className="mb-6 text-slate-700 dark:text-slate-300 leading-relaxed">
+                        Tell us about a challenging project you worked on and
+                        how you overcame obstacles. What skills did you develop
+                        during this process?
+                      </p>
+
+                      <div className="space-y-4">
+                        <textarea
+                          className="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#13131b] min-h-[150px] focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-700 focus:outline-none transition-all"
+                          placeholder="Type your answer here..."
+                        />
+
+                        <div className="flex flex-wrap gap-3 justify-between">
+                          <Button
+                            variant="outline"
+                            className="rounded-xl border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+                          >
+                            <Mic className="h-4 w-4 mr-2 text-indigo-600 dark:text-indigo-400" />
+                            Voice Input
+                          </Button>
+                          <Button className="rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 dark:from-indigo-500 dark:to-purple-500 text-white">
+                            Submit Answer
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
                   </TabsContent>
 
                   <TabsContent
@@ -169,6 +233,17 @@ export default function Home() {
                       </ul>
                     </div>
                   </TabsContent>
+
+                  <TabsContent value="chat" className="focus:outline-none">
+                    <div className="p-6 rounded-xl bg-slate-50 dark:bg-[#1a1a24] border border-slate-100 dark:border-slate-700/50">
+                      <TwoPersonChat
+                        user1Name="Interviewer"
+                        user2Name="Candidate"
+                        title="Interview Chat"
+                        className="h-[400px]"
+                      />
+                    </div>
+                  </TabsContent>
                 </Tabs>
               </div>
             </Card>
@@ -197,11 +272,28 @@ export default function Home() {
             </Card>
 
             {/* Time card */}
-            <TimeRemaining 
-              initialTime={2700} // 45 minutes
-              className="p-4 border border-indigo-100 dark:border-indigo-900/50 bg-white dark:bg-[#16161d] rounded-xl"
-              showBreakButtons={true}
-            />
+            <Card className="p-5 border border-indigo-100 dark:border-indigo-900/50 bg-white dark:bg-[#16161d] rounded-xl">
+              <h3 className="text-lg font-medium mb-4 flex items-center">
+                <div className="w-1 h-6 bg-indigo-500 dark:bg-indigo-400 mr-3 rounded-full"></div>
+                Time Remaining
+              </h3>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center"></div>
+                  <Clock className="h-5 w-5 text-indigo-600 dark:text-indigo-400 mr-2" />
+                  <TimeDisplayButton />
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+                >
+                  <Pause className="h-4 w-4 mr-1 text-indigo-600 dark:text-indigo-400" />
+                  Pause
+                </Button>
+              </div>
+            </Card>
 
             {/* Interview details card */}
             <Card className="p-5 border border-indigo-100 dark:border-indigo-900/50 bg-white dark:bg-[#16161d] rounded-xl">
