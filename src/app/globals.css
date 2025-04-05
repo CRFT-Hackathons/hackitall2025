@@ -1,63 +1,70 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@keyframes candycane {
+  from {
+    background-position: 0 0, 0 0;
+  }
+  to {
+    background-position: 32px 0, 32px 0;
+  }
+}
 
 @layer base {
   :root {
-    --background: 285deg, 14.3%, 94.5%; /* #f2eff3 */
-    --foreground: 252deg, 4.81%, 40.8%; /* #65636d */
-    --card: 240deg, 20%, 98%; /* #f9f9fb */
-    --card-foreground: 249deg, 10.1%, 13.5%; /* #201f26 */
-    /* --popover: 240deg, 15.4%, 94.9%; /* #f0f0f4 */
-    --popover: 240deg, 20%, 98%; /* #f9f9fb */
+    --background: 285deg, 14.3%, 98%; /* #fbfafc */
+    --foreground: 252deg, 4.81%, 38%; /* #615f68 */
+    --card: 240deg, 20%, 99%; /* #fcfcfe */
+    --card-foreground: 249deg, 10.1%, 12%; /* #1d1c24 */
+    --popover: 240deg, 20%, 99%; /* #fcfcfe */
     --popover-hover: 256deg, 100%, 10.4%, 0.153; /* #0e003527 */
-    --popover-foreground: 249deg, 10.1%, 13.5%; /* #201f26 */
-    --popover-foreground-active: 249deg, 10.1%, 13.5%; /* #201f26 */
-    --primary: 240deg, 15.4%, 94.9%; /* #f0f0f4 */
-    --primary-hover: 250deg, 14.3%, 91.8%; /* #e8e7ed */
-    --primary-foreground: 249deg, 10.1%, 13.5%; /* #201f26 */
-    --secondary: 249deg, 10.1%, 13.5%; /* #201f26 */
+    --popover-foreground: 249deg, 10.1%, 12%; /* #1d1c24 */
+    --popover-foreground-active: 249deg, 10.1%, 12%; /* #1d1c24 */
+    --primary: 240deg, 15.4%, 98%; /* #fafafa */
+    --primary-hover: 250deg, 14.3%, 96%; /* #f3f3f6 */
+    --primary-foreground: 249deg, 10.1%, 12%; /* #1d1c24 */
+    --secondary: 249deg, 10.1%, 12%; /* #1d1c24 */
     --secondary-hover: 254deg, 100%, 3.33%, 0.612; /* #0400119c */
-    --secondary-foreground: 250deg, 14.3%, 91.8%; /* #e8e7ed */
-    --muted: 0 0% 96.1%; /**/
-    --muted-foreground: 0 0% 45.1%; /**/
-    --accent: 226deg, 70.2%, 55.3%; /* #3d63dd */
-    --accent-hover: 223deg, 76.5%, 73.3%; /* #87a5ef */
+    --secondary-foreground: 250deg, 14.3%, 96%; /* #f3f3f6 */
+    --muted: 0 0% 98%; /* #fafafa */
+    --muted-foreground: 0 0% 45.1%; /* #737373 */
+    --accent: 226deg, 70.2%, 58%; /* #4669e0 */
+    --accent-hover: 223deg, 76.5%, 75%; /* #89a7f0 */
     --accent-foreground: 0deg, 0%, 100%; /* #fff */
-    --destructive: 358deg, 75.1%, 59%; /* #e5484d */
-    --destructive-hover: 2.5deg, 70.6%, 73.3%; /* #eb8f8b */
+    --destructive: 358deg, 75.1%, 61%; /* #e74b50 */
+    --destructive-hover: 2.5deg, 70.6%, 76%; /* #ec9290 */
     --destructive-foreground: 0deg, 0%, 100%; /* #fff */
     --border: 250deg, 100%, 12.5%, 0.0941; /* #0b004018 */
-    --chart-1: 12 76% 61%; /**/
-    --chart-2: 173 58% 39%; /**/
-    --chart-3: 197 37% 24%; /**/
-    --chart-4: 43 74% 66%; /**/
-    --chart-5: 27 87% 67%; /**/
+    --chart-1: 12 76% 61%; /* */
+    --chart-2: 173 58% 39%; /* */
+    --chart-3: 197 37% 24%; /* */
+    --chart-4: 43 74% 66%; /* */
+    --chart-5: 27 87% 67%; /* */
     --radius: 0.5rem;
-    --sidebar-background: 285deg, 14.3%, 94.5%; /* #f2eff3 */
-    --sidebar-foreground: 252deg, 4.81%, 40.8%; /* #65636d */
-    --sidebar-primary: 226deg, 70.2%, 55.3%; /* #3d63dd */
+    --sidebar-background: 285deg, 14.3%, 98%; /* #fbfafc */
+    --sidebar-foreground: 252deg, 4.81%, 38%; /* #615f68 */
+    --sidebar-primary: 226deg, 70.2%, 58%; /* #4669e0 */
     --sidebar-primary-foreground: 0deg, 0%, 100%; /* #fff */
-    --sidebar-accent: 240deg, 20%, 98%; /* #f9f9fb */
-    --sidebar-accent-foreground: 249deg, 10.1%, 13.5%; /* #201f26 */
+    --sidebar-accent: 240deg, 20%, 99%; /* #fcfcfe */
+    --sidebar-accent-foreground: 249deg, 10.1%, 12%; /* #1d1c24 */
     --sidebar-border: 250deg, 100%, 12.5%, 0.0941; /* #0b004018 */
-    --sidebar-ring: 217.2 91.2% 59.8%; /**/
+    --sidebar-ring: 217.2 91.2% 59.8%; /* */
 
-    --surface-0: #f2eff3;
-    --surface-1: #fcfcfd;
-    --surface-2: #f9f9fb;
-    --surface-3: #f0f0f4;
-    --surface-4: #e8e7ed;
-    --surface-5: #e1e0e7;
-    --surface-6: #dad8e0;
-    --surface-7: #cfcdd7;
-    --surface-8: #bcbac7;
-    --surface-9: #8e8c99;
-    --surface-10: #84818d;
-    --surface-11: #65636d;
-    --surface-12: #201f26;
+    --surface-0: #fbfafc;
+    --surface-1: #fcfcfe;
+    --surface-2: #fafafa;
+    --surface-3: #f3f3f6;
+    --surface-4: #ececee;
+    --surface-5: #e6e6e8;
+    --surface-6: #dfdee2;
+    --surface-7: #d4d3d8;
+    --surface-8: #c3c2ca;
+    --surface-9: #8b8a96;
+    --surface-10: #81808b;
+    --surface-11: #615f68;
+    --surface-12: #1d1c24;
 
-    --surface-a0: #f2eff301;
+    --surface-a0: #fbfafc01;
     --surface-a1: #00005503;
     --surface-a2: #00005506;
     --surface-a3: #0000440f;
@@ -71,17 +78,17 @@
     --surface-a11: #0400119c;
     --surface-a12: #010008e0;
 
-    --accent-1: #fdfdfe;
-    --accent-2: #f7f9ff;
-    --accent-3: #edf2fe;
-    --accent-4: #dfeaff;
-    --accent-5: #d0dfff;
-    --accent-6: #bdd1ff;
-    --accent-7: #a6bff9;
-    --accent-8: #87a5ef;
-    --accent-9: #3d63dd;
-    --accent-10: #3657c3;
-    --accent-11: #395bc7;
+    --accent-1: #fcfcfe;
+    --accent-2: #f8faff;
+    --accent-3: #eef2fe;
+    --accent-4: #e1eaff;
+    --accent-5: #d3e0ff;
+    --accent-6: #c0d3ff;
+    --accent-7: #a9c2f9;
+    --accent-8: #89a7f0;
+    --accent-9: #4669e0;
+    --accent-10: #3e5dc4;
+    --accent-11: #425fc9;
     --accent-12: #1d2e5c;
 
     --accent-a1: #00008002;
@@ -99,21 +106,21 @@
 
     --accent-contrast: #fff;
     --accent-surface: #f5f8ffcc;
-    --accent-indicator: #3d63dd;
-    --accent-track: #3d63dd;
+    --accent-indicator: #4669e0;
+    --accent-track: #4669e0;
 
     --danger-1: #fffcfc;
     --danger-2: #fff7f7;
-    --danger-3: #ffebea;
-    --danger-4: #ffdcd9;
-    --danger-5: #ffcdca;
-    --danger-6: #febdb9;
+    --danger-3: #ffeaea;
+    --danger-4: #ffdcdc;
+    --danger-5: #ffcece;
+    --danger-6: #febbba;
     --danger-7: #f5a9a5;
-    --danger-8: #eb8f8b;
-    --danger-9: #e5484d;
-    --danger-10: #d73840;
-    --danger-11: #cc2e39;
-    --danger-12: #64181b;
+    --danger-8: #ec9290;
+    --danger-9: #e74b50;
+    --danger-10: #d83d41;
+    --danger-11: #cc3238;
+    --danger-12: #64171a;
 
     --danger-a1: #ff000003;
     --danger-a2: #ff000008;
@@ -130,20 +137,12 @@
 
     --danger-contrast: #fff;
     --danger-surface: #fff5f5cc;
-    --danger-indicator: #e5484d;
-    --danger-track: #e5484d;
+    --danger-indicator: #e74b50;
+    --danger-track: #e74b50;
 
     --ui-shadow: var(--surface-7);
-
-    /*
-    --ui-fg-heading: var(--surface-12);
-    --ui-fg-text: var(--surface-11);
-    --ui-border: var(--surface-9);
-    --ui-shadow: var(--surface-7);
-    --ui-background: var(--surface-0);
-    --ui-surface: var(--surface-a0);
-   */
   }
+
   .dark {
     --background: 240deg, 5.56%, 7.06%; /* #111113 */
     --foreground: 258deg, 6.94%, 71.8%; /* #b5b2bc */
@@ -300,3 +299,11 @@
     @apply font-sans;
   }
 }
+
+html{
+  @apply focus:ring-2 focus:ring-blue-400;
+}
+/* ExpandableMap.module.css */
+/* styles/globals.css */
+
+/* Reset border and box-sizing */
