@@ -28,12 +28,12 @@ import {
   Brain,
   MousePointer2,
 } from "lucide-react";
-import { useAccessibility } from "./accessibility-context";
+import { useTheme } from "next-themes";
 
 export default function AccessibilityPanel() {
   const [fontSize, setFontSize] = useState(16);
   const [speechRate, setSpeechRate] = useState(1);
-  const { darkMode, setDarkMode } = useAccessibility();
+  const { theme, setTheme } = useTheme();
 
   return (
     <Sheet>
@@ -125,7 +125,7 @@ export default function AccessibilityPanel() {
                   step={1}
                   value={[fontSize]}
                   onValueChange={(value) => setFontSize(value[0])}
-                  className="[&>span]:bg-indigo-500 dark:[&>span]:bg-indigo-400"
+                  className="slider-track [&>span]:slider-range [&>span>span]:slider-thumb"
                 />
               </div>
 
@@ -147,8 +147,10 @@ export default function AccessibilityPanel() {
                 </Label>
                 <Switch
                   id="darkMode"
-                  checked={darkMode}
-                  onCheckedChange={setDarkMode}
+                  checked={theme === "dark"}
+                  onCheckedChange={() =>
+                    setTheme(theme === "dark" ? "light" : "dark")
+                  }
                   className="data-[state=checked]:bg-indigo-500 dark:data-[state=checked]:bg-indigo-600"
                 />
               </div>
@@ -199,7 +201,7 @@ export default function AccessibilityPanel() {
                   step={0.1}
                   value={[speechRate]}
                   onValueChange={(value) => setSpeechRate(value[0])}
-                  className="[&>span]:bg-indigo-500 dark:[&>span]:bg-indigo-400"
+                  className="slider-track [&>span]:slider-range [&>span>span]:slider-thumb"
                 />
               </div>
 

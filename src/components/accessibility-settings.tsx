@@ -82,6 +82,7 @@ export default function AccessibilitySettings() {
                   step={1}
                   value={[fontSize]}
                   onValueChange={(value) => setFontSize(value[0])}
+                  className="slider-track [&>span]:slider-range [&>span>span]:slider-thumb"
                 />
               </div>
 
