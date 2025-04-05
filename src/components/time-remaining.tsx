@@ -17,7 +17,7 @@ function useInterval(callback: () => void, delay: number | null) {
     function tick() {
       savedCallback.current?.();
     }
-    
+
     if (delay !== null) {
       const id = setInterval(tick, delay);
       return () => clearInterval(id);
@@ -52,9 +52,11 @@ export function TimeRemaining({
 }: TimeRemainingProps) {
   const [timeLeft, setTimeLeft] = useState(initialTime);
   const [isRunning, setIsRunning] = useState(true);
-  const [isTimeHidden, setIsTimeHidden] = useState(false);
+  const [isTimeHidden, setIsTimeHidden] = useState(true);
   const [showBreakOverlay, setShowBreakOverlay] = useState(false);
-  const [breakType, setBreakType] = useState<"regular" | "bathroom" | null>(null);
+  const [breakType, setBreakType] = useState<"regular" | "bathroom" | null>(
+    null
+  );
   const [hasUsedRegularBreak, setHasUsedRegularBreak] = useState(false);
   const [hasUsedBathroomBreak, setHasUsedBathroomBreak] = useState(false);
   const [breakStartTime, setBreakStartTime] = useState<number | null>(null);
@@ -68,37 +70,47 @@ export function TimeRemaining({
     if (savedIsTimeHidden) {
       setIsTimeHidden(savedIsTimeHidden === "true");
     }
-    
+
     // Load break usage
-    const savedHasUsedRegularBreak = localStorage.getItem("hasUsedRegularBreak");
+    const savedHasUsedRegularBreak = localStorage.getItem(
+      "hasUsedRegularBreak"
+    );
     if (savedHasUsedRegularBreak) {
       setHasUsedRegularBreak(savedHasUsedRegularBreak === "true");
     }
-    
-    const savedHasUsedBathroomBreak = localStorage.getItem("hasUsedBathroomBreak");
+
+    const savedHasUsedBathroomBreak = localStorage.getItem(
+      "hasUsedBathroomBreak"
+    );
     if (savedHasUsedBathroomBreak) {
       setHasUsedBathroomBreak(savedHasUsedBathroomBreak === "true");
     }
-    
+
     // Load active break status if any
-    const savedBreakType = localStorage.getItem("breakType") as "regular" | "bathroom" | null;
+    const savedBreakType = localStorage.getItem("breakType") as
+      | "regular"
+      | "bathroom"
+      | null;
     const savedBreakStartTime = localStorage.getItem("breakStartTime");
-    
+
     if (savedBreakType && savedBreakStartTime) {
       const breakStartTime = parseInt(savedBreakStartTime, 10);
       const now = Date.now();
       const breakDuration = savedBreakType === "regular" ? 300000 : 120000; // 5 min or 2 min in ms
-      
+
       // Check if break is still active
       if (now - breakStartTime < breakDuration) {
         setBreakType(savedBreakType);
         setBreakStartTime(breakStartTime);
         setShowBreakOverlay(true);
         setIsRunning(false);
-        
+
         // Calculate remaining break time and progress
         const elapsed = now - breakStartTime;
-        const remaining = Math.max(0, Math.floor((breakDuration - elapsed) / 1000));
+        const remaining = Math.max(
+          0,
+          Math.floor((breakDuration - elapsed) / 1000)
+        );
         setRemainingBreakTime(remaining);
         setBreakProgress(elapsed / breakDuration);
       } else {
@@ -107,21 +119,21 @@ export function TimeRemaining({
         localStorage.removeItem("breakStartTime");
       }
     }
-    
+
     // Check if we have a saved timer state
     const savedTimeLeft = localStorage.getItem("timeLeft");
     const lastUpdateTime = localStorage.getItem("lastUpdateTime");
     const savedIsRunning = localStorage.getItem("isRunning");
-    
+
     if (savedTimeLeft && lastUpdateTime) {
       // We have a saved timer state
       const parsedTimeLeft = parseInt(savedTimeLeft, 10);
       const lastUpdate = parseInt(lastUpdateTime, 10);
       const now = Date.now();
-      
+
       // Calculate elapsed time in seconds since last update
       const elapsedSeconds = Math.floor((now - lastUpdate) / 1000);
-      
+
       // Only subtract elapsed time if timer was running and we're not on a break
       if (savedIsRunning === "true" && !breakType) {
         // Calculate new time left by subtracting elapsed seconds, don't go below 0
@@ -132,12 +144,13 @@ export function TimeRemaining({
         // Timer was paused, just use saved time
         setTimeLeft(parsedTimeLeft);
       }
-      
+
       // Update the last update time to now
       localStorage.setItem("lastUpdateTime", now.toString());
-      
+
       // Set running state (don't run if time is 0)
-      const shouldBeRunning = savedIsRunning === "true" && !breakType && parsedTimeLeft > 0;
+      const shouldBeRunning =
+        savedIsRunning === "true" && !breakType && parsedTimeLeft > 0;
       setIsRunning(shouldBeRunning);
     } else {
       // No saved state, initialize with default values
@@ -147,9 +160,9 @@ export function TimeRemaining({
       setIsRunning(true);
       localStorage.setItem("isRunning", "true");
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialTime]);
-  
+
   // Main timer effect using our custom useInterval hook
   useInterval(
     () => {
@@ -169,7 +182,7 @@ export function TimeRemaining({
     },
     isRunning ? 1000 : null
   );
-  
+
   // Update isRunning in localStorage when it changes
   useEffect(() => {
     localStorage.setItem("isRunning", isRunning.toString());
@@ -179,19 +192,22 @@ export function TimeRemaining({
   useInterval(
     () => {
       if (!breakStartTime || !breakType) return;
-      
+
       const breakDuration = breakType === "regular" ? 300000 : 120000; // 5 min or 2 min in ms
       const now = Date.now();
       const elapsedTime = now - breakStartTime;
-      
+
       // Calculate remaining time in seconds
-      const remaining = Math.max(0, Math.floor((breakDuration - elapsedTime) / 1000));
+      const remaining = Math.max(
+        0,
+        Math.floor((breakDuration - elapsedTime) / 1000)
+      );
       setRemainingBreakTime(remaining);
-      
+
       // Calculate progress (0 to 1)
       const progress = Math.min(1, elapsedTime / breakDuration);
       setBreakProgress(progress);
-      
+
       if (elapsedTime >= breakDuration) {
         endBreak();
       }
@@ -218,12 +234,12 @@ export function TimeRemaining({
     setBreakType(type);
     const now = Date.now();
     setBreakStartTime(now);
-    
+
     // Initialize break time values
     const breakDuration = type === "regular" ? 300000 : 120000; // 5 min or 2 min in ms
     setRemainingBreakTime(Math.floor(breakDuration / 1000));
     setBreakProgress(0);
-    
+
     // Mark break as used in state and localStorage
     if (type === "regular") {
       setHasUsedRegularBreak(true);
@@ -232,7 +248,7 @@ export function TimeRemaining({
       setHasUsedBathroomBreak(true);
       localStorage.setItem("hasUsedBathroomBreak", "true");
     }
-    
+
     // Pause the main timer while on break
     setIsRunning(false);
     localStorage.setItem("isRunning", "false");
@@ -246,7 +262,7 @@ export function TimeRemaining({
     setBreakStartTime(null);
     setRemainingBreakTime(0);
     setBreakProgress(0);
-    
+
     // Resume the main timer
     setIsRunning(true);
     localStorage.setItem("isRunning", "true");
@@ -276,7 +292,7 @@ export function TimeRemaining({
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <Clock className="h-5 w-5 text-indigo-600 dark:text-indigo-400 mr-2" />
-            
+
             <div
               className={`text-2xl font-medium text-indigo-600 dark:text-gray-200 font-mono tabular-nums ${
                 isTimeHidden ? "blur-[6px]" : ""
@@ -359,9 +375,7 @@ export function TimeRemaining({
                   fill="transparent"
                   strokeDasharray={2 * Math.PI * 46}
                   strokeDashoffset={
-                    46 *
-                    (1 -
-                     (breakStartTime ? breakProgress : 0))
+                    46 * (1 - (breakStartTime ? breakProgress : 0))
                   }
                   className="transition-all duration-1000"
                 />

@@ -81,51 +81,54 @@ export default function AccessibilityPanel() {
       if (savedSpeechRate) {
         setSpeechRate(parseFloat(savedSpeechRate));
       }
-      
+
       // Load high contrast setting
       const savedHighContrast = localStorage.getItem("highContrast");
       if (savedHighContrast === "true") {
         setHighContrast(true);
       }
-      
+
       // Load color blind mode
       const savedColorBlindMode = localStorage.getItem("colorBlindMode");
       if (savedColorBlindMode) {
         setColorBlindMode(savedColorBlindMode);
       }
-      
+
       // Load text to speech setting
       const savedTextToSpeech = localStorage.getItem("textToSpeech");
       if (savedTextToSpeech === "true") {
         setTextToSpeech(true);
       }
-      
+
       // Load voice input setting
       const savedVoiceInput = localStorage.getItem("voiceInput");
       if (savedVoiceInput === "true") {
         setVoiceInput(true);
       }
-      
+
       // Load keyboard navigation setting
-      const savedKeyboardNavigation = localStorage.getItem("keyboardNavigation");
+      const savedKeyboardNavigation =
+        localStorage.getItem("keyboardNavigation");
       if (savedKeyboardNavigation === "true") {
         setKeyboardNavigation(true);
       }
-      
+
       // Load eye tracking setting
       const savedEyeTracking = localStorage.getItem("eyeTracking");
       if (savedEyeTracking === "true") {
         setEyeTracking(true);
       }
-      
+
       // Load voice commands setting
       const savedVoiceCommands = localStorage.getItem("voiceCommands");
       if (savedVoiceCommands === "true") {
         setVoiceCommands(true);
       }
-      
+
       // Load simplified interface setting
-      const savedSimplifiedInterface = localStorage.getItem("simplifiedInterface");
+      const savedSimplifiedInterface = localStorage.getItem(
+        "simplifiedInterface"
+      );
       if (savedSimplifiedInterface === "true") {
         setSimplifiedInterface(true);
       }
@@ -209,7 +212,7 @@ export default function AccessibilityPanel() {
     if (typeof window !== "undefined") {
       document.body.setAttribute("data-color-blind-mode", colorBlindMode);
       localStorage.setItem("colorBlindMode", colorBlindMode);
-      
+
       // Apply the filter if set
       if (colorBlindMode && colorBlindMode !== "none") {
         document.documentElement.style.filter = `url(#${colorBlindMode}-filter)`;
@@ -229,7 +232,10 @@ export default function AccessibilityPanel() {
       localStorage.setItem("keyboardNavigation", keyboardNavigation.toString());
       localStorage.setItem("eyeTracking", eyeTracking.toString());
       localStorage.setItem("voiceCommands", voiceCommands.toString());
-      localStorage.setItem("simplifiedInterface", simplifiedInterface.toString());
+      localStorage.setItem(
+        "simplifiedInterface",
+        simplifiedInterface.toString()
+      );
     }
   }, [
     speechRate,
@@ -304,7 +310,7 @@ export default function AccessibilityPanel() {
       <SheetTrigger asChild>
         <Button
           variant="outline"
-          className="rounded-full border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-all shadow-none"
+          className="rounded-full border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-all shadow-none w-full"
         >
           <Accessibility className="h-4 w-4 mr-2 text-indigo-600 dark:text-indigo-400" />
           <span>Accessibility</span>
@@ -360,7 +366,10 @@ export default function AccessibilityPanel() {
                   <div className="w-1 h-4 bg-indigo-500 dark:bg-indigo-400 mr-2 rounded-full"></div>
                   Color Blind Mode
                 </Label>
-                <Select value={colorBlindMode} onValueChange={setColorBlindMode}>
+                <Select
+                  value={colorBlindMode}
+                  onValueChange={setColorBlindMode}
+                >
                   <SelectTrigger className="w-[140px] rounded-xl border-indigo-200 dark:border-indigo-800">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>

@@ -7,7 +7,15 @@ import TimeDisplayButton from "@/components/time-display-button";
 import { TimeRemaining } from "@/components/time-remaining";
 import { Questionnaire } from "@/components/questionnaire";
 import { InterviewChat } from "@/components/interview-chat";
-import { Pause, Mic, Clock, UserRound, Settings2 } from "lucide-react";
+import {
+  Pause,
+  Mic,
+  Clock,
+  UserRound,
+  Settings2,
+  MessageSquare,
+  Book,
+} from "lucide-react";
 import { useState } from "react";
 
 // Sample questions for the interview
@@ -114,20 +122,23 @@ export default function Home() {
                   <TabsList className="mb-6 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-full w-fit">
                     <TabsTrigger
                       value="questions"
-                      className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-indigo-900/30 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300 px-6"
+                      className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-indigo-900/30 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300 px-6 flex items-center gap-2"
                     >
+                      <UserRound className="h-4 w-4" />
                       Questions
                     </TabsTrigger>
                     <TabsTrigger
                       value="instructions"
-                      className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-indigo-900/30 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300 px-6"
+                      className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-indigo-900/30 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300 px-6 flex items-center gap-2"
                     >
+                      <Book className="h-4 w-4" />
                       Instructions
                     </TabsTrigger>
                     <TabsTrigger
                       value="chat"
-                      className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-indigo-900/30 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300 px-6"
+                      className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-indigo-900/30 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300 px-6 flex items-center gap-2"
                     >
+                      <MessageSquare className="h-4 w-4" />
                       Chat
                     </TabsTrigger>
                   </TabsList>
