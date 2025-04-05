@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,12 +7,7 @@ import TimeDisplayButton from "@/components/time-display-button";
 import { TimeRemaining } from "@/components/time-remaining";
 import { Questionnaire } from "@/components/questionnaire";
 import { TwoPersonChat } from "@/components/interview-chat";
-import {
-  Pause,
-  Mic,
-  Clock,
-  UserRound,
-} from "lucide-react";
+import { Pause, Mic, Clock, UserRound } from "lucide-react";
 import { useState } from "react";
 
 // Sample questions for the interview
@@ -20,84 +15,51 @@ const interviewQuestions = [
   {
     id: "introduce",
     title: "Tell us about yourself",
-    description: "Tell us about a challenging project you worked on and how you overcame obstacles. What skills did you develop during this process?",
+    description:
+      "Tell us about a challenging project you worked on and how you overcame obstacles. What skills did you develop during this process?",
     required: true,
-    image: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
-  },
-  {
-    id: "logic_pattern",
-    title: "Logical Pattern Recognition",
-    description: "What number comes next in this sequence: 2, 6, 12, 20, 30, 42, ...? Explain your reasoning.",
-    required: true,
-    image: "https://miro.medium.com/v2/resize:fit:1400/1*PbLZ7_nZxSYYp88XAfGTaQ.png"
-  },
-  {
-    id: "logic_riddle",
-    title: "Logic Riddle",
-    description: "You have 9 balls, equally sized but one is slightly heavier than the others. Using a balance scale, how can you identify the heavier ball with just 2 weighings? Outline each step in your approach.",
-    required: true,
-    image: "https://images.unsplash.com/photo-1583243567239-3727551e0c59?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
   },
   {
     id: "teamwork",
     title: "Teamwork Experience",
-    description: "Describe a situation where you had to work effectively as part of a team. What was your role in the team and how did you contribute to the team's success?",
+    description:
+      "Describe a situation where you had to work effectively as part of a team. What was your role in the team and how did you contribute to the team's success?",
     required: true,
-    image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
   },
   {
     id: "technical",
-    title: "System Design Question",
-    description: "Looking at the architecture diagram below, identify potential scalability issues and explain how you would address them. What components would you modify or add?",
+    title: "Technical Knowledge",
+    description:
+      "Explain how you would design a scalable web application. What technologies would you choose and why?",
     required: true,
-    image: "https://miro.medium.com/v2/resize:fit:1400/1*KbZc-Aza1Snt3TQcvwYFdQ.png"
   },
   {
-    id: "logic_puzzle",
-    title: "River Crossing Puzzle",
-    description: "A farmer needs to cross a river with a fox, a chicken, and a bag of grain. The boat can only carry the farmer and one item at a time. If left alone, the fox will eat the chicken, and the chicken will eat the grain. How can the farmer get everything across safely? Describe each crossing in order.",
+    id: "challenges",
+    title: "Problem Solving",
+    description:
+      "Tell us about a time when you faced a significant technical challenge. How did you approach it and what was the outcome?",
     required: true,
-    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/River_Crossing_Puzzle.svg/1280px-River_Crossing_Puzzle.svg.png"
-  },
-  {
-    id: "code_logic",
-    title: "Code Logic Problem",
-    description: "Consider this function: `boolean isValid(int[] array)`. Write a pseudocode implementation that returns true if and only if the array contains no duplicate elements. Then analyze its time and space complexity.",
-    required: true,
-    image: "https://www.learncomputerscienceonline.com/wp-content/uploads/2021/09/Big-O-Complexity-Chart.jpg"
-  },
-  {
-    id: "code_review",
-    title: "Code Review Exercise",
-    description: "Review the code snippet below. Identify any bugs, performance issues, or areas for improvement. How would you refactor this code?",
-    required: true,
-    image: "https://res.cloudinary.com/practicaldev/image/fetch/s--rQS9VZov--/c_imagga_scale,f_auto,fl_progressive,h_900,q_auto,w_1600/https://dev-to-uploads.s3.amazonaws.com/uploads/articles/l7q7sji989ble20a6eos.png"
-  },
-  {
-    id: "logic_probability",
-    title: "Probability Problem",
-    description: "You have a standard deck of 52 playing cards. If you draw 5 cards at random, what is the probability of getting a flush (all cards of the same suit)? Show your calculations.",
-    required: true,
-    image: "https://clipart-library.com/images/8TzryjGTa.jpg"
   },
   {
     id: "goals",
     title: "Career Goals",
-    description: "What are your short-term and long-term career goals? How does this position align with those goals? Please refer to the career path diagram for context.",
+    description:
+      "What are your short-term and long-term career goals? How does this position align with those goals?",
     required: false,
-    image: "https://assets-global.website-files.com/5dbb30f00775d4c32191a4df/61bc180155b6d4d4a8e2be57_8-career-paths-in-development.webp"
-  }
+  },
 ];
 
 export default function Home() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const totalQuestions = interviewQuestions.length;
-  const progress = Math.round(((currentQuestionIndex + 1) / totalQuestions) * 100);
+  const progress = Math.round(
+    ((currentQuestionIndex + 1) / totalQuestions) * 100
+  );
 
   const handleQuestionAnswered = (id: string | number, answer: string) => {
     console.log(`Question ${id} answered:`, answer);
-    setAnswers(prev => ({ ...prev, [id]: answer }));
+    setAnswers((prev) => ({ ...prev, [id]: answer }));
   };
 
   const handleQuestionChange = (index: number) => {
@@ -142,7 +104,7 @@ export default function Home() {
           {/* Main content area - spans 2 columns on larger screens */}
           <div className="lg:col-span-2 space-y-6">
             {/* Accessibility tools grid */}
-            
+
             {/* Main question card */}
             <Card className="overflow-hidden border border-indigo-100 dark:border-indigo-900/50 bg-white dark:bg-[#16161d] relative rounded-xl">
               {/* Unique corner accent */}
@@ -175,7 +137,7 @@ export default function Home() {
                     value="questions"
                     className="space-y-4 focus:outline-none"
                   >
-                    <Questionnaire 
+                    <Questionnaire
                       questions={interviewQuestions}
                       onQuestionAnswered={handleQuestionAnswered}
                       onSubmit={handleSubmit}
@@ -244,17 +206,16 @@ export default function Home() {
               </div>
 
               <div className="flex justify-between text-sm text-slate-500 dark:text-slate-400 mb-4">
-                <span>Question {currentQuestionIndex + 1} of {totalQuestions}</span>
+                <span>
+                  Question {currentQuestionIndex + 1} of {totalQuestions}
+                </span>
                 <span>{progress}% Complete</span>
               </div>
             </Card>
 
             {/* Time remaining component */}
             <Card className="border border-indigo-100 dark:border-indigo-900/50 bg-white dark:bg-[#16161d] rounded-xl overflow-hidden">
-              <div className="p-5 pb-0 flex items-center">
-               
-              </div>
-              <TimeRemaining 
+              <TimeRemaining
                 initialTime={2700} // 45 minutes
                 showBreakButtons={true}
                 className="px-5 py-5"
