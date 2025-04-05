@@ -383,12 +383,18 @@ html{
   }
 }
 
+@font-face {
+  font-family: 'OpenDyslexic';
+  src: url('../../public/fonts/OpenDyslexic-Regular.woff2') format('woff2'),
+       url('../../public/fonts/OpenDyslexic-Regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Dyslexic-friendly font styling */
 .dyslexic-font {
-  font-family: "Arial", sans-serif;
-  line-height: 1.5;
-  letter-spacing: 0.05em;
-  word-spacing: 0.1em;
+  font-family: "OpenDyslexic" !important;
 }
 
 /* Color blindness filters */

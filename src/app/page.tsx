@@ -50,7 +50,41 @@ export default function Home() {
           {/* Main content area - spans 2 columns on larger screens */}
           <div className="lg:col-span-2 space-y-6">
             {/* Accessibility tools grid */}
-            
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-all"
+              >
+                <Volume2 className="h-4 w-4 mr-2 text-indigo-600 dark:text-indigo-400" />
+                <span>Text to Speech</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-all"
+              >
+                <Globe className="h-4 w-4 mr-2 text-indigo-600 dark:text-indigo-400" />
+                <span>Translate</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-all"
+              >
+                <Eye className="h-4 w-4 mr-2 text-indigo-600 dark:text-indigo-400" />
+                <span>Eye Tracking</span>
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="rounded-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 dark:bg-indigo-900/50 dark:hover:bg-indigo-800 dark:text-indigo-300 transition-all"
+              >
+                <Pause className="h-4 w-4 mr-2" />
+                <span>Timeout</span>
+              </Button>
+            </div>
+
             {/* Main question card */}
             <Card className="overflow-hidden border border-indigo-100 dark:border-indigo-900/50 bg-white dark:bg-[#16161d] relative rounded-xl">
               {/* Unique corner accent */}
@@ -95,7 +129,7 @@ export default function Home() {
 
                       <div className="space-y-4">
                         <textarea
-                          className="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#13131b] min-h-[150px] focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-700 focus:outline-none transition-all dyslexic-font"
+                          className="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#13131b] min-h-[150px] focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-700 focus:outline-none transition-all"
                           placeholder="Type your answer here..."
                         />
 
@@ -141,6 +175,17 @@ export default function Home() {
                           Your answers will be automatically saved as you type.
                         </li>
                       </ul>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="chat" className="focus:outline-none">
+                    <div className="p-6 rounded-xl bg-slate-50 dark:bg-[#1a1a24] border border-slate-100 dark:border-slate-700/50">
+                      <TwoPersonChat
+                        user1Name="Interviewer"
+                        user2Name="Candidate"
+                        title="Interview Chat"
+                        className="h-[400px]"
+                      />
                     </div>
                   </TabsContent>
                 </Tabs>
@@ -190,11 +235,28 @@ export default function Home() {
             </Card>
 
             {/* Time card */}
-            <TimeRemaining 
-              initialTime={2700} // 45 minutes
-              className="p-4 border border-indigo-100 dark:border-indigo-900/50 bg-white dark:bg-[#16161d] rounded-xl"
-              showBreakButtons={true}
-            />
+            <Card className="p-5 border border-indigo-100 dark:border-indigo-900/50 bg-white dark:bg-[#16161d] rounded-xl">
+              <h3 className="text-lg font-medium mb-4 flex items-center">
+                <div className="w-1 h-6 bg-indigo-500 dark:bg-indigo-400 mr-3 rounded-full"></div>
+                Time Remaining
+              </h3>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center"></div>
+                  <Clock className="h-5 w-5 text-indigo-600 dark:text-indigo-400 mr-2" />
+                  <TimeDisplayButton />
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+                >
+                  <Pause className="h-4 w-4 mr-1 text-indigo-600 dark:text-indigo-400" />
+                  Pause
+                </Button>
+              </div>
+            </Card>
 
             {/* Interview details card */}
             <Card className="p-5 border border-indigo-100 dark:border-indigo-900/50 bg-white dark:bg-[#16161d] rounded-xl">
