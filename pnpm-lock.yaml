@@ -23,6 +23,9 @@ importers:
       '@google-cloud/text-to-speech':
         specifier: ^6.0.1
         version: 6.0.1
+      '@google-cloud/vision':
+        specifier: ^5.1.0
+        version: 5.1.0
       '@google/genai':
         specifier: ^0.7.0
         version: 0.7.0
@@ -594,12 +597,20 @@ packages:
     resolution: {integrity: sha512-G/FQx5cE/+DqBbOpA5jKsegGwdPniU6PuIEMt+qxWgFxvxuFOzVmp6zYchtYuwAWV5/8Dgs0yAmjvNZv3uXLQg==}
     engines: {node: '>=18'}
 
+  '@google-cloud/promisify@5.0.0':
+    resolution: {integrity: sha512-N8qS6dlORGHwk7WjGXKOSsLjIjNINCPicsOX6gyyLiYk7mq3MtII96NZ9N2ahwA2vnkLmZODOIH9rlNniYWvCQ==}
+    engines: {node: '>=18'}
+
   '@google-cloud/speech@7.0.1':
     resolution: {integrity: sha512-GWL4cjyEAK6w1LD+e02wW9RB8hb4MPYXxjxEp3R4acFkNq1k/mBjIQwQP+147Omq2q6mZUBk/OGuOo/jCEL/Bg==}
     engines: {node: '>=18'}
 
   '@google-cloud/text-to-speech@6.0.1':
     resolution: {integrity: sha512-d9BLvmrAHTc1is38VdFxFLORvkzhDcfBz4h+j6Af21znj5pMlomX8VV7vD0SyRznORAXcwUaBDQ7zvCfChSA1A==}
+    engines: {node: '>=18'}
+
+  '@google-cloud/vision@5.1.0':
+    resolution: {integrity: sha512-lLF6eTjFRngoV5mnOSqimWsNBt1u56ncxbO/vEFgVfw2TqPCEN2HDmFZquA+FZMDuxQnEVb6hUJCTlVgG3SJBg==}
     engines: {node: '>=18'}
 
   '@google/genai@0.7.0':
@@ -2397,6 +2408,9 @@ packages:
     resolution: {integrity: sha512-hFoiJiTl63nn+kstHGBtewWSKnQLpyb155KHheA1l39uvtO9nWIop1p3udqPcUd/xbF1VLMO4n7OI6p7RbngDg==}
     engines: {node: '>=8'}
 
+  is@3.3.0:
+    resolution: {integrity: sha512-nW24QBoPcFGGHJGUwnfpI7Yc5CdqWNdsyHQszVE/z2pKHXzh7FZ5GWhJqSyaQ9wMkQnsTx+kAI8bHlCX4tKdbg==}
+
   isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
 
@@ -3393,6 +3407,8 @@ snapshots:
 
   '@google-cloud/promisify@4.1.0': {}
 
+  '@google-cloud/promisify@5.0.0': {}
+
   '@google-cloud/speech@7.0.1':
     dependencies:
       '@google-cloud/common': 6.0.0
@@ -3407,6 +3423,14 @@ snapshots:
   '@google-cloud/text-to-speech@6.0.1':
     dependencies:
       google-gax: 5.0.1-rc.0
+    transitivePeerDependencies:
+      - supports-color
+
+  '@google-cloud/vision@5.1.0':
+    dependencies:
+      '@google-cloud/promisify': 5.0.0
+      google-gax: 5.0.1-rc.0
+      is: 3.3.0
     transitivePeerDependencies:
       - supports-color
 
@@ -5173,6 +5197,8 @@ snapshots:
   is-number@7.0.0: {}
 
   is-stream@2.0.1: {}
+
+  is@3.3.0: {}
 
   isexe@2.0.0: {}
 

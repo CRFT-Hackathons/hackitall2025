@@ -16,13 +16,17 @@ import { transcribeAudio } from "../app/backend/stt-integration";
 import { synthesizeSpeech } from "../app/backend/tts-integration";
 import { toast } from "sonner";
 import Image from "next/image";
+import { rephraseText } from "~/app/backend/rephraseText";
+import { generateImageCaption } from "~/app/backend/generateImageCaption";
+import { describePhoto } from "~/app/backend/photoAnnotation";
+import { generateAnnotate } from "~/app/backend/generateAnnotate";
 
 interface Question {
   id: string | number;
   title: string;
   description: string;
   required?: boolean;
-  image?: string;
+  image?: any;
 }
 
 interface QuestionnaireProps {
@@ -72,6 +76,8 @@ export function Questionnaire({
   const [currentAnswer, setCurrentAnswer] = useState("");
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isTtsLoading, setIsTtsLoading] = useState(false);
+  const [summerizedQuestion, setSummerizedQuestion] = useState("");
+  const [isSumerizing, setIsSumerizing] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioUrlRef = useRef<string | null>(null);
 
@@ -325,6 +331,49 @@ export function Questionnaire({
       toast.info("Processing your voice input...");
     }
   };
+  const [isShowingSummary, setIsShowingSummary] = useState(false);
+  //Summarize question
+  const summarizeCurrentQuestion = async () => {
+    if (!currentQuestion) return;
+    if (isShowingSummary) {
+      setIsShowingSummary(false);
+      return;
+    }
+    setIsShowingSummary(true);
+    if (summerizedQuestion) {
+      console.log("here2");
+      return;
+    }
+    try {
+      const payload = {
+        title: currentQuestion.title,
+        description: currentQuestion.description,
+        disabilities_list: ["discalculia", "adhd"],
+        image: currentQuestion.image, // This can be a URL (or undefined)
+        languageCode,
+      };
+
+      const responsePhoto = await generateAnnotate(payload);
+      const responseRephrase = await rephraseText(
+        payload.description,
+        languageCode,
+        payload.disabilities_list
+      );
+      if (!responseRephrase) throw Error("Calling the repharse do not work");
+      console.log(responseRephrase);
+      console.log(responsePhoto);
+      if (responsePhoto != "")
+        setSummerizedQuestion(responseRephrase + "\n\n" + responsePhoto);
+      else setSummerizedQuestion(responseRephrase);
+      setIsShowingSummary(true);
+      toast.success("Question summarized successfully");
+    } catch (error) {
+      console.error("Summarization error:", error);
+      toast.error("Failed to summarize question");
+    } finally {
+      setIsSumerizing(false);
+    }
+  };
 
   // Play question using text-to-speech
   const playQuestionAudio = async () => {
@@ -405,43 +454,59 @@ export function Questionnaire({
               {currentQuestion?.title || "Loading questions..."}
             </h3>
           </div>
-
-          {/* Text-to-speech button */}
-          <button
-            onClick={() => playQuestionAudio()}
-            disabled={isTtsLoading}
-            className={`rounded-full p-2 ${
-              isPlayingAudio
-                ? "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300"
-                : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800/50"
-            } ${isTtsLoading ? "opacity-50 cursor-wait" : ""}`}
-            aria-label={
-              isTtsLoading
-                ? "Generating audio..."
-                : isPlayingAudio
-                ? "Stop audio"
-                : "Read question aloud"
-            }
-            title={
-              isTtsLoading
-                ? "Generating audio..."
-                : isPlayingAudio
-                ? "Stop audio"
-                : "Read question aloud"
-            }
-          >
-            {isTtsLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Volume2 className="h-4 w-4" />
-            )}
-          </button>
+          <div>
+            {/* Text-to-speech button */}
+            <button
+              onClick={summarizeCurrentQuestion}
+              disabled={isSumerizing}
+              className="rounded-xl bg-indigo-600 text-white px-4 py-2"
+            >
+              {isSumerizing ? (
+                <Loader2 className="animate-spin h-4 w-4" />
+              ) : isShowingSummary ? (
+                "Show Full Question"
+              ) : (
+                "Summarize"
+              )}
+            </button>
+            <button
+              onClick={() => playQuestionAudio()}
+              disabled={isTtsLoading}
+              className={`rounded-full p-2 ${
+                isPlayingAudio
+                  ? "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300"
+                  : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800/50"
+              } ${isTtsLoading ? "opacity-50 cursor-wait" : ""}`}
+              aria-label={
+                isTtsLoading
+                  ? "Generating audio..."
+                  : isPlayingAudio
+                  ? "Stop audio"
+                  : "Read question aloud"
+              }
+              title={
+                isTtsLoading
+                  ? "Generating audio..."
+                  : isPlayingAudio
+                  ? "Stop audio"
+                  : "Read question aloud"
+              }
+            >
+              {isTtsLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Volume2 className="h-4 w-4" />
+              )}
+            </button>
+          </div>
         </div>
 
         {currentQuestion ? (
           <>
             <p className="mb-6 text-slate-700 dark:text-slate-300 leading-relaxed">
-              {currentQuestion.description}
+              {isShowingSummary && summerizedQuestion
+                ? summerizedQuestion
+                : currentQuestion.description}
             </p>
 
             {isClient && currentQuestion.image && (
