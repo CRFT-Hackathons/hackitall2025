@@ -1,9 +1,12 @@
+"use client"
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AccessibilityPanel from "@/components/accessibility-panel";
 import TimeDisplayButton from "@/components/time-display-button";
 import { TimeRemaining } from "@/components/time-remaining";
+import { Questionnaire } from "@/components/questionnaire";
+import { useState } from "react";
 import {
   Eye,
   Pause,
@@ -16,7 +19,60 @@ import {
   UserRound,
 } from "lucide-react";
 
+// Sample questions for the interview
+const interviewQuestions = [
+  {
+    id: "introduce",
+    title: "Tell us about yourself",
+    description: "Tell us about a challenging project you worked on and how you overcame obstacles. What skills did you develop during this process?",
+    required: true
+  },
+  {
+    id: "teamwork",
+    title: "Teamwork Experience",
+    description: "Describe a situation where you had to work effectively as part of a team. What was your role in the team and how did you contribute to the team's success?",
+    required: true
+  },
+  {
+    id: "technical",
+    title: "Technical Knowledge",
+    description: "Explain how you would design a scalable web application. What technologies would you choose and why?",
+    required: true
+  },
+  {
+    id: "challenges",
+    title: "Problem Solving",
+    description: "Tell us about a time when you faced a significant technical challenge. How did you approach it and what was the outcome?",
+    required: true
+  },
+  {
+    id: "goals",
+    title: "Career Goals",
+    description: "What are your short-term and long-term career goals? How does this position align with those goals?",
+    required: false
+  }
+];
+
 export default function Home() {
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const totalQuestions = interviewQuestions.length;
+  const progress = Math.round(((currentQuestionIndex + 1) / totalQuestions) * 100);
+
+  const handleQuestionAnswered = (id: string | number, answer: string) => {
+    console.log(`Question ${id} answered:`, answer);
+    setAnswers(prev => ({ ...prev, [id]: answer }));
+  };
+
+  const handleQuestionChange = (index: number) => {
+    setCurrentQuestionIndex(index);
+  };
+
+  const handleSubmit = (submittedAnswers: Record<string, string>) => {
+    console.log("All answers submitted:", submittedAnswers);
+    setAnswers(submittedAnswers);
+  };
+
   return (
     <main className="min-h-screen bg-[#f8f9fa] dark:bg-[#0f0f13]">
       {/* Decorative elements for uniqueness */}
@@ -51,7 +107,7 @@ export default function Home() {
           <div className="lg:col-span-2 space-y-6">
             {/* Accessibility tools grid */}
             
-            {/* Main question card */}
+            {/* Main question card with questionnaire component */}
             <Card className="overflow-hidden border border-indigo-100 dark:border-indigo-900/50 bg-white dark:bg-[#16161d] relative rounded-xl">
               {/* Unique corner accent */}
               <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-indigo-100 to-transparent dark:from-indigo-900/20 -z-0"></div>
@@ -77,42 +133,12 @@ export default function Home() {
                     value="questions"
                     className="space-y-4 focus:outline-none"
                   >
-                    <div className="p-6 rounded-xl bg-slate-50 dark:bg-[#1a1a24] border border-slate-100 dark:border-slate-700/50">
-                      <div className="flex items-center mb-4">
-                        <span className="w-8 h-8 flex items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 font-medium mr-3">
-                          1
-                        </span>
-                        <h3 className="text-xl font-medium">
-                          Tell us about yourself
-                        </h3>
-                      </div>
-
-                      <p className="mb-6 text-slate-700 dark:text-slate-300 leading-relaxed">
-                        Tell us about a challenging project you worked on and
-                        how you overcame obstacles. What skills did you develop
-                        during this process?
-                      </p>
-
-                      <div className="space-y-4">
-                        <textarea
-                          className="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#13131b] min-h-[150px] focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-700 focus:outline-none transition-all dyslexic-font"
-                          placeholder="Type your answer here..."
-                        />
-
-                        <div className="flex flex-wrap gap-3 justify-between">
-                          <Button
-                            variant="outline"
-                            className="rounded-xl border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
-                          >
-                            <Mic className="h-4 w-4 mr-2 text-indigo-600 dark:text-indigo-400" />
-                            Voice Input
-                          </Button>
-                          <Button className="rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 dark:from-indigo-500 dark:to-purple-500 text-white">
-                            Submit Answer
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
+                    <Questionnaire 
+                      questions={interviewQuestions}
+                      onQuestionAnswered={handleQuestionAnswered}
+                      onSubmit={handleSubmit}
+                      onQuestionChange={handleQuestionChange}
+                    />
                   </TabsContent>
 
                   <TabsContent
@@ -146,25 +172,6 @@ export default function Home() {
                 </Tabs>
               </div>
             </Card>
-
-            {/* Navigation buttons */}
-            <div className="grid grid-cols-2 gap-4">
-              <Button
-                variant="outline"
-                className="rounded-xl border-indigo-200 dark:border-indigo-800"
-                disabled
-              >
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                Previous Question
-              </Button>
-              <Button
-                variant="outline"
-                className="rounded-xl border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
-              >
-                Next Question
-                <ChevronRight className="h-4 w-4 ml-2" />
-              </Button>
-            </div>
           </div>
 
           {/* Sidebar with multiple cards in a grid layout */}
@@ -178,14 +185,14 @@ export default function Home() {
 
               <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full mb-4 overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400 rounded-full"
-                  style={{ width: "20%" }}
+                  className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400 rounded-full transition-all duration-300 ease-in-out"
+                  style={{ width: `${progress}%` }}
                 ></div>
               </div>
 
               <div className="flex justify-between text-sm text-slate-500 dark:text-slate-400 mb-4">
-                <span>Question 1 of 5</span>
-                <span>20% Complete</span>
+                <span>Question {currentQuestionIndex + 1} of {totalQuestions}</span>
+                <span>{progress}% Complete</span>
               </div>
             </Card>
 
