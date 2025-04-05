@@ -152,7 +152,7 @@ export function TimeRemaining({
           <div className="flex items-center">
             <Clock className="h-5 w-5 text-indigo-600 dark:text-indigo-400 mr-2" />
             <div
-              className={`text-2xl font-medium text-gray-200 font-mono tabular-nums ${
+              className={`text-2xl font-medium text-indigo-400 dark:text-gray-200 font-mono tabular-nums ${
                 isTimeHidden ? "blur-[6px]" : ""
               }`}
             >

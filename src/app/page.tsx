@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,12 +7,7 @@ import TimeDisplayButton from "@/components/time-display-button";
 import { TimeRemaining } from "@/components/time-remaining";
 import { Questionnaire } from "@/components/questionnaire";
 import { TwoPersonChat } from "@/components/interview-chat";
-import {
-  Pause,
-  Mic,
-  Clock,
-  UserRound,
-} from "lucide-react";
+import { Pause, Mic, Clock, UserRound } from "lucide-react";
 import { useState } from "react";
 
 // Sample questions for the interview
@@ -20,44 +15,51 @@ const interviewQuestions = [
   {
     id: "introduce",
     title: "Tell us about yourself",
-    description: "Tell us about a challenging project you worked on and how you overcame obstacles. What skills did you develop during this process?",
-    required: true
+    description:
+      "Tell us about a challenging project you worked on and how you overcame obstacles. What skills did you develop during this process?",
+    required: true,
   },
   {
     id: "teamwork",
     title: "Teamwork Experience",
-    description: "Describe a situation where you had to work effectively as part of a team. What was your role in the team and how did you contribute to the team's success?",
-    required: true
+    description:
+      "Describe a situation where you had to work effectively as part of a team. What was your role in the team and how did you contribute to the team's success?",
+    required: true,
   },
   {
     id: "technical",
     title: "Technical Knowledge",
-    description: "Explain how you would design a scalable web application. What technologies would you choose and why?",
-    required: true
+    description:
+      "Explain how you would design a scalable web application. What technologies would you choose and why?",
+    required: true,
   },
   {
     id: "challenges",
     title: "Problem Solving",
-    description: "Tell us about a time when you faced a significant technical challenge. How did you approach it and what was the outcome?",
-    required: true
+    description:
+      "Tell us about a time when you faced a significant technical challenge. How did you approach it and what was the outcome?",
+    required: true,
   },
   {
     id: "goals",
     title: "Career Goals",
-    description: "What are your short-term and long-term career goals? How does this position align with those goals?",
-    required: false
-  }
+    description:
+      "What are your short-term and long-term career goals? How does this position align with those goals?",
+    required: false,
+  },
 ];
 
 export default function Home() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const totalQuestions = interviewQuestions.length;
-  const progress = Math.round(((currentQuestionIndex + 1) / totalQuestions) * 100);
+  const progress = Math.round(
+    ((currentQuestionIndex + 1) / totalQuestions) * 100
+  );
 
   const handleQuestionAnswered = (id: string | number, answer: string) => {
     console.log(`Question ${id} answered:`, answer);
-    setAnswers(prev => ({ ...prev, [id]: answer }));
+    setAnswers((prev) => ({ ...prev, [id]: answer }));
   };
 
   const handleQuestionChange = (index: number) => {
@@ -102,7 +104,7 @@ export default function Home() {
           {/* Main content area - spans 2 columns on larger screens */}
           <div className="lg:col-span-2 space-y-6">
             {/* Accessibility tools grid */}
-            
+
             {/* Main question card */}
             <Card className="overflow-hidden border border-indigo-100 dark:border-indigo-900/50 bg-white dark:bg-[#16161d] relative rounded-xl">
               {/* Unique corner accent */}
@@ -135,7 +137,7 @@ export default function Home() {
                     value="questions"
                     className="space-y-4 focus:outline-none"
                   >
-                    <Questionnaire 
+                    <Questionnaire
                       questions={interviewQuestions}
                       onQuestionAnswered={handleQuestionAnswered}
                       onSubmit={handleSubmit}
@@ -204,14 +206,16 @@ export default function Home() {
               </div>
 
               <div className="flex justify-between text-sm text-slate-500 dark:text-slate-400 mb-4">
-                <span>Question {currentQuestionIndex + 1} of {totalQuestions}</span>
+                <span>
+                  Question {currentQuestionIndex + 1} of {totalQuestions}
+                </span>
                 <span>{progress}% Complete</span>
               </div>
             </Card>
 
             {/* Time remaining component */}
             <Card className="border border-indigo-100 dark:border-indigo-900/50 bg-white dark:bg-[#16161d] rounded-xl overflow-hidden">
-              <TimeRemaining 
+              <TimeRemaining
                 initialTime={2700} // 45 minutes
                 showBreakButtons={true}
                 className="px-5 py-5 mb-1"
