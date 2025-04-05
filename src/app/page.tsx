@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AccessibilityPanel from "@/components/accessibility-panel";
 import TimeDisplayButton from "@/components/time-display-button";
+import { TwoPersonChat } from "@/components/interview-chat";
 import {
   Eye,
   Pause,
@@ -13,6 +14,7 @@ import {
   ChevronRight,
   ChevronLeft,
   UserRound,
+  MessageSquare,
 } from "lucide-react";
 
 export default function Home() {
@@ -104,6 +106,13 @@ export default function Home() {
                     >
                       Instructions
                     </TabsTrigger>
+                    <TabsTrigger
+                      value="chat"
+                      className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-indigo-900/30 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300 px-6"
+                    >
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Chat
+                    </TabsTrigger>
                   </TabsList>
 
                   <TabsContent
@@ -174,6 +183,20 @@ export default function Home() {
                           Your answers will be automatically saved as you type.
                         </li>
                       </ul>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent
+                    value="chat"
+                    className="focus:outline-none"
+                  >
+                    <div className="p-6 rounded-xl bg-slate-50 dark:bg-[#1a1a24] border border-slate-100 dark:border-slate-700/50">
+                      <TwoPersonChat 
+                        user1Name="Interviewer"
+                        user2Name="Candidate"
+                        title="Interview Chat"
+                        className="h-[400px]"
+                      />
                     </div>
                   </TabsContent>
                 </Tabs>
