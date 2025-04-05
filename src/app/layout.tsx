@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import type React from "react";
 import { Inter } from "next/font/google";
@@ -22,20 +22,20 @@ const siteMetadata = {
 function OnboardingCheck({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  
+
   useEffect(() => {
     // Skip check if we're already on the onboarding page
     if (pathname === "/onboarding") return;
-    
+
     // Check if onboarding has been completed
     const hasCompletedOnboarding = localStorage.getItem("onboardingCompleted");
-    
+
     // If this is first visit and not on onboarding page, redirect
     if (!hasCompletedOnboarding) {
       router.push("/onboarding");
     }
   }, [pathname, router]);
-  
+
   return <>{children}</>;
 }
 
@@ -49,25 +49,25 @@ function AccessibilitySettings({ children }: { children: React.ReactNode }) {
       if (fontSize) {
         document.documentElement.style.fontSize = `${fontSize}px`;
       }
-      
+
       // Dyslexic font
       const useDyslexicFont = localStorage.getItem("useDyslexicFont");
       if (useDyslexicFont === "true") {
         document.body.classList.add("dyslexic-font");
       }
-      
+
       // Color blind mode
       const colorBlindMode = localStorage.getItem("colorBlindMode");
       if (colorBlindMode && colorBlindMode !== "none") {
         document.body.setAttribute("data-color-blind-mode", colorBlindMode);
       }
-      
+
       // High contrast
       const highContrast = localStorage.getItem("highContrast");
       if (highContrast === "true") {
         document.body.classList.add("high-contrast");
       }
-      
+
       // Animations
       const disableAnimations = localStorage.getItem("disableAnimations");
       if (disableAnimations === "true") {
@@ -77,7 +77,7 @@ function AccessibilitySettings({ children }: { children: React.ReactNode }) {
       console.error("Error applying accessibility settings:", error);
     }
   }, []);
-  
+
   return <>{children}</>;
 }
 
@@ -87,69 +87,67 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-      <html lang="en" suppressHydrationWarning>
-        <head>
-          <title>{siteMetadata.title}</title>
-          <meta name="description" content={siteMetadata.description} />
-        </head>
-        <body className={inter.className}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="light"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <OnboardingCheck>
-              <AccessibilitySettings>
-                {/* SVG filters for color blindness */}
-                <svg
-                  className="absolute"
-                  style={{ height: 0, width: 0, position: "absolute" }}
-                >
-                  <defs>
-                    {/* Protanopia Filter */}
-                    <filter id="protanopia-filter">
-                      <feColorMatrix
-                        type="matrix"
-                        values="0.567, 0.433, 0, 0, 0
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <title>{siteMetadata.title}</title>
+        <meta name="description" content={siteMetadata.description} />
+      </head>
+      <body className={inter.className}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <OnboardingCheck>
+            <AccessibilitySettings>
+              {/* SVG filters for color blindness */}
+              <svg
+                className="absolute"
+                style={{ height: 0, width: 0, position: "absolute" }}
+              >
+                <defs>
+                  {/* Protanopia Filter */}
+                  <filter id="protanopia-filter">
+                    <feColorMatrix
+                      type="matrix"
+                      values="0.567, 0.433, 0, 0, 0
                                 0.558, 0.442, 0, 0, 0
                                 0, 0.242, 0.758, 0, 0
                                 0, 0, 0, 1, 0"
-                      />
-                    </filter>
+                    />
+                  </filter>
 
-                    {/* Deuteranopia Filter */}
-                    <filter id="deuteranopia-filter">
-                      <feColorMatrix
-                        type="matrix"
-                        values="0.625, 0.375, 0, 0, 0
+                  {/* Deuteranopia Filter */}
+                  <filter id="deuteranopia-filter">
+                    <feColorMatrix
+                      type="matrix"
+                      values="0.625, 0.375, 0, 0, 0
                                 0.7, 0.3, 0, 0, 0
                                 0, 0.3, 0.7, 0, 0
                                 0, 0, 0, 1, 0"
-                      />
-                    </filter>
+                    />
+                  </filter>
 
-                    {/* Tritanopia Filter */}
-                    <filter id="tritanopia-filter">
-                      <feColorMatrix
-                        type="matrix"
-                        values="0.95, 0.05, 0, 0, 0
+                  {/* Tritanopia Filter */}
+                  <filter id="tritanopia-filter">
+                    <feColorMatrix
+                      type="matrix"
+                      values="0.95, 0.05, 0, 0, 0
                                 0, 0.433, 0.567, 0, 0
                                 0, 0.475, 0.525, 0, 0
                                 0, 0, 0, 1, 0"
-                      />
-                    </filter>
-                  </defs>
-                </svg>
-                
-                {children}
-              </AccessibilitySettings>
-            </OnboardingCheck>
-            <Toaster />
-          </ThemeProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+                    />
+                  </filter>
+                </defs>
+              </svg>
+
+              {children}
+            </AccessibilitySettings>
+          </OnboardingCheck>
+          <Toaster />
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }

@@ -118,10 +118,7 @@ export default function Home() {
             {/* Accessibility tools grid */}
 
             {/* Main question card */}
-            <Card className="overflow-hidden border border-indigo-100 dark:border-indigo-900/50 bg-white dark:bg-[#16161d] relative rounded-xl">
-              {/* Unique corner accent */}
-              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-indigo-100 to-transparent dark:from-indigo-900/20 -z-0"></div>
-
+            <Card className="overflow-hidden border border-indigo-100 dark:border-indigo-900/50 bg-gradient-to-br from-white via-white to-indigo-50/30 dark:from-[#16161d] dark:via-[#16161d] dark:to-indigo-900/10">
               <div className="p-6 relative z-10">
                 <Tabs defaultValue="questions" className="w-full">
                   <TabsList className="mb-6 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-full w-fit">
