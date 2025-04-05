@@ -50,41 +50,7 @@ export default function Home() {
           {/* Main content area - spans 2 columns on larger screens */}
           <div className="lg:col-span-2 space-y-6">
             {/* Accessibility tools grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-full border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-all"
-              >
-                <Volume2 className="h-4 w-4 mr-2 text-indigo-600 dark:text-indigo-400" />
-                <span>Text to Speech</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-full border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-all"
-              >
-                <Globe className="h-4 w-4 mr-2 text-indigo-600 dark:text-indigo-400" />
-                <span>Translate</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-full border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-all"
-              >
-                <Eye className="h-4 w-4 mr-2 text-indigo-600 dark:text-indigo-400" />
-                <span>Eye Tracking</span>
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="rounded-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 dark:bg-indigo-900/50 dark:hover:bg-indigo-800 dark:text-indigo-300 transition-all"
-              >
-                <Pause className="h-4 w-4 mr-2" />
-                <span>Timeout</span>
-              </Button>
-            </div>
-
+            
             {/* Main question card */}
             <Card className="overflow-hidden border border-indigo-100 dark:border-indigo-900/50 bg-white dark:bg-[#16161d] relative rounded-xl">
               {/* Unique corner accent */}
