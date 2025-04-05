@@ -10,10 +10,12 @@ import {
   Loader2,
   StopCircle,
   Volume2,
+  Info,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { transcribeAudio } from "../app/backend/stt-integration";
 import { synthesizeSpeech } from "../app/backend/tts-integration";
+import { translateText } from "../app/backend/translation";
 import { toast } from "sonner";
 import Image from "next/image";
 import { VoiceRecordingButton } from "./voice-recording-button";
@@ -100,7 +102,7 @@ export function Questionnaire({
   onQuestionChange,
   className = "",
   showProgress = true,
-  languageCode = "en-US",
+  languageCode = "ro-RO",
   initialAnswers = {},
 }: QuestionnaireProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -118,6 +120,7 @@ export function Questionnaire({
   const [currentAnswer, setCurrentAnswer] = useState("");
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isTtsLoading, setIsTtsLoading] = useState(false);
+  const [isTranslating, setIsTranslating] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioUrlRef = useRef<string | null>(null);
   const [isClient, setIsClient] = useState(false);
@@ -1140,7 +1143,8 @@ export function Questionnaire({
     }
 
     try {
-      setIsTtsLoading(true);
+      setIsTtsLoading(false); // We'll set this true later when generating audio
+      setIsTranslating(true); // Start with translation
       let currentSpeechRate = 1.0;
       
       if (typeof window !== 'undefined') {
@@ -1150,9 +1154,25 @@ export function Questionnaire({
         }
       }
       
-      const textToRead = `${currentQuestion.title}. ${currentQuestion.description}`;
+      const originalText = `${currentQuestion.title}. ${currentQuestion.description}`;
+      
+      // Translate the text to Romanian
+      toast.info("Translating to Romanian...");
+      const translatedText = await translateText(originalText, "en", "ro");
+      
+      if (!translatedText) {
+        throw new Error("Failed to translate text");
+      }
+      
+      setIsTranslating(false); // Translation done
+      setIsTtsLoading(true); // Now generating audio
+      
+      toast.success("Translation successful");
+      console.log("Translated text:", translatedText);
+      
+      // Use the translated text for speech synthesis
       const audioUrl = await synthesizeSpeech(
-        textToRead,
+        translatedText,
         languageCode,
         currentSpeechRate
       );
@@ -1181,13 +1201,14 @@ export function Questionnaire({
       await audioRef.current.play();
       console.log("Audio playback started");
       setIsPlayingAudio(true);
-      toast.success("Playing question audio");
+      toast.success("Playing translated question audio");
     } catch (error) {
       console.error("Text-to-speech error:", error);
       toast.error("Failed to generate or play audio");
       audioUrlRef.current = null;
     } finally {
       setIsTtsLoading(false);
+      setIsTranslating(false);
     }
   };
 
@@ -1250,15 +1271,17 @@ export function Questionnaire({
           {/* Text-to-speech button */}
           <button
             onClick={() => playQuestionAudio()}
-            disabled={isTtsLoading}
+            disabled={isTtsLoading || isTranslating}
             className={`rounded-full p-2 ${
               isPlayingAudio
                 ? "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300"
                 : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800/50"
-            } ${isTtsLoading ? "opacity-50 cursor-wait" : ""}`}
+            } ${isTtsLoading || isTranslating ? "opacity-50 cursor-wait" : ""}`}
             aria-label={
               isTtsLoading
                 ? "Generating audio..."
+                : isTranslating
+                ? "Translating to Romanian..."
                 : isPlayingAudio
                 ? "Stop audio"
                 : "Read question aloud"
@@ -1266,12 +1289,14 @@ export function Questionnaire({
             title={
               isTtsLoading
                 ? "Generating audio..."
+                : isTranslating
+                ? "Translating to Romanian..."
                 : isPlayingAudio
                 ? "Stop audio"
                 : "Read question aloud"
             }
           >
-            {isTtsLoading ? (
+            {isTtsLoading || isTranslating ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <Volume2 className="h-4 w-4" />
@@ -1309,20 +1334,15 @@ export function Questionnaire({
               />
               
               {/* Auto-save indicator */}
-              {pendingSaves[currentQuestion.id] && (
-                <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 mt-1 animate-pulse">
-                  <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                  <span>Changes will be saved in {countdowns[currentQuestion.id] || 10} seconds...</span>
-                </div>
-              )}
-              
+              {pendingSaves[currentQuestion.id] }
+
               {transcriptionError && (
                 <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm border border-red-200 dark:border-red-800/30">
                   <AlertCircle className="h-4 w-4 inline-block mr-2" />
                   Error: {transcriptionError}
                 </div>
               )}
-              
+
               <div className="flex flex-wrap gap-3 justify-between">
                 <div className="flex items-center gap-2">
                   <button
@@ -1372,7 +1392,7 @@ export function Questionnaire({
                             }
                           }
                           
-                          toast.success("Answer deleted");
+                      toast.success("Answer deleted");
                         } catch (error) {
                           console.error("Error removing answer from localStorage:", error);
                           toast.error("Failed to delete answer");

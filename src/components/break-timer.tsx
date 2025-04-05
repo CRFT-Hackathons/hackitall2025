@@ -121,7 +121,7 @@ export function BreakTimer({
               {getIcon()}
             </div>
             <svg className="absolute top-0 left-0 w-24 h-24 -rotate-90" aria-hidden="true">
-              <motion.circle
+              <circle
                 cx="48"
                 cy="48"
                 r="46"
@@ -129,15 +129,18 @@ export function BreakTimer({
                 strokeWidth="2"
                 fill="transparent"
                 strokeDasharray={2 * Math.PI * 46}
-                initial={{ strokeDashoffset: 0 }}
-                animate={{ 
-                  strokeDashoffset: 2 * Math.PI * 46 * (1 - timeLeft / duration)
-                }}
-                transition={{ 
-                  duration: 1,
-                  ease: "linear"
-                }}
-              />
+                strokeDashoffset={0}
+                className="transition-all duration-1000"
+              >
+                <animate 
+                  attributeName="stroke-dashoffset" 
+                  from="0" 
+                  to={2 * Math.PI * 46} 
+                  dur={`${duration}s`} 
+                  fill="freeze" 
+                  calcMode="linear"
+                />
+              </circle>
             </svg>
           </div>
           <h3 className="text-xl font-light mb-2 text-white">{title}</h3>
@@ -184,13 +187,14 @@ export function BreakTimer({
 /**
  * A component that displays a 5-minute break timer
  */
-export function NeedABreak(props: Omit<BreakTimerProps, "duration" | "title" | "subtitle" | "icon">) {
+export function NeedABreak(props: Omit<BreakTimerProps, "duration" | "title" | "subtitle" | "icon" | "primaryColor">) {
   return (
     <BreakTimer
       duration={300} // 5 minutes
       title="BREAK TIME"
       subtitle="Take a moment to breathe"
       icon="clock"
+      primaryColor="#8b5cf6" // Purple color to match the recording circle
       {...props}
     />
   )
@@ -199,13 +203,14 @@ export function NeedABreak(props: Omit<BreakTimerProps, "duration" | "title" | "
 /**
  * A component that displays a 2-minute bathroom break timer
  */
-export function BathroomBreak(props: Omit<BreakTimerProps, "duration" | "title" | "subtitle" | "icon">) {
+export function BathroomBreak(props: Omit<BreakTimerProps, "duration" | "title" | "subtitle" | "icon" | "primaryColor">) {
   return (
     <BreakTimer
       duration={120} // 2 minutes
       title="BATHROOM BREAK"
       subtitle="We'll wait for you to return"
-      icon="timer"
+      icon="coffee"
+      primaryColor="#8b5cf6" // Purple color to match the recording circle
       {...props}
     />
   )
