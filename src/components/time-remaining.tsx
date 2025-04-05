@@ -29,36 +29,130 @@ export function TimeRemaining({
   showBreakButtons = true,
 }: TimeRemainingProps) {
   const [timeLeft, setTimeLeft] = useState(initialTime);
-  const [isTimeHidden, setIsTimeHidden] = useState(true);
-  const [isBreakActive, setIsBreakActive] = useState(false);
-  const [showBreakTimer, setShowBreakTimer] = useState<
-    "regular" | "bathroom" | null
-  >(null);
-  const [breakTimeLeft, setBreakTimeLeft] = useState(0);
+  const [isRunning, setIsRunning] = useState(true);
+  const [isTimeHidden, setIsTimeHidden] = useState(false);
+  const [showBreakOverlay, setShowBreakOverlay] = useState(false);
+  const [breakType, setBreakType] = useState<"regular" | "bathroom" | null>(null);
   const [hasUsedRegularBreak, setHasUsedRegularBreak] = useState(false);
   const [hasUsedBathroomBreak, setHasUsedBathroomBreak] = useState(false);
+  const [pauseReason, setPauseReason] = useState("");
+  const [breakStartTime, setBreakStartTime] = useState<number | null>(null);
 
-  // Load saved preferences and break usage status from localStorage on mount
+  // Load saved state from localStorage on component mount
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      // Load break usage status
-      const regularBreakUsed =
-        localStorage.getItem("regularBreakUsed") === "true";
-      const bathroomBreakUsed =
-        localStorage.getItem("bathroomBreakUsed") === "true";
-
-      // Load time visibility preference
-      const timeHidden = localStorage.getItem("isTimeHidden");
-
-      setHasUsedRegularBreak(regularBreakUsed);
-      setHasUsedBathroomBreak(bathroomBreakUsed);
-
-      // Only update if there's a saved preference
-      if (timeHidden !== null) {
-        setIsTimeHidden(timeHidden === "true");
+    // Load time hiding preference
+    const savedIsTimeHidden = localStorage.getItem("isTimeHidden");
+    if (savedIsTimeHidden) {
+      setIsTimeHidden(savedIsTimeHidden === "true");
+    }
+    
+    // Load break usage
+    const savedHasUsedRegularBreak = localStorage.getItem("hasUsedRegularBreak");
+    if (savedHasUsedRegularBreak) {
+      setHasUsedRegularBreak(savedHasUsedRegularBreak === "true");
+    }
+    
+    const savedHasUsedBathroomBreak = localStorage.getItem("hasUsedBathroomBreak");
+    if (savedHasUsedBathroomBreak) {
+      setHasUsedBathroomBreak(savedHasUsedBathroomBreak === "true");
+    }
+    
+    // Load active break status if any
+    const savedBreakType = localStorage.getItem("breakType") as "regular" | "bathroom" | null;
+    const savedBreakStartTime = localStorage.getItem("breakStartTime");
+    
+    if (savedBreakType && savedBreakStartTime) {
+      const breakStartTime = parseInt(savedBreakStartTime, 10);
+      const now = Date.now();
+      const breakDuration = savedBreakType === "regular" ? 300000 : 120000; // 5 min or 2 min in ms
+      
+      // Check if break is still active
+      if (now - breakStartTime < breakDuration) {
+        setBreakType(savedBreakType);
+        setBreakStartTime(breakStartTime);
+        setShowBreakOverlay(true);
+        setIsRunning(false);
+      } else {
+        // Break duration has passed, clear it
+        localStorage.removeItem("breakType");
+        localStorage.removeItem("breakStartTime");
       }
     }
-  }, []);
+    
+    // Check if we have a saved timer state
+    const savedTimeLeft = localStorage.getItem("timeLeft");
+    const lastUpdateTime = localStorage.getItem("lastUpdateTime");
+    const savedIsRunning = localStorage.getItem("isRunning");
+    
+    if (savedTimeLeft && lastUpdateTime) {
+      // We have a saved timer state
+      const parsedTimeLeft = parseInt(savedTimeLeft, 10);
+      const lastUpdate = parseInt(lastUpdateTime, 10);
+      const now = Date.now();
+      
+      // Calculate elapsed time in seconds since last update
+      const elapsedSeconds = Math.floor((now - lastUpdate) / 1000);
+      
+      // Only subtract elapsed time if timer was running and we're not on a break
+      if (savedIsRunning === "true" && !breakType) {
+        // Calculate new time left by subtracting elapsed seconds, don't go below 0
+        const newTimeLeft = Math.max(0, parsedTimeLeft - elapsedSeconds);
+        setTimeLeft(newTimeLeft);
+        localStorage.setItem("timeLeft", newTimeLeft.toString());
+      } else {
+        // Timer was paused, just use saved time
+        setTimeLeft(parsedTimeLeft);
+      }
+      
+      // Update the last update time to now
+      localStorage.setItem("lastUpdateTime", now.toString());
+      
+      // Set running state (don't run if time is 0)
+      const shouldBeRunning = savedIsRunning === "true" && !breakType && parsedTimeLeft > 0;
+      setIsRunning(shouldBeRunning);
+    } else {
+      // No saved state, initialize with default values
+      setTimeLeft(initialTime);
+      localStorage.setItem("timeLeft", initialTime.toString());
+      localStorage.setItem("lastUpdateTime", Date.now().toString());
+      setIsRunning(true);
+      localStorage.setItem("isRunning", "true");
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialTime]);
+  
+  // Main timer effect
+  useEffect(() => {
+    let timerId: NodeJS.Timeout | null = null;
+
+    if (isRunning && timeLeft > 0) {
+      timerId = setInterval(() => {
+        setTimeLeft((prevTime) => {
+          const newTime = prevTime - 1;
+          // Update localStorage with current time and update timestamp
+          localStorage.setItem("timeLeft", newTime.toString());
+          localStorage.setItem("lastUpdateTime", Date.now().toString());
+          return newTime;
+        });
+      }, 1000);
+    } else if (timeLeft === 0) {
+      setIsRunning(false);
+      localStorage.setItem("isRunning", "false");
+      onTimeUp?.();
+    }
+
+    return () => {
+      if (timerId) {
+        clearInterval(timerId);
+      }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isRunning, timeLeft, onTimeUp]);
+  
+  // Update isRunning in localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem("isRunning", isRunning.toString());
+  }, [isRunning]);
 
   // Format time as MM:SS
   const formatTime = (seconds: number) => {
@@ -66,40 +160,6 @@ export function TimeRemaining({
     const secs = seconds % 60;
     return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
   };
-
-  // Handle countdown
-  useEffect(() => {
-    if (isBreakActive) return;
-
-    if (timeLeft <= 0) {
-      onTimeUp?.();
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setTimeLeft((prev) => Math.max(0, prev - 1));
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [timeLeft, isBreakActive, onTimeUp]);
-
-  // Handle break countdown
-  useEffect(() => {
-    if (!showBreakTimer || breakTimeLeft <= 0) return;
-
-    const interval = setInterval(() => {
-      setBreakTimeLeft((prev) => {
-        if (prev <= 1) {
-          setShowBreakTimer(null);
-          setIsBreakActive(false);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [breakTimeLeft, showBreakTimer]);
 
   const toggleTimeVisibility = () => {
     const newValue = !isTimeHidden;
@@ -109,25 +169,55 @@ export function TimeRemaining({
   };
 
   const startBreak = (type: "regular" | "bathroom") => {
-    setIsBreakActive(true);
-    setShowBreakTimer(type);
-    setBreakTimeLeft(type === "regular" ? 300 : 120); // 5 or 2 minutes
-
+    setShowBreakOverlay(true);
+    setBreakType(type);
+    setBreakStartTime(Date.now());
+    
     // Mark break as used in state and localStorage
-    if (type === "regular" && !hasUsedRegularBreak) {
+    if (type === "regular") {
       setHasUsedRegularBreak(true);
-      localStorage.setItem("regularBreakUsed", "true");
-    } else if (type === "bathroom" && !hasUsedBathroomBreak) {
+      localStorage.setItem("hasUsedRegularBreak", "true");
+    } else {
       setHasUsedBathroomBreak(true);
-      localStorage.setItem("bathroomBreakUsed", "true");
+      localStorage.setItem("hasUsedBathroomBreak", "true");
     }
+    
+    // Pause the main timer while on break
+    setIsRunning(false);
+    localStorage.setItem("isRunning", "false");
+    localStorage.setItem("breakStartTime", Date.now().toString());
+    localStorage.setItem("breakType", type);
   };
 
   const endBreak = () => {
-    setShowBreakTimer(null);
-    setIsBreakActive(false);
-    setBreakTimeLeft(0);
+    setShowBreakOverlay(false);
+    setBreakType(null);
+    setBreakStartTime(null);
+    
+    // Resume the main timer
+    setIsRunning(true);
+    localStorage.setItem("isRunning", "true");
+    localStorage.removeItem("breakStartTime");
+    localStorage.removeItem("breakType");
   };
+  
+  // Update break timer display and end break when time is up
+  useEffect(() => {
+    if (!breakStartTime || !breakType) return;
+    
+    const breakDuration = breakType === "regular" ? 300000 : 120000; // 5 min or 2 min in ms
+    const breakInterval = setInterval(() => {
+      const now = Date.now();
+      const elapsedTime = now - breakStartTime;
+      
+      if (elapsedTime >= breakDuration) {
+        endBreak();
+      }
+    }, 1000);
+    
+    return () => clearInterval(breakInterval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [breakStartTime, breakType]);
 
   return (
     <div className={`rounded-xl ${className}`}>
@@ -151,16 +241,22 @@ export function TimeRemaining({
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <Clock className="h-5 w-5 text-indigo-600 dark:text-indigo-400 mr-2" />
+            
             <div
-              className={`text-2xl font-medium text-indigo-400 dark:text-gray-200 font-mono tabular-nums ${
+              className={`text-2xl font-medium text-indigo-600 dark:text-gray-200 font-mono tabular-nums ${
                 isTimeHidden ? "blur-[6px]" : ""
               }`}
+              onClick={() => {
+                const newValue = !isTimeHidden;
+                setIsTimeHidden(newValue);
+                localStorage.setItem("isTimeHidden", String(newValue));
+              }}
             >
               {formatTime(timeLeft)}
             </div>
           </div>
 
-          {showBreakButtons && !showBreakTimer && (
+          {showBreakButtons && !breakType && (
             <div className="flex space-x-2">
               <button
                 onClick={() => startBreak("regular")}
@@ -199,7 +295,7 @@ export function TimeRemaining({
 
       {/* Full-page break overlay */}
       <AnimatePresence>
-        {showBreakTimer && (
+        {breakType && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -209,7 +305,7 @@ export function TimeRemaining({
           >
             <div className="relative">
               <div className="w-24 h-24 rounded-full bg-indigo-500/10 flex items-center justify-center mb-6">
-                {showBreakTimer === "regular" ? (
+                {breakType === "regular" ? (
                   <Clock size={32} className="text-indigo-500" />
                 ) : (
                   <Bath size={32} className="text-purple-500" />
@@ -223,32 +319,30 @@ export function TimeRemaining({
                   cx="48"
                   cy="48"
                   r="46"
-                  stroke={showBreakTimer === "regular" ? "#6366f1" : "#8b5cf6"}
+                  stroke={breakType === "regular" ? "#6366f1" : "#8b5cf6"}
                   strokeWidth="2"
                   fill="transparent"
                   strokeDasharray={2 * Math.PI * 46}
                   strokeDashoffset={
-                    2 *
-                    Math.PI *
                     46 *
                     (1 -
-                      breakTimeLeft /
-                        (showBreakTimer === "regular" ? 300 : 120))
+                     (breakStartTime ? (Date.now() - breakStartTime) / 
+                       (breakType === "regular" ? 300000 : 120000) : 0))
                   }
                   className="transition-all duration-1000"
                 />
               </svg>
             </div>
             <h3 className="text-xl font-light mb-2 text-white">
-              {showBreakTimer === "regular" ? "BREAK TIME" : "BATHROOM BREAK"}
+              {breakType === "regular" ? "BREAK TIME" : "BATHROOM BREAK"}
             </h3>
             <p className="text-white/60 mb-4 text-sm">
-              {showBreakTimer === "regular"
+              {breakType === "regular"
                 ? "Take a moment to breathe"
                 : "We'll wait for you to return"}
             </p>
             <div className="text-4xl font-light mb-8 text-indigo-400">
-              {formatTime(breakTimeLeft)}
+              {formatTime(breakStartTime ? Math.floor((Date.now() - breakStartTime) / 1000) : 0)}
             </div>
 
             <div className="mb-6 flex items-center gap-2 px-5 py-3 bg-amber-900/20 border border-amber-800/30 rounded-lg text-amber-300 max-w-xs text-center">

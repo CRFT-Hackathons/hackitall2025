@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ChevronLeft, ChevronRight, Mic, AlertCircle } from "lucide-react"
+import { ChevronLeft, ChevronRight, Mic, AlertCircle, Maximize2 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 
 interface Question {
@@ -155,6 +155,7 @@ export function Questionnaire({
               onClick={() => openQuestionModal(currentIndex)}
               className="rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 dark:from-indigo-500 dark:to-purple-500 text-white px-4 py-2"
             >
+              <Maximize2 className="h-4 w-4 mr-2 inline-block" />
               Expand Question
             </button>
           </div>
