@@ -186,12 +186,9 @@ export default function Home() {
                     </div>
                   </TabsContent>
 
-                  <TabsContent
-                    value="chat"
-                    className="focus:outline-none"
-                  >
+                  <TabsContent value="chat" className="focus:outline-none">
                     <div className="p-6 rounded-xl bg-slate-50 dark:bg-[#1a1a24] border border-slate-100 dark:border-slate-700/50">
-                      <TwoPersonChat 
+                      <TwoPersonChat
                         user1Name="Interviewer"
                         user2Name="Candidate"
                         title="Interview Chat"
