@@ -272,7 +272,7 @@ export function TimeRemaining({
 
   return (
     <div className={`rounded-xl ${className}`}>
-      <div className="flex flex-col">
+      <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center">
             <div className="w-1 h-6 bg-indigo-500 dark:bg-indigo-400 mr-3 rounded-full"></div>
