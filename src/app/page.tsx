@@ -245,12 +245,12 @@ export default function Home() {
             </div>
 
             <div className="flex gap-2">
-              <button
+              {/* <button
                 onClick={startNewInterview}
                 className="rounded-xl border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-[#1e1e2d] hover:bg-indigo-50 dark:hover:bg-indigo-900/30 px-4 py-2 text-indigo-600 dark:text-indigo-400 transition-colors"
               >
                 New Interview
-              </button>
+              </button> */}
               <AccessibilityPanel />
             </div>
           </div>
