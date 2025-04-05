@@ -26,7 +26,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Home,
-  User,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -50,159 +49,94 @@ export default function OnboardingPage() {
   const [voiceCommands, setVoiceCommands] = useState(false);
   const [simplifiedInterface, setSimplifiedInterface] = useState(false);
 
-  // Load settings from localStorage on component mount
+  // Load settings from localStorage if they exist
   useEffect(() => {
-    // Load dyslexic font setting
-    const savedDyslexicFont = localStorage.getItem("useDyslexicFont");
-    if (savedDyslexicFont === "true") {
-      setUseDyslexicFont(true);
-    }
-
-    // Load profanity filter setting
-    const savedProfanityFilter = localStorage.getItem("useProfanityFilter");
-    if (savedProfanityFilter === "true") {
-      setUseProfanityFilter(true);
-    }
-
-    // Load animations setting
-    const savedDisableAnimations = localStorage.getItem("disableAnimations");
-    if (savedDisableAnimations === "true") {
-      setDisableAnimations(true);
-    }
-
-    // Load font size
     const savedFontSize = localStorage.getItem("fontSize");
-    if (savedFontSize) {
-      setFontSize(parseInt(savedFontSize, 10));
-    }
-
-    // Load speech rate
-    const savedSpeechRate = localStorage.getItem("speechRate");
-    if (savedSpeechRate) {
-      setSpeechRate(parseFloat(savedSpeechRate));
-    }
-
-    // Load other settings
-    const savedHighContrast = localStorage.getItem("highContrast");
-    if (savedHighContrast === "true") {
-      setHighContrast(true);
-    }
-
+    const savedUseDyslexicFont = localStorage.getItem("useDyslexicFont");
     const savedColorBlindMode = localStorage.getItem("colorBlindMode");
-    if (savedColorBlindMode) {
-      setColorBlindMode(savedColorBlindMode);
-    }
-
+    const savedDisableAnimations = localStorage.getItem("disableAnimations");
+    const savedHighContrast = localStorage.getItem("highContrast");
+    const savedSpeechRate = localStorage.getItem("speechRate");
     const savedTextToSpeech = localStorage.getItem("textToSpeech");
-    if (savedTextToSpeech === "true") {
-      setTextToSpeech(true);
-    }
-
     const savedVoiceInput = localStorage.getItem("voiceInput");
-    if (savedVoiceInput === "true") {
-      setVoiceInput(true);
-    }
-
     const savedKeyboardNavigation = localStorage.getItem("keyboardNavigation");
-    if (savedKeyboardNavigation === "true") {
-      setKeyboardNavigation(true);
-    }
-
     const savedEyeTracking = localStorage.getItem("eyeTracking");
-    if (savedEyeTracking === "true") {
-      setEyeTracking(true);
-    }
-
     const savedVoiceCommands = localStorage.getItem("voiceCommands");
-    if (savedVoiceCommands === "true") {
-      setVoiceCommands(true);
-    }
-
     const savedSimplifiedInterface = localStorage.getItem("simplifiedInterface");
-    if (savedSimplifiedInterface === "true") {
-      setSimplifiedInterface(true);
-    }
+    const savedProfanityFilter = localStorage.getItem("useProfanityFilter");
+
+    if (savedFontSize) setFontSize(parseInt(savedFontSize));
+    if (savedUseDyslexicFont) setUseDyslexicFont(savedUseDyslexicFont === "true");
+    if (savedColorBlindMode) setColorBlindMode(savedColorBlindMode);
+    if (savedDisableAnimations) setDisableAnimations(savedDisableAnimations === "true");
+    if (savedHighContrast) setHighContrast(savedHighContrast === "true");
+    if (savedSpeechRate) setSpeechRate(parseFloat(savedSpeechRate));
+    if (savedTextToSpeech) setTextToSpeech(savedTextToSpeech === "true");
+    if (savedVoiceInput) setVoiceInput(savedVoiceInput === "true");
+    if (savedKeyboardNavigation) setKeyboardNavigation(savedKeyboardNavigation === "true");
+    if (savedEyeTracking) setEyeTracking(savedEyeTracking === "true");
+    if (savedVoiceCommands) setVoiceCommands(savedVoiceCommands === "true");
+    if (savedSimplifiedInterface) setSimplifiedInterface(savedSimplifiedInterface === "true");
+    if (savedProfanityFilter) setUseProfanityFilter(savedProfanityFilter === "true");
   }, []);
-
-  // Apply settings effects
   
-  // Apply dyslexic font when changed
+  // Apply font size to the document
   useEffect(() => {
-    try {
-      if (useDyslexicFont) {
-        // Apply dyslexic font to the entire body
-        document.body.style.fontFamily = "'OpenDyslexic', sans-serif";
-
-        // Also try to force it with !important through a stylesheet
-        const style = document.createElement("style");
-        style.id = "dyslexic-font";
-        style.textContent = `
-          * {
-            font-family: 'OpenDyslexic', sans-serif !important;
-          }
-        `;
-        document.head.appendChild(style);
-
-        // Save setting to localStorage
-        localStorage.setItem("useDyslexicFont", "true");
-      } else {
-        // Remove dyslexic font
-        document.body.style.fontFamily = "";
-
-        // Remove the stylesheet if it exists
-        const existingStyle = document.getElementById("dyslexic-font");
-        if (existingStyle) {
-          existingStyle.remove();
-        }
-
-        // Save setting to localStorage
-        localStorage.setItem("useDyslexicFont", "false");
-      }
-    } catch (error) {
-      console.error("Error applying dyslexic font:", error);
-    }
-  }, [useDyslexicFont]);
-
-  // Apply animations setting
-  useEffect(() => {
-    if (disableAnimations) {
-      document.documentElement.classList.add("disable-animations");
-    } else {
-      document.documentElement.classList.remove("disable-animations");
-    }
-    localStorage.setItem("disableAnimations", disableAnimations.toString());
-  }, [disableAnimations]);
-
-  // Save font size
-  useEffect(() => {
+    document.documentElement.style.fontSize = `${fontSize}px`;
     localStorage.setItem("fontSize", fontSize.toString());
-    // Apply font size to root element
-    document.documentElement.style.fontSize = `${fontSize / 16}rem`;
   }, [fontSize]);
-
-  // Save all other settings
+  
+  // Save preferences to localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem("speechRate", speechRate.toString());
-    localStorage.setItem("useProfanityFilter", useProfanityFilter.toString());
-    localStorage.setItem("highContrast", highContrast.toString());
+    localStorage.setItem("useDyslexicFont", useDyslexicFont.toString());
     localStorage.setItem("colorBlindMode", colorBlindMode);
+    localStorage.setItem("disableAnimations", disableAnimations.toString());
+    localStorage.setItem("highContrast", highContrast.toString());
+    localStorage.setItem("speechRate", speechRate.toString());
     localStorage.setItem("textToSpeech", textToSpeech.toString());
     localStorage.setItem("voiceInput", voiceInput.toString());
     localStorage.setItem("keyboardNavigation", keyboardNavigation.toString());
     localStorage.setItem("eyeTracking", eyeTracking.toString());
     localStorage.setItem("voiceCommands", voiceCommands.toString());
     localStorage.setItem("simplifiedInterface", simplifiedInterface.toString());
+    localStorage.setItem("useProfanityFilter", useProfanityFilter.toString());
+    
+    // Apply dyslexic font if enabled
+    if (useDyslexicFont) {
+      document.body.classList.add("dyslexic-font");
+    } else {
+      document.body.classList.remove("dyslexic-font");
+    }
+    
+    // Apply color blind mode
+    document.body.setAttribute("data-color-blind-mode", colorBlindMode);
+    
+    // Apply high contrast
+    if (highContrast) {
+      document.body.classList.add("high-contrast");
+    } else {
+      document.body.classList.remove("high-contrast");
+    }
+    
+    // Apply animations disable
+    if (disableAnimations) {
+      document.body.classList.add("reduce-motion");
+    } else {
+      document.body.classList.remove("reduce-motion");
+    }
   }, [
-    speechRate,
-    useProfanityFilter,
-    highContrast,
+    useDyslexicFont,
     colorBlindMode,
+    disableAnimations,
+    highContrast,
+    speechRate,
     textToSpeech,
     voiceInput,
     keyboardNavigation,
     eyeTracking,
     voiceCommands,
     simplifiedInterface,
+    useProfanityFilter
   ]);
 
   // Step configuration
@@ -498,23 +432,13 @@ export default function OnboardingPage() {
             Your accessibility preferences have been saved. You can always change them later from the Accessibility panel.
           </p>
           <div className="flex gap-4">
-            <Link href="/">
-              <Button
-                className="rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 dark:from-indigo-500 dark:to-purple-500 text-white"
-              >
-                <Home className="mr-2 h-4 w-4" />
-                Go to Home
-              </Button>
-            </Link>
-            <Link href="/profile">
-              <Button
-                variant="outline"
-                className="rounded-xl border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
-              >
-                <User className="mr-2 h-4 w-4" />
-                Setup Profile
-              </Button>
-            </Link>
+            <Button
+              onClick={() => router.push('/')}
+              className="rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 dark:from-indigo-500 dark:to-purple-500 text-white"
+            >
+              <Home className="mr-2 h-4 w-4" />
+              Start Interview
+            </Button>
           </div>
         </div>
       ),

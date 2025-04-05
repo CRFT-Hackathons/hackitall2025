@@ -394,7 +394,74 @@ html{
 
 /* Dyslexic-friendly font styling */
 .dyslexic-font {
-  font-family: "OpenDyslexic" !important;
+  font-family: 'OpenDyslexic', sans-serif !important;
+  letter-spacing: 0.05em;
+  line-height: 1.5;
+  word-spacing: 0.15em;
+}
+
+.dyslexic-font h1,
+.dyslexic-font h2,
+.dyslexic-font h3,
+.dyslexic-font h4,
+.dyslexic-font h5,
+.dyslexic-font h6,
+.dyslexic-font p,
+.dyslexic-font span,
+.dyslexic-font div,
+.dyslexic-font button,
+.dyslexic-font a,
+.dyslexic-font input,
+.dyslexic-font textarea,
+.dyslexic-font label {
+  font-family: 'OpenDyslexic', sans-serif !important;
+}
+
+/* Color blindness modes */
+body[data-color-blind-mode="protanopia"] {
+  filter: url(#protanopia-filter);
+}
+
+body[data-color-blind-mode="deuteranopia"] {
+  filter: url(#deuteranopia-filter);
+}
+
+body[data-color-blind-mode="tritanopia"] {
+  filter: url(#tritanopia-filter);
+}
+
+/* High contrast mode */
+.high-contrast {
+  filter: contrast(1.5);
+}
+
+.high-contrast button,
+.high-contrast a,
+.high-contrast input,
+.high-contrast [role="button"],
+.high-contrast .card {
+  border: 2px solid currentColor !important;
+}
+
+/* Reduce motion */
+.reduce-motion * {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+/* For focus mode */
+.focus-mode .container {
+  max-width: 65ch;
+  margin: 0 auto;
+}
+
+.focus-mode p {
+  line-height: 1.8;
+}
+
+.focus-mode [data-non-essential="true"] {
+  opacity: 0.3;
 }
 
 /* Color blindness filters */
