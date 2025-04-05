@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -40,6 +40,38 @@ export default function AccessibilityPanel() {
   const [useDyslexicFont, setUseDyslexicFont] = useState(false);
   const [useProfanityFilter, setUseProfanityFilter] = useState(false);
 
+  useEffect(() => {
+    try {
+      if (typeof window !== "undefined") {
+        if (useDyslexicFont) {
+          // Apply dyslexic font to the entire body
+          document.body.style.fontFamily = "'OpenDyslexic', sans-serif";
+
+          // Also try to force it with !important through a stylesheet
+          const style = document.createElement("style");
+          style.id = "dyslexic-font-style";
+          style.textContent = `
+            * {
+              font-family: 'OpenDyslexic', sans-serif !important;
+            }
+          `;
+          document.head.appendChild(style);
+        } else {
+          // Remove dyslexic font
+          document.body.style.fontFamily = "";
+
+          // Remove the stylesheet if it exists
+          const existingStyle = document.getElementById("dyslexic-font-style");
+          if (existingStyle) {
+            existingStyle.remove();
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error applying dyslexic font:", error);
+    }
+  }, [useDyslexicFont]);
+
   const handleSaveSettings = () => {
     toast("Settings saved!", {
       description: "Your settings have been saved successfully.",
@@ -47,6 +79,15 @@ export default function AccessibilityPanel() {
 
     setOpen(false);
   };
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedDyslexicFont = localStorage.getItem("useDyslexicFont");
+      if (savedDyslexicFont === "true") {
+        setUseDyslexicFont(true);
+      }
+    }
+  }, []);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -287,7 +328,16 @@ export default function AccessibilityPanel() {
                 <Switch
                   id="dyslexicFont"
                   checked={useDyslexicFont}
-                  onCheckedChange={setUseDyslexicFont}
+                  onCheckedChange={(checked) => {
+                    setUseDyslexicFont(checked);
+                    // For immediate feedback, we could apply this here too
+                    if (checked) {
+                      document.body.style.fontFamily =
+                        "'OpenDyslexic', sans-serif";
+                    } else {
+                      document.body.style.fontFamily = "";
+                    }
+                  }}
                   className="data-[state=checked]:bg-indigo-500 dark:data-[state=checked]:bg-indigo-600"
                 />
               </div>
@@ -326,6 +376,16 @@ export default function AccessibilityPanel() {
           <Button
             variant="outline"
             className="rounded-xl border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+            onClick={() => {
+              setUseDyslexicFont(false);
+              document.body.style.fontFamily = "";
+              const existingStyle = document.getElementById(
+                "dyslexic-font-style"
+              );
+              if (existingStyle) {
+                existingStyle.remove();
+              }
+            }}
           >
             Reset to Default
           </Button>
