@@ -40,6 +40,14 @@ export default function AccessibilityPanel() {
   const [useDyslexicFont, setUseDyslexicFont] = useState(false);
   const [useProfanityFilter, setUseProfanityFilter] = useState(false);
   const [disableAnimations, setDisableAnimations] = useState(false);
+  const [highContrast, setHighContrast] = useState(false);
+  const [colorBlindMode, setColorBlindMode] = useState("none");
+  const [textToSpeech, setTextToSpeech] = useState(false);
+  const [voiceInput, setVoiceInput] = useState(false);
+  const [keyboardNavigation, setKeyboardNavigation] = useState(false);
+  const [eyeTracking, setEyeTracking] = useState(false);
+  const [voiceCommands, setVoiceCommands] = useState(false);
+  const [simplifiedInterface, setSimplifiedInterface] = useState(false);
 
   // Load settings from localStorage on component mount
   useEffect(() => {
@@ -72,6 +80,54 @@ export default function AccessibilityPanel() {
       const savedSpeechRate = localStorage.getItem("speechRate");
       if (savedSpeechRate) {
         setSpeechRate(parseFloat(savedSpeechRate));
+      }
+      
+      // Load high contrast setting
+      const savedHighContrast = localStorage.getItem("highContrast");
+      if (savedHighContrast === "true") {
+        setHighContrast(true);
+      }
+      
+      // Load color blind mode
+      const savedColorBlindMode = localStorage.getItem("colorBlindMode");
+      if (savedColorBlindMode) {
+        setColorBlindMode(savedColorBlindMode);
+      }
+      
+      // Load text to speech setting
+      const savedTextToSpeech = localStorage.getItem("textToSpeech");
+      if (savedTextToSpeech === "true") {
+        setTextToSpeech(true);
+      }
+      
+      // Load voice input setting
+      const savedVoiceInput = localStorage.getItem("voiceInput");
+      if (savedVoiceInput === "true") {
+        setVoiceInput(true);
+      }
+      
+      // Load keyboard navigation setting
+      const savedKeyboardNavigation = localStorage.getItem("keyboardNavigation");
+      if (savedKeyboardNavigation === "true") {
+        setKeyboardNavigation(true);
+      }
+      
+      // Load eye tracking setting
+      const savedEyeTracking = localStorage.getItem("eyeTracking");
+      if (savedEyeTracking === "true") {
+        setEyeTracking(true);
+      }
+      
+      // Load voice commands setting
+      const savedVoiceCommands = localStorage.getItem("voiceCommands");
+      if (savedVoiceCommands === "true") {
+        setVoiceCommands(true);
+      }
+      
+      // Load simplified interface setting
+      const savedSimplifiedInterface = localStorage.getItem("simplifiedInterface");
+      if (savedSimplifiedInterface === "true") {
+        setSimplifiedInterface(true);
       }
     }
   }, []);
@@ -131,27 +187,60 @@ export default function AccessibilityPanel() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem("fontSize", fontSize.toString());
-      // Apply font size to root element (optional)
+      // Apply font size to root element
       document.documentElement.style.fontSize = `${fontSize / 16}rem`;
     }
   }, [fontSize]);
 
-  // Save speech rate
+  // Apply high contrast setting
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (highContrast) {
+        document.body.classList.add("high-contrast");
+      } else {
+        document.body.classList.remove("high-contrast");
+      }
+      localStorage.setItem("highContrast", highContrast.toString());
+    }
+  }, [highContrast]);
+
+  // Apply color blind mode
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      document.body.setAttribute("data-color-blind-mode", colorBlindMode);
+      localStorage.setItem("colorBlindMode", colorBlindMode);
+      
+      // Apply the filter if set
+      if (colorBlindMode && colorBlindMode !== "none") {
+        document.documentElement.style.filter = `url(#${colorBlindMode}-filter)`;
+      } else {
+        document.documentElement.style.filter = "";
+      }
+    }
+  }, [colorBlindMode]);
+
+  // Save all other settings
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem("speechRate", speechRate.toString());
+      localStorage.setItem("useProfanityFilter", useProfanityFilter.toString());
+      localStorage.setItem("textToSpeech", textToSpeech.toString());
+      localStorage.setItem("voiceInput", voiceInput.toString());
+      localStorage.setItem("keyboardNavigation", keyboardNavigation.toString());
+      localStorage.setItem("eyeTracking", eyeTracking.toString());
+      localStorage.setItem("voiceCommands", voiceCommands.toString());
+      localStorage.setItem("simplifiedInterface", simplifiedInterface.toString());
     }
-  }, [speechRate]);
-
-  // Save profanity filter setting when changed
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem(
-        "useProfanityFilter",
-        useProfanityFilter ? "true" : "false"
-      );
-    }
-  }, [useProfanityFilter]);
+  }, [
+    speechRate,
+    useProfanityFilter,
+    textToSpeech,
+    voiceInput,
+    keyboardNavigation,
+    eyeTracking,
+    voiceCommands,
+    simplifiedInterface,
+  ]);
 
   const handleSaveSettings = () => {
     toast("Settings saved!", {
@@ -166,13 +255,24 @@ export default function AccessibilityPanel() {
     setUseDyslexicFont(false);
     setUseProfanityFilter(false);
     setDisableAnimations(false);
+    setHighContrast(false);
+    setColorBlindMode("none");
     setFontSize(16);
     setSpeechRate(1);
+    setTextToSpeech(false);
+    setVoiceInput(false);
+    setKeyboardNavigation(false);
+    setEyeTracking(false);
+    setVoiceCommands(false);
+    setSimplifiedInterface(false);
 
     // Clear the applied styles
     document.body.style.fontFamily = "";
     document.documentElement.style.fontSize = "";
     document.documentElement.classList.remove("disable-animations");
+    document.body.classList.remove("high-contrast");
+    document.body.setAttribute("data-color-blind-mode", "none");
+    document.documentElement.style.filter = "";
 
     const existingStyle = document.getElementById("dyslexic-font");
     if (existingStyle) {
@@ -183,8 +283,16 @@ export default function AccessibilityPanel() {
     localStorage.removeItem("useDyslexicFont");
     localStorage.removeItem("useProfanityFilter");
     localStorage.removeItem("disableAnimations");
+    localStorage.removeItem("highContrast");
+    localStorage.removeItem("colorBlindMode");
     localStorage.removeItem("fontSize");
     localStorage.removeItem("speechRate");
+    localStorage.removeItem("textToSpeech");
+    localStorage.removeItem("voiceInput");
+    localStorage.removeItem("keyboardNavigation");
+    localStorage.removeItem("eyeTracking");
+    localStorage.removeItem("voiceCommands");
+    localStorage.removeItem("simplifiedInterface");
 
     toast("Settings reset!", {
       description: "Your settings have been reset to defaults.",
@@ -252,7 +360,7 @@ export default function AccessibilityPanel() {
                   <div className="w-1 h-4 bg-indigo-500 dark:bg-indigo-400 mr-2 rounded-full"></div>
                   Color Blind Mode
                 </Label>
-                <Select defaultValue="none">
+                <Select value={colorBlindMode} onValueChange={setColorBlindMode}>
                   <SelectTrigger className="w-[140px] rounded-xl border-indigo-200 dark:border-indigo-800">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
@@ -292,6 +400,8 @@ export default function AccessibilityPanel() {
                 </Label>
                 <Switch
                   id="highContrast"
+                  checked={highContrast}
+                  onCheckedChange={setHighContrast}
                   className="data-[state=checked]:bg-indigo-500 dark:data-[state=checked]:bg-indigo-600"
                 />
               </div>
@@ -338,7 +448,8 @@ export default function AccessibilityPanel() {
                 </Label>
                 <Switch
                   id="textToSpeech"
-                  defaultChecked
+                  checked={textToSpeech}
+                  onCheckedChange={setTextToSpeech}
                   className="data-[state=checked]:bg-indigo-500 dark:data-[state=checked]:bg-indigo-600"
                 />
               </div>
@@ -369,7 +480,8 @@ export default function AccessibilityPanel() {
                 </Label>
                 <Switch
                   id="voiceInput"
-                  defaultChecked
+                  checked={voiceInput}
+                  onCheckedChange={setVoiceInput}
                   className="data-[state=checked]:bg-indigo-500 dark:data-[state=checked]:bg-indigo-600"
                 />
               </div>
@@ -388,7 +500,8 @@ export default function AccessibilityPanel() {
                 </Label>
                 <Switch
                   id="keyboardNavigation"
-                  defaultChecked
+                  checked={keyboardNavigation}
+                  onCheckedChange={setKeyboardNavigation}
                   className="data-[state=checked]:bg-indigo-500 dark:data-[state=checked]:bg-indigo-600"
                 />
               </div>
@@ -400,6 +513,8 @@ export default function AccessibilityPanel() {
                 </Label>
                 <Switch
                   id="eyeTracking"
+                  checked={eyeTracking}
+                  onCheckedChange={setEyeTracking}
                   className="data-[state=checked]:bg-indigo-500 dark:data-[state=checked]:bg-indigo-600"
                 />
               </div>
@@ -411,7 +526,8 @@ export default function AccessibilityPanel() {
                 </Label>
                 <Switch
                   id="voiceCommands"
-                  defaultChecked
+                  checked={voiceCommands}
+                  onCheckedChange={setVoiceCommands}
                   className="data-[state=checked]:bg-indigo-500 dark:data-[state=checked]:bg-indigo-600"
                 />
               </div>
@@ -446,6 +562,8 @@ export default function AccessibilityPanel() {
                 </Label>
                 <Switch
                   id="simplifiedInterface"
+                  checked={simplifiedInterface}
+                  onCheckedChange={setSimplifiedInterface}
                   className="data-[state=checked]:bg-indigo-500 dark:data-[state=checked]:bg-indigo-600"
                 />
               </div>
