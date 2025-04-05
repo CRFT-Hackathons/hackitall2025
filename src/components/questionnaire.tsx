@@ -9,6 +9,7 @@ interface Question {
   title: string
   description: string
   required?: boolean
+  image?: string
 }
 
 interface QuestionnaireProps {
@@ -124,6 +125,16 @@ export function Questionnaire({
           {currentQuestion.description}
         </p>
 
+        {currentQuestion.image && (
+          <div className="mb-6 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
+            <img 
+              src={currentQuestion.image} 
+              alt={`Visual for ${currentQuestion.title}`}
+              className="w-full object-cover max-h-[300px]"
+            />
+          </div>
+        )}
+
         <div className="space-y-4">
           <textarea
             className="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#13131b] min-h-[150px] focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-700 focus:outline-none transition-all"
@@ -224,6 +235,16 @@ export function Questionnaire({
                 <p className="mb-6 text-slate-700 dark:text-slate-300 leading-relaxed">
                   {questions[modalIndex].description}
                 </p>
+
+                {questions[modalIndex].image && (
+                  <div className="mb-6 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
+                    <img 
+                      src={questions[modalIndex].image} 
+                      alt={`Visual for ${questions[modalIndex].title}`}
+                      className="w-full object-cover max-h-[300px]"
+                    />
+                  </div>
+                )}
 
                 {questions[modalIndex].required && (
                   <div className="flex items-center gap-2 p-3 mb-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-lg text-amber-700 dark:text-amber-400">
