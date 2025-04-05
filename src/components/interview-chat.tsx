@@ -10,8 +10,13 @@ import {
   Play,
   Clock,
   Coffee,
+  AlertCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { VoiceRecordingButton } from "./voice-recording-button";
+import { transcribeAudio } from "../app/backend/stt-integration";
+import { translateText } from "../app/backend/translation";
+import { toast } from "sonner";
 
 interface Message {
   id: string;
@@ -28,6 +33,7 @@ interface InterviewChatProps {
   buttonClassName?: string;
   placeholder?: string;
   initialMessages?: Message[];
+  languageCode?: string;
 }
 
 export function InterviewChat({
@@ -39,18 +45,58 @@ export function InterviewChat({
   buttonClassName = "",
   placeholder = "Type your response...",
   initialMessages = [],
+  languageCode = "ro-RO",
 }: InterviewChatProps) {
+  // Custom animation styles
+  const customAnimationStyles = `
+    @keyframes pulse-fade {
+      0% {
+        transform: scale(1);
+        opacity: 0.9;
+      }
+      100% {
+        transform: scale(2.2);
+        opacity: 0;
+      }
+    }
+    
+    .animate-pulse-fade {
+      animation: pulse-fade 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes countdown {
+      0% {
+        stroke-dashoffset: 0;
+      }
+      100% {
+        stroke-dashoffset: 100;
+      }
+    }
+    
+    .animate-countdown {
+      animation: countdown 3s linear infinite;
+    }
+  `;
+
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isMounted, setIsMounted] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [timeoutActive, setTimeoutActive] = useState(false);
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
   const [bathroomTimeoutActive, setBathroomTimeoutActive] = useState(false);
   const [bathroomTimeLeft, setBathroomTimeLeft] = useState(120); // 2 minutes
+  const [transcriptionError, setTranscriptionError] = useState<string | null>(null);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const recordingMaxTime = 60; // 60 seconds maximum recording time
+  
+  // For audio recording
+  const mediaRecorder = useRef<MediaRecorder | null>(null);
+  const audioChunks = useRef<Blob[]>([]);
 
   // Scroll to bottom when messages change or when typing
   useEffect(() => {
@@ -103,9 +149,146 @@ export function InterviewChat({
       setIsTyping(false);
     }
   }, [input]);
+  
+  // Clean up MediaRecorder on unmount
+  useEffect(() => {
+    return () => {
+      // Clean up media recorder
+      if (mediaRecorder.current && isRecording) {
+        const tracks = mediaRecorder.current.stream?.getTracks();
+        tracks?.forEach((track) => track.stop());
+      }
+    };
+  }, [isRecording]);
 
-  const toggleRecording = () => {
-    setIsRecording(!isRecording);
+  // Handle recording timer
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    
+    if (isRecording && recordingTime < recordingMaxTime) {
+      timer = setInterval(() => {
+        setRecordingTime(prev => {
+          const newTime = prev + 1;
+          if (newTime >= recordingMaxTime) {
+            // Auto-stop recording when max time is reached
+            stopRecording();
+          }
+          return newTime;
+        });
+      }, 1000);
+    }
+    
+    return () => {
+      clearInterval(timer);
+    };
+  }, [isRecording, recordingTime]);
+
+  // Voice input functionality
+  const toggleRecording = async () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      await startRecording();
+    }
+  };
+  
+  const startRecording = async () => {
+    // Reset recording time
+    setRecordingTime(0);
+    
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder.current = new MediaRecorder(stream);
+      audioChunks.current = [];
+
+      mediaRecorder.current.ondataavailable = (e) => {
+        audioChunks.current.push(e.data);
+      };
+
+      mediaRecorder.current.onstop = async () => {
+        setIsProcessing(true);
+        setTranscriptionError(null);
+
+        try {
+          const audioBlob = new Blob(audioChunks.current, {
+            type: "audio/webm",
+          });
+          const reader = new FileReader();
+
+          reader.onloadend = async () => {
+            try {
+              const base64Audio = (reader.result as string).split(",")[1];
+              
+              // First, transcribe the audio in the original language
+              toast.info("Transcribing audio...");
+              const transcription = await transcribeAudio(
+                base64Audio,
+                languageCode
+              );
+
+              if (transcription) {
+                // If Romanian, translate to English for input to the chat
+                let processedText = transcription;
+                
+                if (languageCode === "ro-RO") {
+                  toast.info("Translating to English...");
+                  const translatedText = await translateText(transcription, "ro", "en");
+                  if (translatedText) {
+                    processedText = translatedText;
+                    toast.success("Translation successful");
+                  } else {
+                    toast.warning("Translation failed, using original transcription");
+                  }
+                }
+                
+                // Add the transcribed/translated text to the input field
+                setInput(prev => prev ? `${prev} ${processedText}` : processedText);
+                toast.success("Voice input processed successfully");
+              } else {
+                setTranscriptionError("No transcription received");
+                toast.error(
+                  "Could not transcribe your speech. Please try again."
+                );
+              }
+            } catch (err) {
+              console.error("Transcription processing error:", err);
+              setTranscriptionError("Transcription failed");
+              toast.error("Failed to process speech. Please try again.");
+            } finally {
+              setIsProcessing(false);
+            }
+          };
+
+          reader.readAsDataURL(audioBlob);
+          // Reset the chunks for the next recording
+          audioChunks.current = [];
+        } catch (err) {
+          console.error("Audio processing error:", err);
+          setTranscriptionError("Audio processing failed");
+          toast.error("Audio processing failed. Please try again.");
+          setIsProcessing(false);
+        }
+      };
+
+      // Start recording
+      mediaRecorder.current.start();
+      setIsRecording(true);
+      setTranscriptionError(null);
+      toast.info("Recording started. Speak now...");
+    } catch (err) {
+      console.error("Microphone access error:", err);
+      setTranscriptionError("Microphone access denied");
+      toast.error("Microphone access denied. Please check your permissions.");
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorder.current && mediaRecorder.current.state !== "inactive") {
+      mediaRecorder.current.stop();
+      setIsRecording(false);
+      setRecordingTime(0); // Reset the recording time
+      toast.info("Processing your voice input...");
+    }
   };
 
   const togglePause = () => {
@@ -156,6 +339,9 @@ export function InterviewChat({
     <div
       className={`flex flex-col h-[500px] rounded-lg border-2 border-gray-200 dark:border-gray-800 relative ${className}`}
     >
+      {/* Add custom animation styles */}
+      <style dangerouslySetInnerHTML={{ __html: customAnimationStyles }} />
+      
       {/* Header */}
       <div className="p-4 border-b border-gray-200 dark:border-gray-800">
         <h2 className="text-lg font-medium">{title}</h2>
@@ -223,6 +409,16 @@ export function InterviewChat({
             </div>
           </div>
         )}
+        
+        {transcriptionError && (
+          <div className="flex justify-end">
+            <div className="max-w-[80%] rounded-lg px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm border border-red-200 dark:border-red-800/30">
+              <AlertCircle className="h-4 w-4 inline-block mr-2" />
+              Error: {transcriptionError}
+            </div>
+          </div>
+        )}
+        
         <div ref={messagesEndRef} />
       </div>
 
@@ -245,15 +441,64 @@ export function InterviewChat({
         />
 
         <div className="flex gap-2">
+          {/* Original Voice Recording Button with animation */}
           <button
             type="button"
             onClick={toggleRecording}
-            disabled={isPaused || !input.trim()}
+            disabled={isProcessing || isPaused}
             aria-label={isRecording ? "Stop recording" : "Start recording"}
-            className="p-2 rounded-md bg-red-500/20 text-red-500 border border-red-500/30 hover:bg-red-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`relative p-2 rounded-md ${
+              isRecording
+                ? "bg-indigo-500/20 text-indigo-500 border border-indigo-400/50 hover:bg-indigo-500/30"
+                : "bg-indigo-500/20 text-indigo-600 border border-indigo-300/30 hover:bg-indigo-500/30"
+            } transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
           >
-            {isRecording ? (
-              <MicOff className="h-5 w-5" />
+            {isProcessing ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : isRecording ? (
+              <div className="relative flex items-center justify-center">
+                <MicOff className="h-5 w-5 z-10 text-indigo-500" />
+                <div className="absolute inset-0 rounded-full bg-indigo-100 dark:bg-indigo-900/30"></div>
+                
+                {/* Circle progress animation */}
+                <svg className="absolute -inset-2 w-[34px] h-[34px] -rotate-90" aria-hidden="true">
+                  {/* Background circle (always full) */}
+                  <circle
+                    cx="17"
+                    cy="17"
+                    r="14"
+                    stroke="#8b5cf620"
+                    strokeWidth="4"
+                    fill="transparent"
+                  />
+                  {/* Foreground circle (animates) */}
+                  <circle
+                    key={`recording-${Date.now()}`}
+                    cx="17"
+                    cy="17"
+                    r="14"
+                    stroke="#8b5cf6"
+                    strokeWidth="4"
+                    fill="transparent"
+                    strokeDasharray={2 * Math.PI * 14}
+                    strokeDashoffset={0}
+                    className="transition-all duration-1000"
+                  >
+                    <animate 
+                      attributeName="stroke-dashoffset" 
+                      from="0" 
+                      to={2 * Math.PI * 14} 
+                      dur="60s" 
+                      fill="freeze" 
+                      calcMode="linear"
+                    />
+                  </circle>
+                </svg>
+                
+                {/* Pulse animations */}
+                <div className="absolute rounded-full border-2 border-indigo-500/40 animate-pulse-fade h-8 w-8"></div>
+                <div className="absolute rounded-full border-2 border-indigo-500/20 animate-pulse-fade h-8 w-8" style={{ animationDelay: '400ms' }}></div>
+              </div>
             ) : (
               <Mic className="h-5 w-5" />
             )}
@@ -261,113 +506,63 @@ export function InterviewChat({
 
           <button
             type="submit"
-            disabled={isPaused || !input.trim()}
-            className={`px-4 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed ${buttonClassName}`}
+            disabled={!input.trim() || isPaused}
+            className={`rounded-xl bg-indigo-600 dark:bg-indigo-600 hover:bg-indigo-700 dark:hover:bg-indigo-700 
+            text-white px-5 py-2 flex items-center justify-center transition-colors 
+            disabled:opacity-50 disabled:cursor-not-allowed ${buttonClassName}`}
             aria-label="Send message"
           >
-            <Send className="h-5 w-5" />
+            <Send className="h-4 w-4" />
           </button>
         </div>
-
-        {isPaused && (
-          <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center rounded-b-lg">
-            <div className="flex items-center gap-2 text-primary">
-              <Pause className="h-5 w-5" />
-              <span>Interview paused</span>
-            </div>
-          </div>
-        )}
       </form>
 
-      {/* Timeout overlay */}
-      <AnimatePresence>
-        {timeoutActive && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-gray-900/95 backdrop-blur-md flex flex-col items-center justify-center z-10 rounded-lg"
-            role="alert"
-            aria-live="assertive"
-          >
-            <div className="relative">
-              <div className="w-20 h-20 rounded-full bg-indigo-500/10 flex items-center justify-center mb-6">
-                <Clock size={28} className="text-indigo-500" />
-              </div>
-              <svg className="absolute top-0 left-0 w-20 h-20 -rotate-90">
-                <circle
-                  cx="40"
-                  cy="40"
-                  r="38"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  fill="transparent"
-                  strokeDasharray={2 * Math.PI * 38}
-                  strokeDashoffset={2 * Math.PI * 38 * (1 - timeLeft / 300)}
-                  className="text-indigo-500 transition-all duration-1000"
-                />
-              </svg>
-            </div>
-            <h3 className="text-xl font-light mb-2 text-white">BREAK TIME</h3>
-            <p className="text-gray-400 mb-4 text-sm">
-              Take a moment to breathe
-            </p>
-            <div
-              className="text-3xl font-light text-indigo-400"
-              aria-live="polite"
-            >
-              {formatTime(timeLeft)}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Bathroom Timeout overlay */}
-      <AnimatePresence>
-        {bathroomTimeoutActive && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-gray-900/95 backdrop-blur-md flex flex-col items-center justify-center z-10 rounded-lg"
-            role="alert"
-            aria-live="assertive"
-          >
-            <div className="relative">
-              <div className="w-20 h-20 rounded-full bg-purple-500/10 flex items-center justify-center mb-6">
-                <Coffee size={28} className="text-purple-500" />
-              </div>
-              <svg className="absolute top-0 left-0 w-20 h-20 -rotate-90">
-                <circle
-                  cx="40"
-                  cy="40"
-                  r="38"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  fill="transparent"
-                  strokeDasharray={2 * Math.PI * 38}
-                  strokeDashoffset={
-                    2 * Math.PI * 38 * (1 - bathroomTimeLeft / 120)
-                  }
-                  className="text-purple-500 transition-all duration-1000"
-                />
-              </svg>
-            </div>
-            <h3 className="text-xl font-light mb-2 text-white">
-              BATHROOM BREAK
+      {/* Pause controls */}
+      {isPaused && (
+        <div className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex flex-col items-center justify-center rounded-lg">
+          <div className="bg-white dark:bg-[#1e1e2d] p-6 rounded-xl shadow-xl w-72 space-y-5">
+            <h3 className="text-xl font-semibold text-center">
+              Interview Paused
             </h3>
-            <p className="text-gray-400 mb-4 text-sm">
-              We'll wait for you to return
-            </p>
-            <div
-              className="text-3xl font-light text-purple-400"
-              aria-live="polite"
-            >
-              {formatTime(bathroomTimeLeft)}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
+            {timeoutActive && (
+              <div className="text-center">
+                <Clock className="h-8 w-8 mx-auto mb-2 text-amber-500" />
+                <div className="text-2xl font-bold text-amber-500">
+                  {formatTime(timeLeft)}
+                </div>
+                <div className="text-sm text-gray-500 mt-1">
+                  Time remaining until resume
+                </div>
+              </div>
+            )}
+
+            {bathroomTimeoutActive && (
+              <div className="text-center">
+                <Coffee className="h-8 w-8 mx-auto mb-2 text-amber-500" />
+                <div className="text-2xl font-bold text-amber-500">
+                  {formatTime(bathroomTimeLeft)}
+                </div>
+                <div className="text-sm text-gray-500 mt-1">
+                  Bathroom break remaining
+                </div>
+              </div>
+            )}
+
+            {!timeoutActive && !bathroomTimeoutActive && (
+              <div className="flex justify-center">
+                <button
+                  onClick={togglePause}
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 flex items-center space-x-2"
+                >
+                  <Play className="h-4 w-4" />
+                  <span>Resume Interview</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

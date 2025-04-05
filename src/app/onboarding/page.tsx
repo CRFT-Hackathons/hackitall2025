@@ -164,6 +164,24 @@ export default function OnboardingPage() {
           <h2 className="text-2xl font-bold text-center mb-4">
             Welcome to InAble - An Accessible Interview Platform
           </h2>
+          
+          {/* Disclaimer Notice */}
+          <div className="mb-4 px-3.5 py-2.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 border-l-2 border-indigo-500 dark:border-indigo-400 w-full max-w-md">
+            <div className="flex items-center gap-2">
+              <div className="text-indigo-600 dark:text-indigo-400 shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+              </div>
+              <p className="text-sm text-gray-800 dark:text-gray-200 font-semibold">
+                <span className="text-indigo-700 dark:text-indigo-300 font-bold uppercase mr-1">Disclaimer:</span>
+                We will not disclose any personal details about the interviewee.
+              </p>
+            </div>
+          </div>
+          
           <p className="text-slate-600 dark:text-slate-400 text-center max-w-md mb-8">
             We'll guide you through setting up accessibility features to make
             your interview experience more comfortable and effective.

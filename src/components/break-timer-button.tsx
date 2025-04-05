@@ -1,297 +1,190 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { Clock, Coffee, X } from "lucide-react";
-import { motion } from "framer-motion";
-import { NeedABreak, BathroomBreak } from "@/components/break-timer";
+import { useState, useEffect } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Clock, Coffee, Timer } from "lucide-react"
 
-export interface BreakTimerButtonProps {
+export interface BreakTimerProps {
   /**
-   * Type of break timer to show
+   * Duration of the break in seconds
    */
-  breakType?: "regular" | "bathroom";
+  duration?: number
   /**
-   * Primary color for the button and timer
+   * Title displayed during the break
    */
-  primaryColor?: string;
+  title?: string
   /**
-   * Text to display on the button
+   * Subtitle displayed during the break
    */
-  label?: string;
+  subtitle?: string
   /**
-   * Whether to show the button's icon
+   * Icon to display (defaults to Clock)
    */
-  showIcon?: boolean;
+  icon?: "clock" | "coffee" | "timer"
   /**
-   * Custom class name for the button container
+   * Primary color (used for icon and timer)
    */
-  className?: string;
+  primaryColor?: string
   /**
-   * Callback function when the break starts
+   * Background color for the timer overlay
    */
-  onBreakStart?: () => void;
+  backgroundColor?: string
   /**
-   * Callback function when the break ends
+   * Callback function when timer completes
    */
-  onBreakEnd?: () => void;
+  onComplete?: () => void
   /**
-   * Custom duration for the break in seconds (overrides default durations)
+   * Callback function when timer is canceled
    */
-  duration?: number;
+  onCancel?: () => void
+  /**
+   * Whether to show a cancel button
+   */
+  showCancelButton?: boolean
+  /**
+   * Custom class name for the container
+   */
+  className?: string
 }
 
-export function BreakTimerButton({
-  breakType = "regular",
-  primaryColor = breakType === "regular" ? "#6366f1" : "#8b5cf6",
-  label = breakType === "regular" ? "NEED A BREAK" : "BATHROOM BREAK",
-  showIcon = true,
+export function BreakTimer({
+  duration = 300, // 5 minutes by default
+  title = "BREAK TIME",
+  subtitle = "Take a moment to breathe",
+  icon = "clock",
+  primaryColor = "#6366f1",
+  backgroundColor = "rgba(15, 15, 19, 0.95)",
+  onComplete,
+  onCancel,
+  showCancelButton = true,
   className = "",
-  onBreakStart,
-  onBreakEnd,
-  duration,
-}: BreakTimerButtonProps) {
-  const [showBreak, setShowBreak] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
+}: BreakTimerProps) {
+  const [timeLeft, setTimeLeft] = useState(duration)
+  const [isActive, setIsActive] = useState(true)
 
-  const startBreak = () => {
-    setShowBreak(true);
-    onBreakStart?.();
-  };
+  // Handle timeout countdown
+  useEffect(() => {
+    let timer: NodeJS.Timeout
 
-  const endBreak = () => {
-    setShowBreak(false);
-    onBreakEnd?.();
-  };
+    if (isActive && timeLeft > 0) {
+      timer = setInterval(() => {
+        setTimeLeft((prev) => prev - 1)
+      }, 1000)
+    } else if (timeLeft === 0) {
+      setIsActive(false)
+      onComplete?.()
+    }
 
-  // Animation variants
-  const buttonVariants = {
-    initial: { scale: 1 },
-    hover: { scale: 1.05 },
-    tap: { scale: 0.95 },
-  };
+    return () => clearInterval(timer)
+  }, [isActive, timeLeft, onComplete])
 
-  const iconVariants = {
-    initial: { rotate: 0 },
-    hover: {
-      rotate: 15,
-      transition: {
-        repeat: Infinity,
-        repeatType: "reverse" as const,
-        duration: 1,
-      },
-    },
-  };
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs < 10 ? "0" : ""}${secs}`
+  }
 
-  const pulseVariants = {
-    initial: { opacity: 0.7, scale: 1 },
-    animate: {
-      opacity: [0.7, 1, 0.7],
-      scale: [1, 1.05, 1],
-      transition: {
-        repeat: Infinity,
-        duration: 2,
-      },
-    },
-  };
+  const handleCancel = () => {
+    setIsActive(false)
+    onCancel?.()
+  }
 
-  const Icon = breakType === "regular" ? Clock : Coffee;
+  const getIcon = () => {
+    switch (icon) {
+      case "coffee":
+        return <Coffee size={32} style={{ color: primaryColor }} />
+      case "timer":
+        return <Timer size={32} style={{ color: primaryColor }} />
+      case "clock":
+      default:
+        return <Clock size={32} style={{ color: primaryColor }} />
+    }
+  }
 
   return (
-    <>
-      <motion.button
-        onClick={startBreak}
-        className={`px-4 py-2 rounded-full flex items-center gap-2 transition-colors bg-opacity-20 border border-opacity-30 hover:bg-opacity-30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden relative ${className}`}
-        style={{
-          backgroundColor: `${primaryColor}20`,
-          borderColor: `${primaryColor}30`,
-          color: primaryColor,
-        }}
-        aria-label={label}
-        variants={buttonVariants}
-        initial="initial"
-        whileHover="hover"
-        whileTap="tap"
-        onHoverStart={() => setIsHovered(true)}
-        onHoverEnd={() => setIsHovered(false)}
-      >
-        {/* Background pulse effect */}
-        {isHovered && (
-          <motion.div
-            className="absolute inset-0 rounded-full"
-            style={{ backgroundColor: primaryColor }}
-            variants={pulseVariants}
-            initial="initial"
-            animate="animate"
-          />
-        )}
-
-        <div className="relative z-10 flex items-center gap-2">
-          {showIcon && (
-            <motion.div
-              variants={iconVariants}
-              initial="initial"
-              animate={isHovered ? "hover" : "initial"}
+    <AnimatePresence>
+      {isActive && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className={`fixed inset-0 flex flex-col items-center justify-center z-50 backdrop-blur-md ${className}`}
+          style={{ backgroundColor }}
+          role="alert"
+          aria-live="assertive"
+        >
+          <div className="relative">
+            <div
+              className="w-24 h-24 rounded-full flex items-center justify-center mb-6"
+              style={{ backgroundColor: `${primaryColor}10` }}
             >
-              <Icon size={16} />
-            </motion.div>
+              {getIcon()}
+            </div>
+            <svg className="absolute top-0 left-0 w-24 h-24 -rotate-90" aria-hidden="true">
+              <circle
+                cx="48"
+                cy="48"
+                r="46"
+                stroke={primaryColor}
+                strokeWidth="2"
+                fill="transparent"
+                strokeDasharray={2 * Math.PI * 46}
+                strokeDashoffset={2 * Math.PI * 46 * (1 - timeLeft / duration)}
+                className="transition-all duration-1000"
+              />
+            </svg>
+          </div>
+          <h3 className="text-xl font-light mb-2 text-white">{title}</h3>
+          <p className="text-white/60 mb-4 text-sm">{subtitle}</p>
+          <div className="text-4xl font-light mb-8" style={{ color: primaryColor }} aria-live="polite">
+            {formatTime(timeLeft)}
+          </div>
+
+          {showCancelButton && (
+            <button
+              onClick={handleCancel}
+              className="px-4 py-2 rounded-full text-white/70 hover:text-white/90 border border-white/20 hover:border-white/30 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
+              style={{
+                "--tw-ring-color": primaryColor,
+                "--tw-ring-offset-color": backgroundColor,
+              } as React.CSSProperties}
+            >
+              End Break Early
+            </button>
           )}
-          <span className="text-sm font-medium">{label}</span>
-        </div>
-      </motion.button>
-
-      {showBreak && breakType === "regular" && (
-        <NeedABreak
-          primaryColor={primaryColor}
-          onComplete={endBreak}
-          onCancel={endBreak}
-        />
+        </motion.div>
       )}
-
-      {showBreak && breakType === "bathroom" && (
-        <BathroomBreak
-          primaryColor={primaryColor}
-          onComplete={endBreak}
-          onCancel={endBreak}
-        />
-      )}
-    </>
-  );
+    </AnimatePresence>
+  )
 }
 
-// Combined button that has a dropdown to select the type of break
-export function BreakTimerCombinedButton({
-  regularColor = "#6366f1",
-  bathroomColor = "#8b5cf6",
-  className = "",
-  onBreakStart,
-  onBreakEnd,
-}: {
-  regularColor?: string;
-  bathroomColor?: string;
-  className?: string;
-  onBreakStart?: (type: "regular" | "bathroom") => void;
-  onBreakEnd?: (type: "regular" | "bathroom") => void;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [showRegularBreak, setShowRegularBreak] = useState(false);
-  const [showBathroomBreak, setShowBathroomBreak] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-
-  const toggleDropdown = () => {
-    setIsOpen(!isOpen);
-  };
-
-  const startRegularBreak = () => {
-    setShowRegularBreak(true);
-    onBreakStart?.("regular");
-    setIsOpen(false);
-  };
-
-  const startBathroomBreak = () => {
-    setShowBathroomBreak(true);
-    onBreakStart?.("bathroom");
-    setIsOpen(false);
-  };
-
-  const endRegularBreak = () => {
-    setShowRegularBreak(false);
-    onBreakEnd?.("regular");
-  };
-
-  const endBathroomBreak = () => {
-    setShowBathroomBreak(false);
-    onBreakEnd?.("bathroom");
-  };
-
-  // Animation variants
-  const buttonVariants = {
-    initial: { scale: 1 },
-    hover: { scale: 1.05 },
-    tap: { scale: 0.95 },
-  };
-
-  const menuVariants = {
-    closed: {
-      opacity: 0,
-      y: -10,
-      pointerEvents: "none" as const,
-      transitionEnd: {
-        display: "none" as const,
-      },
-    },
-    open: {
-      opacity: 1,
-      y: 0,
-      display: "flex" as const,
-      pointerEvents: "auto" as const,
-    },
-  };
-
+/**
+ * A component that displays a 5-minute break timer
+ */
+export function NeedABreak(props: Omit<BreakTimerProps, "duration" | "title" | "subtitle" | "icon">) {
   return (
-    <div className={`relative ${className}`}>
-      <motion.button
-        onClick={toggleDropdown}
-        className="px-4 py-2 rounded-full flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-background transition"
-        variants={buttonVariants}
-        initial="initial"
-        whileHover="hover"
-        whileTap="tap"
-        onHoverStart={() => setIsHovered(true)}
-        onHoverEnd={() => setIsHovered(false)}
-      >
-        <span className="text-sm font-medium">TAKE A BREAK</span>
-      </motion.button>
-
-      <motion.div
-        className="absolute right-0 mt-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden min-w-[200px] flex flex-col z-10"
-        variants={menuVariants}
-        initial="closed"
-        animate={isOpen ? "open" : "closed"}
-        transition={{ duration: 0.2 }}
-      >
-        <motion.button
-          onClick={startRegularBreak}
-          className="flex items-center gap-2 px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          whileHover={{ x: 4 }}
-        >
-          <Clock size={16} className="text-indigo-500" />
-          <span>Need a Break (5m)</span>
-        </motion.button>
-
-        <motion.button
-          onClick={startBathroomBreak}
-          className="flex items-center gap-2 px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          whileHover={{ x: 4 }}
-        >
-          <Coffee size={16} className="text-purple-500" />
-          <span>Bathroom Break (2m)</span>
-        </motion.button>
-
-        <motion.button
-          onClick={() => setIsOpen(false)}
-          className="flex items-center gap-2 px-4 py-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border-t border-gray-200 dark:border-gray-600"
-          whileHover={{ x: 4 }}
-        >
-          <X size={16} className="text-gray-500" />
-          <span>Cancel</span>
-        </motion.button>
-      </motion.div>
-
-      {showRegularBreak && (
-        <NeedABreak
-          primaryColor={regularColor}
-          onComplete={endRegularBreak}
-          onCancel={endRegularBreak}
-        />
-      )}
-
-      {showBathroomBreak && (
-        <BathroomBreak
-          primaryColor={bathroomColor}
-          onComplete={endBathroomBreak}
-          onCancel={endBathroomBreak}
-        />
-      )}
-    </div>
-  );
+    <BreakTimer
+      duration={300} // 5 minutes
+      title="BREAK TIME"
+      subtitle="Take a moment to breathe"
+      icon="clock"
+      {...props}
+    />
+  )
 }
+
+/**
+ * A component that displays a 2-minute bathroom break timer
+ */
+export function BathroomBreak(props: Omit<BreakTimerProps, "duration" | "title" | "subtitle" | "icon">) {
+  return (
+    <BreakTimer
+      duration={120} // 2 minutes
+      title="BATHROOM BREAK"
+      subtitle="We'll wait for you to return"
+      icon="timer"
+      {...props}
+    />
+  )
+}
+

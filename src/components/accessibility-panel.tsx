@@ -402,48 +402,53 @@ export default function AccessibilityPanel() {
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="highContrast" className="flex items-center">
-                  <div className="w-1 h-4 bg-indigo-500 dark:bg-indigo-400 mr-2 rounded-full"></div>
-                  High Contrast
-                </Label>
-                <Switch
-                  id="highContrast"
-                  checked={highContrast}
-                  onCheckedChange={setHighContrast}
-                  className="data-[state=checked]:bg-indigo-500 dark:data-[state=checked]:bg-indigo-600"
-                />
-              </div>
+              <div className="space-y-4">
+                {/* High Contrast Mode */}
+                <div className="flex items-center justify-between border border-border rounded-lg p-4 bg-card hover:bg-accent/10 transition-colors">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="high-contrast" className="text-base font-semibold">High Contrast Mode</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Enhances visibility with maximum contrast for better readability
+                    </p>
+                  </div>
+                  <Switch
+                    id="high-contrast"
+                    checked={highContrast}
+                    onCheckedChange={setHighContrast}
+                    className="data-[state=checked]:bg-primary"
+                  />
+                </div>
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="darkMode" className="flex items-center">
-                  <div className="w-1 h-4 bg-indigo-500 dark:bg-indigo-400 mr-2 rounded-full"></div>
-                  Dark Mode
-                </Label>
-                <Switch
-                  id="darkMode"
-                  checked={theme === "dark"}
-                  onCheckedChange={() =>
-                    setTheme(theme === "dark" ? "light" : "dark")
-                  }
-                  className="data-[state=checked]:bg-indigo-500 dark:data-[state=checked]:bg-indigo-600"
-                />
-              </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="darkMode" className="flex items-center">
+                    <div className="w-1 h-4 bg-indigo-500 dark:bg-indigo-400 mr-2 rounded-full"></div>
+                    Dark Mode
+                  </Label>
+                  <Switch
+                    id="darkMode"
+                    checked={theme === "dark"}
+                    onCheckedChange={() =>
+                      setTheme(theme === "dark" ? "light" : "dark")
+                    }
+                    className="data-[state=checked]:bg-indigo-500 dark:data-[state=checked]:bg-indigo-600"
+                  />
+                </div>
 
-              <div className="flex items-center justify-between">
-                <Label
-                  htmlFor="disableAnimations"
-                  className="flex items-center"
-                >
-                  <div className="w-1 h-4 bg-indigo-500 dark:bg-indigo-400 mr-2 rounded-full"></div>
-                  Disable Animations
-                </Label>
-                <Switch
-                  id="disableAnimations"
-                  checked={disableAnimations}
-                  onCheckedChange={setDisableAnimations}
-                  className="data-[state=checked]:bg-indigo-500 dark:data-[state=checked]:bg-indigo-600"
-                />
+                <div className="flex items-center justify-between">
+                  <Label
+                    htmlFor="disableAnimations"
+                    className="flex items-center"
+                  >
+                    <div className="w-1 h-4 bg-indigo-500 dark:bg-indigo-400 mr-2 rounded-full"></div>
+                    Disable Animations
+                  </Label>
+                  <Switch
+                    id="disableAnimations"
+                    checked={disableAnimations}
+                    onCheckedChange={setDisableAnimations}
+                    className="data-[state=checked]:bg-indigo-500 dark:data-[state=checked]:bg-indigo-600"
+                  />
+                </div>
               </div>
             </div>
           </TabsContent>
