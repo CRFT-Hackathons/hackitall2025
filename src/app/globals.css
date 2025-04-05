@@ -307,3 +307,174 @@ html{
 /* styles/globals.css */
 
 /* Reset border and box-sizing */
+
+/* Moree */
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 246 100% 60%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 246 100% 96%;
+    --secondary-foreground: 246 100% 40%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 246 100% 96%;
+    --accent-foreground: 246 100% 40%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 246 100% 60%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 240 14% 7%;
+    --foreground: 210 40% 98%;
+
+    --card: 240 13% 10%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 240 14% 7%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 246 100% 60%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 246 30% 20%;
+    --secondary-foreground: 246 100% 80%;
+
+    --muted: 240 13% 13%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 246 30% 20%;
+    --accent-foreground: 246 100% 80%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 240 13% 15%;
+    --input: 240 13% 15%;
+    --ring: 246 100% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Dyslexic-friendly font styling */
+.dyslexic-font {
+  font-family: "Arial", sans-serif;
+  line-height: 1.5;
+  letter-spacing: 0.05em;
+  word-spacing: 0.1em;
+}
+
+/* Color blindness filters */
+.protanopia {
+  filter: url("#protanopia-filter");
+}
+
+.deuteranopia {
+  filter: url("#deuteranopia-filter");
+}
+
+.tritanopia {
+  filter: url("#tritanopia-filter");
+}
+
+.achromatopsia {
+  filter: grayscale(100%);
+}
+
+/* High contrast mode */
+.high-contrast {
+  filter: contrast(150%);
+}
+
+/* Focus mode */
+.focus-mode {
+  background-color: #f8f9fa;
+  border: 2px solid #e9ecef;
+  box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.25);
+}
+
+/* Disable animations */
+.no-animations * {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+/* Ensure gradients still work with animations disabled */
+.no-animations [class*="bg-gradient"] {
+  transition: none !important;
+}
+
+/* Ensure hover states still work with animations disabled */
+.no-animations button:hover,
+.no-animations a:hover {
+  background-color: var(--hover-color, inherit);
+  color: var(--hover-text-color, inherit);
+}
+
+/* Add these slider-specific styles at the end of the file */
+
+/* Custom slider styling */
+.slider-track {
+  @apply bg-slate-200 dark:bg-slate-700 rounded-full h-2;
+}
+
+.slider-range {
+  @apply bg-gradient-to-r from-indigo-500 to-purple-500 dark:from-indigo-400 dark:to-purple-400 rounded-full h-2;
+}
+
+.slider-thumb {
+  @apply bg-white dark:bg-indigo-400 border-2 border-indigo-500 dark:border-indigo-300 rounded-full h-4 w-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 dark:focus:ring-offset-slate-800;
+}
+
+/* Ensure sliders are visible in dark mode */
+.dark [role="slider"] {
+  @apply bg-indigo-400 border-indigo-300;
+}
+
+.dark [data-disabled] [role="slider"] {
+  @apply opacity-50;
+}
+
+/* Ensure slider track is visible in dark mode */
+.dark [role="slider"] ~ span {
+  @apply bg-slate-700;
+}
+
+/* Ensure active part of slider is visible */
+.dark [role="slider"] ~ span[data-state="active"] {
+  @apply bg-gradient-to-r from-indigo-400 to-purple-400;
+}
+
+/* No-animation compatibility for sliders */
+.no-animations [role="slider"] {
+  transition: none !important;
+}
+
