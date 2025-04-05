@@ -4,7 +4,6 @@ import type React from "react";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { ClerkProvider } from "@clerk/nextjs";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
