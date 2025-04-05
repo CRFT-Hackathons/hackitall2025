@@ -26,6 +26,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Home,
+  ArrowRight,
 } from "lucide-react";
 import { PersonIcon } from "@radix-ui/react-icons";
 import { synthesizeSpeech } from "@/app/backend/tts-integration";
@@ -452,7 +453,7 @@ export default function OnboardingPage() {
               onClick={() => router.push("/")}
               className="rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 dark:from-indigo-500 dark:to-purple-500 text-white"
             >
-              <Home className="mr-2 h-4 w-4" />
+              <ArrowRight className="mr-2 h-4 w-4" />
               Start Interview
             </Button>
           </div>
