@@ -470,32 +470,66 @@ export function Questionnaire({
               )}
 
               <div className="flex flex-wrap gap-3 justify-between">
-                <button
-                  onClick={toggleRecording}
-                  disabled={isProcessing || isTtsLoading}
-                  className={`rounded-xl border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-[#1e1e2d] hover:bg-indigo-50 dark:hover:bg-indigo-900/30 px-4 py-2 transition-colors flex items-center ${
-                    isRecording
-                      ? "text-red-600 dark:text-red-400 border-red-200 dark:border-red-800"
-                      : "text-indigo-600 dark:text-indigo-400"
-                  } ${
-                    isProcessing || isTtsLoading
-                      ? "opacity-70 cursor-not-allowed"
-                      : ""
-                  }`}
-                >
-                  {isProcessing ? (
-                    <Loader2 className="h-4 w-4 mr-2 inline-block animate-spin" />
-                  ) : isRecording ? (
-                    <StopCircle className="h-4 w-4 mr-2 inline-block" />
-                  ) : (
-                    <Mic className="h-4 w-4 mr-2 inline-block" />
-                  )}
-                  {isProcessing
-                    ? "Processing..."
-                    : isRecording
-                    ? "Stop Recording"
-                    : "Voice Input"}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      setAnswers((prev) => {
+                        const newAnswers = { ...prev };
+                        delete newAnswers[currentQuestion.id];
+                        return newAnswers;
+                      });
+                      onQuestionAnswered?.(currentQuestion.id, "");
+                      toast.success("Answer deleted");
+                    }}
+                    disabled={!answers[currentQuestion.id]}
+                    className={`rounded-xl border border-red-500 dark:border-red-600 bg-white dark:bg-[#1e1e2d] hover:bg-red-100 dark:hover:bg-red-900/30 px-4 py-2 transition-colors flex items-center text-red-600 dark:text-red-500 ${
+                      !answers[currentQuestion.id]
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
+                    }`}
+                  >
+                    <svg
+                      className="h-4 w-4 mr-2"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path
+                        d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    Delete answer
+                  </button>
+                  <button
+                    onClick={toggleRecording}
+                    disabled={isProcessing || isTtsLoading}
+                    className={`rounded-xl border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-[#1e1e2d] hover:bg-indigo-50 dark:hover:bg-indigo-900/30 px-4 py-2 transition-colors flex items-center ${
+                      isRecording
+                        ? "text-red-600 dark:text-red-400 border-red-200 dark:border-red-800"
+                        : "text-indigo-600 dark:text-indigo-400"
+                    } ${
+                      isProcessing || isTtsLoading
+                        ? "opacity-70 cursor-not-allowed"
+                        : ""
+                    }`}
+                  >
+                    {isProcessing ? (
+                      <Loader2 className="h-4 w-4 mr-2 inline-block animate-spin" />
+                    ) : isRecording ? (
+                      <StopCircle className="h-4 w-4 mr-2 inline-block" />
+                    ) : (
+                      <Mic className="h-4 w-4 mr-2 inline-block" />
+                    )}
+                    {isProcessing
+                      ? "Processing..."
+                      : isRecording
+                      ? "Stop Recording"
+                      : "Voice Input"}
+                  </button>
+                </div>
                 <button
                   onClick={() => openQuestionModal(currentIndex)}
                   className="rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 dark:from-indigo-500 dark:to-purple-500 text-white px-4 py-2"
