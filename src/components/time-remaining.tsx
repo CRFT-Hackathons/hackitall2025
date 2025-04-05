@@ -38,16 +38,25 @@ export function TimeRemaining({
   const [hasUsedRegularBreak, setHasUsedRegularBreak] = useState(false);
   const [hasUsedBathroomBreak, setHasUsedBathroomBreak] = useState(false);
 
-  // Load break usage status from localStorage on mount
+  // Load saved preferences and break usage status from localStorage on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
+      // Load break usage status
       const regularBreakUsed =
         localStorage.getItem("regularBreakUsed") === "true";
       const bathroomBreakUsed =
         localStorage.getItem("bathroomBreakUsed") === "true";
 
+      // Load time visibility preference
+      const timeHidden = localStorage.getItem("isTimeHidden");
+
       setHasUsedRegularBreak(regularBreakUsed);
       setHasUsedBathroomBreak(bathroomBreakUsed);
+
+      // Only update if there's a saved preference
+      if (timeHidden !== null) {
+        setIsTimeHidden(timeHidden === "true");
+      }
     }
   }, []);
 
@@ -93,7 +102,10 @@ export function TimeRemaining({
   }, [breakTimeLeft, showBreakTimer]);
 
   const toggleTimeVisibility = () => {
-    setIsTimeHidden(!isTimeHidden);
+    const newValue = !isTimeHidden;
+    setIsTimeHidden(newValue);
+    // Save the preference to localStorage
+    localStorage.setItem("isTimeHidden", String(newValue));
   };
 
   const startBreak = (type: "regular" | "bathroom") => {

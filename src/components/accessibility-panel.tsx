@@ -39,7 +39,44 @@ export default function AccessibilityPanel() {
 
   const [useDyslexicFont, setUseDyslexicFont] = useState(false);
   const [useProfanityFilter, setUseProfanityFilter] = useState(false);
+  const [disableAnimations, setDisableAnimations] = useState(false);
 
+  // Load settings from localStorage on component mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      // Load dyslexic font setting
+      const savedDyslexicFont = localStorage.getItem("useDyslexicFont");
+      if (savedDyslexicFont === "true") {
+        setUseDyslexicFont(true);
+      }
+
+      // Load profanity filter setting
+      const savedProfanityFilter = localStorage.getItem("useProfanityFilter");
+      if (savedProfanityFilter === "true") {
+        setUseProfanityFilter(true);
+      }
+
+      // Load animations setting
+      const savedDisableAnimations = localStorage.getItem("disableAnimations");
+      if (savedDisableAnimations === "true") {
+        setDisableAnimations(true);
+      }
+
+      // Load font size
+      const savedFontSize = localStorage.getItem("fontSize");
+      if (savedFontSize) {
+        setFontSize(parseInt(savedFontSize, 10));
+      }
+
+      // Load speech rate
+      const savedSpeechRate = localStorage.getItem("speechRate");
+      if (savedSpeechRate) {
+        setSpeechRate(parseFloat(savedSpeechRate));
+      }
+    }
+  }, []);
+
+  // Apply dyslexic font when changed
   useEffect(() => {
     try {
       if (typeof window !== "undefined") {
@@ -49,28 +86,72 @@ export default function AccessibilityPanel() {
 
           // Also try to force it with !important through a stylesheet
           const style = document.createElement("style");
-          style.id = "dyslexic-font-style";
+          style.id = "dyslexic-font";
           style.textContent = `
             * {
               font-family: 'OpenDyslexic', sans-serif !important;
             }
           `;
           document.head.appendChild(style);
+
+          // Save setting to localStorage
+          localStorage.setItem("useDyslexicFont", "true");
         } else {
           // Remove dyslexic font
           document.body.style.fontFamily = "";
 
           // Remove the stylesheet if it exists
-          const existingStyle = document.getElementById("dyslexic-font-style");
+          const existingStyle = document.getElementById("dyslexic-font");
           if (existingStyle) {
             existingStyle.remove();
           }
+
+          // Save setting to localStorage
+          localStorage.setItem("useDyslexicFont", "false");
         }
       }
     } catch (error) {
       console.error("Error applying dyslexic font:", error);
     }
   }, [useDyslexicFont]);
+
+  // Apply animations setting
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (disableAnimations) {
+        document.documentElement.classList.add("disable-animations");
+      } else {
+        document.documentElement.classList.remove("disable-animations");
+      }
+      localStorage.setItem("disableAnimations", disableAnimations.toString());
+    }
+  }, [disableAnimations]);
+
+  // Save font size
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("fontSize", fontSize.toString());
+      // Apply font size to root element (optional)
+      document.documentElement.style.fontSize = `${fontSize / 16}rem`;
+    }
+  }, [fontSize]);
+
+  // Save speech rate
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("speechRate", speechRate.toString());
+    }
+  }, [speechRate]);
+
+  // Save profanity filter setting when changed
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(
+        "useProfanityFilter",
+        useProfanityFilter ? "true" : "false"
+      );
+    }
+  }, [useProfanityFilter]);
 
   const handleSaveSettings = () => {
     toast("Settings saved!", {
@@ -80,14 +161,35 @@ export default function AccessibilityPanel() {
     setOpen(false);
   };
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedDyslexicFont = localStorage.getItem("useDyslexicFont");
-      if (savedDyslexicFont === "true") {
-        setUseDyslexicFont(true);
-      }
+  const resetToDefaults = () => {
+    // Reset states
+    setUseDyslexicFont(false);
+    setUseProfanityFilter(false);
+    setDisableAnimations(false);
+    setFontSize(16);
+    setSpeechRate(1);
+
+    // Clear the applied styles
+    document.body.style.fontFamily = "";
+    document.documentElement.style.fontSize = "";
+    document.documentElement.classList.remove("disable-animations");
+
+    const existingStyle = document.getElementById("dyslexic-font");
+    if (existingStyle) {
+      existingStyle.remove();
     }
-  }, []);
+
+    // Clear localStorage settings
+    localStorage.removeItem("useDyslexicFont");
+    localStorage.removeItem("useProfanityFilter");
+    localStorage.removeItem("disableAnimations");
+    localStorage.removeItem("fontSize");
+    localStorage.removeItem("speechRate");
+
+    toast("Settings reset!", {
+      description: "Your settings have been reset to defaults.",
+    });
+  };
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -100,7 +202,7 @@ export default function AccessibilityPanel() {
           <span>Accessibility</span>
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-md border-l border-indigo-100 dark:border-indigo-900 bg-white dark:bg-[#0f0f13]">
+      <SheetContent className="w-full sm:max-w-md border-l border-indigo-100 dark:border-indigo-900 bg-white dark:bg-[#0f0f13] rounded-l-2xl">
         <SheetHeader className="mb-6">
           <SheetTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
             Accessibility Settings
@@ -219,7 +321,8 @@ export default function AccessibilityPanel() {
                 </Label>
                 <Switch
                   id="disableAnimations"
-                  checked={false}
+                  checked={disableAnimations}
+                  onCheckedChange={setDisableAnimations}
                   className="data-[state=checked]:bg-indigo-500 dark:data-[state=checked]:bg-indigo-600"
                 />
               </div>
@@ -328,16 +431,7 @@ export default function AccessibilityPanel() {
                 <Switch
                   id="dyslexicFont"
                   checked={useDyslexicFont}
-                  onCheckedChange={(checked) => {
-                    setUseDyslexicFont(checked);
-                    // For immediate feedback, we could apply this here too
-                    if (checked) {
-                      document.body.style.fontFamily =
-                        "'OpenDyslexic', sans-serif";
-                    } else {
-                      document.body.style.fontFamily = "";
-                    }
-                  }}
+                  onCheckedChange={setUseDyslexicFont}
                   className="data-[state=checked]:bg-indigo-500 dark:data-[state=checked]:bg-indigo-600"
                 />
               </div>
@@ -376,16 +470,7 @@ export default function AccessibilityPanel() {
           <Button
             variant="outline"
             className="rounded-xl border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
-            onClick={() => {
-              setUseDyslexicFont(false);
-              document.body.style.fontFamily = "";
-              const existingStyle = document.getElementById(
-                "dyslexic-font-style"
-              );
-              if (existingStyle) {
-                existingStyle.remove();
-              }
-            }}
+            onClick={resetToDefaults}
           >
             Reset to Default
           </Button>
