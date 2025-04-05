@@ -108,6 +108,9 @@ export function Questionnaire({
   // Initialize answers directly from initialAnswers prop to ensure it's always in sync
   const [answers, setAnswers] = useState<Record<string, string>>(initialAnswers);
   
+  // Track which questions have pending saves
+  const [pendingSaves, setPendingSaves] = useState<Record<string | number, boolean>>({});
+  
   console.log("Questionnaire rendered with initialAnswers:", initialAnswers);
   
   const [showModal, setShowModal] = useState(false);
@@ -143,6 +146,146 @@ export function Questionnaire({
 
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speechRecognition, setSpeechRecognition] = useState<SpeechRecognition | null>(null);
+
+  // Add a ref to store debounce timeouts for each question
+  const saveTimeoutsRef = useRef<Record<string | number, NodeJS.Timeout>>({});
+  
+  // Add this at the top of the Questionnaire component where other state variables are defined
+  const [countdowns, setCountdowns] = useState<Record<string | number, number>>({});
+  const countdownIntervalsRef = useRef<Record<string | number, NodeJS.Timeout>>({});
+  
+  // Helper function to save an answer to localStorage with debounce
+  const debouncedSaveAnswer = (questionId: string | number, answer: string) => {
+    // Clear any existing timeout for this question
+    if (saveTimeoutsRef.current[questionId]) {
+      clearTimeout(saveTimeoutsRef.current[questionId]);
+    }
+    
+    // Mark this question as having a pending save
+    setPendingSaves(prev => ({ ...prev, [questionId]: true }));
+    
+    // Set a new timeout to save after 5 seconds
+    saveTimeoutsRef.current[questionId] = setTimeout(() => {
+      if (typeof window === 'undefined') return;
+      
+      try {
+        console.log(`Saving answer for ${questionId} after 5 second delay`);
+        
+        // Save direct question answer and timestamp
+        localStorage.setItem(`questionnaire_answer_${questionId}`, answer);
+        localStorage.setItem(`questionnaire_answer_${questionId}_timestamp`, new Date().toISOString());
+        
+        // Get the current answers state with the new answer included
+        const updatedAnswers = { ...answers, [questionId]: answer };
+        
+        // Update the JSON backup with all answers
+        localStorage.setItem('questionnaire_all_answers', JSON.stringify(updatedAnswers));
+        localStorage.setItem('questionnaire_all_answers_timestamp', new Date().toISOString());
+        
+        // Clear the pending status
+        setPendingSaves(prev => {
+          const updated = { ...prev };
+          delete updated[questionId];
+          return updated;
+        });
+        
+        toast.success("Answer saved to localStorage");
+        console.log(`Saved answer for ${questionId} to localStorage:`, answer.substring(0, 20));
+      } catch (error) {
+        console.error("Error saving answer to localStorage:", error);
+        toast.error("Failed to save your answer");
+        
+        // Clear the pending status even if there was an error
+        setPendingSaves(prev => {
+          const updated = { ...prev };
+          delete updated[questionId];
+          return updated;
+        });
+      }
+    }, 5000); // 5 seconds delay
+  };
+  
+  // Helper function to remove an answer from localStorage with debounce
+  const debouncedRemoveAnswer = (questionId: string | number) => {
+    // Clear any existing timeout for this question
+    if (saveTimeoutsRef.current[questionId]) {
+      clearTimeout(saveTimeoutsRef.current[questionId]);
+    }
+    
+    // Mark this question as having a pending operation
+    setPendingSaves(prev => ({ ...prev, [questionId]: true }));
+    
+    // Set a new timeout to remove after 5 seconds
+    saveTimeoutsRef.current[questionId] = setTimeout(() => {
+      if (typeof window === 'undefined') return;
+      
+      try {
+        console.log(`Removing answer for question ${questionId} from localStorage after 5 second delay`);
+        
+        // 1. Remove direct question answer and timestamp
+        localStorage.removeItem(`questionnaire_answer_${questionId}`);
+        localStorage.removeItem(`questionnaire_answer_${questionId}_timestamp`);
+        
+        // 2. Update the JSON backup without this answer
+        try {
+          const savedAnswersJson = localStorage.getItem('questionnaire_all_answers');
+          if (savedAnswersJson) {
+            const allAnswers = JSON.parse(savedAnswersJson);
+            if (allAnswers[questionId]) {
+              delete allAnswers[questionId];
+              localStorage.setItem('questionnaire_all_answers', JSON.stringify(allAnswers));
+              localStorage.setItem('questionnaire_all_answers_timestamp', new Date().toISOString());
+            }
+          }
+        } catch (jsonError) {
+          console.error("Error updating JSON backup when removing answer:", jsonError);
+        }
+        
+        // 3. Update any in-progress session data
+        try {
+          const responsesStr = localStorage.getItem('questionnaireResponses');
+          if (responsesStr) {
+            const responses = JSON.parse(responsesStr);
+            
+            // Check all sessions and remove the answer from any that have it
+            let updatedAnySession = false;
+            
+            Object.entries(responses).forEach(([sessionId, sessionData]: [string, any]) => {
+              if (sessionData.answers && sessionData.answers[questionId]) {
+                delete sessionData.answers[questionId];
+                updatedAnySession = true;
+              }
+            });
+            
+            if (updatedAnySession) {
+              localStorage.setItem('questionnaireResponses', JSON.stringify(responses));
+            }
+          }
+        } catch (sessionError) {
+          console.error("Error updating session data when removing answer:", sessionError);
+        }
+        
+        // Clear the pending status
+        setPendingSaves(prev => {
+          const updated = { ...prev };
+          delete updated[questionId];
+          return updated;
+        });
+        
+        toast.success("Answer deleted from localStorage");
+      } catch (error) {
+        console.error("Error removing answer from localStorage:", error);
+        toast.error("Failed to delete your answer");
+        
+        // Clear the pending status even if there was an error
+        setPendingSaves(prev => {
+          const updated = { ...prev };
+          delete updated[questionId];
+          return updated;
+        });
+      }
+    }, 5000); // 5 seconds delay
+  };
 
   // Helper function to get all saved answers from localStorage
   const getSavedAnswersFromLocalStorage = (): Record<string, string> => {
@@ -255,6 +398,96 @@ export function Questionnaire({
               transcript;
             
             setAnswers(prev => ({ ...prev, [currentQuestionId]: updatedAnswer }));
+            
+            // Save speech recognition input with the same timeout mechanism
+            if (typeof window !== 'undefined') {
+              // Clear any existing timeout for this question
+              if (saveTimeoutsRef.current[currentQuestionId]) {
+                clearTimeout(saveTimeoutsRef.current[currentQuestionId]);
+              }
+              
+              // Clear any existing countdown interval
+              if (countdownIntervalsRef.current[currentQuestionId]) {
+                clearInterval(countdownIntervalsRef.current[currentQuestionId]);
+              }
+              
+              // Mark this question as having a pending save
+              setPendingSaves(prev => ({ ...prev, [currentQuestionId]: true }));
+              
+              // Initialize countdown to 10 seconds
+              setCountdowns(prev => ({ ...prev, [currentQuestionId]: 10 }));
+              
+              // Create countdown interval
+              countdownIntervalsRef.current[currentQuestionId] = setInterval(() => {
+                setCountdowns(prev => {
+                  const newCount = (prev[currentQuestionId] || 10) - 1;
+                  return { ...prev, [currentQuestionId]: newCount > 0 ? newCount : 0 };
+                });
+              }, 1000);
+              
+              // Set a new timeout to save after 10 seconds
+              saveTimeoutsRef.current[currentQuestionId] = setTimeout(() => {
+                try {
+                  console.log(`Saving speech recognized answer for ${currentQuestionId} after 10 second delay`);
+                  
+                  // Save direct question answer and timestamp
+                  localStorage.setItem(`questionnaire_answer_${currentQuestionId}`, updatedAnswer);
+                  localStorage.setItem(`questionnaire_answer_${currentQuestionId}_timestamp`, new Date().toISOString());
+                  
+                  // Get the current answers state with the new answer included
+                  const updatedAnswers = { ...answers, [currentQuestionId]: updatedAnswer };
+                  
+                  // Update the JSON backup with all answers
+                  localStorage.setItem('questionnaire_all_answers', JSON.stringify(updatedAnswers));
+                  localStorage.setItem('questionnaire_all_answers_timestamp', new Date().toISOString());
+                  
+                  // Clear the pending status
+                  setPendingSaves(prev => {
+                    const updated = { ...prev };
+                    delete updated[currentQuestionId];
+                    return updated;
+                  });
+                  
+                  // Clear the countdown interval
+                  if (countdownIntervalsRef.current[currentQuestionId]) {
+                    clearInterval(countdownIntervalsRef.current[currentQuestionId]);
+                    delete countdownIntervalsRef.current[currentQuestionId];
+                  }
+                  
+                  // Clear the countdown
+                  setCountdowns(prev => {
+                    const updated = { ...prev };
+                    delete updated[currentQuestionId];
+                    return updated;
+                  });
+                  
+                  toast.success("Speech recognized answer saved automatically");
+                } catch (error) {
+                  console.error("Error auto-saving speech recognized answer to localStorage:", error);
+                  
+                  // Clear the pending status even if there was an error
+                  setPendingSaves(prev => {
+                    const updated = { ...prev };
+                    delete updated[currentQuestionId];
+                    return updated;
+                  });
+                  
+                  // Clear the countdown interval
+                  if (countdownIntervalsRef.current[currentQuestionId]) {
+                    clearInterval(countdownIntervalsRef.current[currentQuestionId]);
+                    delete countdownIntervalsRef.current[currentQuestionId];
+                  }
+                  
+                  // Clear the countdown
+                  setCountdowns(prev => {
+                    const updated = { ...prev };
+                    delete updated[currentQuestionId];
+                    return updated;
+                  });
+                }
+              }, 10000); // 10 seconds delay
+            }
+            
             onQuestionAnswered?.(currentQuestionId, updatedAnswer);
           }
         };
@@ -311,9 +544,10 @@ export function Questionnaire({
     );
   }, [currentIndex, onQuestionChange, currentQuestion, answers]);
 
-  // Clean up MediaRecorder on unmount
+  // Clean up MediaRecorder and timeouts on unmount
   useEffect(() => {
     return () => {
+      // Clean up media recorder
       if (mediaRecorder.current && isRecording) {
         const tracks = mediaRecorder.current.stream?.getTracks();
         tracks?.forEach((track) => track.stop());
@@ -324,6 +558,12 @@ export function Questionnaire({
         audioRef.current.pause();
         audioRef.current = null;
       }
+      
+      // Clean up any pending save timeouts
+      Object.values(saveTimeoutsRef.current).forEach(timeout => {
+        clearTimeout(timeout);
+      });
+      saveTimeoutsRef.current = {};
     };
   }, [isRecording]);
 
@@ -378,6 +618,45 @@ export function Questionnaire({
   }, [speechRate]);
 
   const handleNext = () => {
+    // Save the current answer before navigating
+    if (currentQuestion && answers[currentQuestion.id]) {
+      // Save directly to localStorage immediately
+      if (typeof window !== 'undefined') {
+        const questionId = currentQuestion.id;
+        const answer = answers[questionId];
+        
+        // Clear any existing timeout for this question
+        if (saveTimeoutsRef.current[questionId]) {
+          clearTimeout(saveTimeoutsRef.current[questionId]);
+          delete saveTimeoutsRef.current[questionId];
+        }
+        
+        try {
+          // Save directly to localStorage
+          localStorage.setItem(`questionnaire_answer_${questionId}`, answer);
+          localStorage.setItem(`questionnaire_answer_${questionId}_timestamp`, new Date().toISOString());
+          
+          // Update the JSON backup
+          const updatedAnswers = { ...answers };
+          localStorage.setItem('questionnaire_all_answers', JSON.stringify(updatedAnswers));
+          localStorage.setItem('questionnaire_all_answers_timestamp', new Date().toISOString());
+          
+          // Clear pending status
+          setPendingSaves(prev => {
+            const updated = { ...prev };
+            delete updated[questionId];
+            return updated;
+          });
+          
+          console.log(`Saved answer for ${questionId} before navigation`);
+        } catch (error) {
+          console.error("Error saving answer before navigation:", error);
+          // Fall back to debounced save
+          debouncedSaveAnswer(questionId, answer);
+        }
+      }
+    }
+    
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
@@ -386,103 +665,145 @@ export function Questionnaire({
   };
 
   const handlePrevious = () => {
+    // Save the current answer before navigating
+    if (currentQuestion && answers[currentQuestion.id]) {
+      // Save directly to localStorage immediately
+      if (typeof window !== 'undefined') {
+        const questionId = currentQuestion.id;
+        const answer = answers[questionId];
+        
+        // Clear any existing timeout for this question
+        if (saveTimeoutsRef.current[questionId]) {
+          clearTimeout(saveTimeoutsRef.current[questionId]);
+          delete saveTimeoutsRef.current[questionId];
+        }
+        
+        try {
+          // Save directly to localStorage
+          localStorage.setItem(`questionnaire_answer_${questionId}`, answer);
+          localStorage.setItem(`questionnaire_answer_${questionId}_timestamp`, new Date().toISOString());
+          
+          // Update the JSON backup
+          const updatedAnswers = { ...answers };
+          localStorage.setItem('questionnaire_all_answers', JSON.stringify(updatedAnswers));
+          localStorage.setItem('questionnaire_all_answers_timestamp', new Date().toISOString());
+          
+          // Clear pending status
+          setPendingSaves(prev => {
+            const updated = { ...prev };
+            delete updated[questionId];
+            return updated;
+          });
+          
+          console.log(`Saved answer for ${questionId} before navigation`);
+        } catch (error) {
+          console.error("Error saving answer before navigation:", error);
+          // Fall back to debounced save
+          debouncedSaveAnswer(questionId, answer);
+        }
+      }
+    }
+    
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
     }
   };
 
-  // Helper function to save an answer to localStorage
-  const saveLocalStorageAnswer = (questionId: string | number, answer: string) => {
-    if (typeof window === 'undefined') return;
+  const handleAnswerChange = (answer: string, questionId: string | number) => {
+    // Update state
+    setAnswers((prev) => ({ ...prev, [questionId]: answer }));
     
-    try {
-      // Save direct question answer and timestamp
-      localStorage.setItem(`questionnaire_answer_${questionId}`, answer);
-      localStorage.setItem(`questionnaire_answer_${questionId}_timestamp`, new Date().toISOString());
-      
-      // Get the current answers state with the new answer included
-      const updatedAnswers = { ...answers, [questionId]: answer };
-      
-      // Update the JSON backup with all answers
-      localStorage.setItem('questionnaire_all_answers', JSON.stringify(updatedAnswers));
-      localStorage.setItem('questionnaire_all_answers_timestamp', new Date().toISOString());
-      
-      console.log(`Saved answer for ${questionId} to localStorage:`, answer.substring(0, 20));
-      console.log('Updated questionnaire_all_answers:', updatedAnswers);
-    } catch (error) {
-      console.error("Error saving answer to localStorage:", error);
-    }
-  };
-
-  // Helper function to fully remove an answer from localStorage
-  const removeLocalStorageAnswer = (questionId: string | number) => {
-    if (typeof window === 'undefined') return;
-    
-    try {
-      console.log(`Removing answer for question ${questionId} from localStorage`);
-      
-      // 1. Remove direct question answer and timestamp
-      localStorage.removeItem(`questionnaire_answer_${questionId}`);
-      localStorage.removeItem(`questionnaire_answer_${questionId}_timestamp`);
-      
-      // 2. Update the JSON backup without this answer
-      try {
-        const savedAnswersJson = localStorage.getItem('questionnaire_all_answers');
-        if (savedAnswersJson) {
-          const allAnswers = JSON.parse(savedAnswersJson);
-          if (allAnswers[questionId]) {
-            delete allAnswers[questionId];
-            localStorage.setItem('questionnaire_all_answers', JSON.stringify(allAnswers));
-            localStorage.setItem('questionnaire_all_answers_timestamp', new Date().toISOString());
-            console.log('Updated questionnaire_all_answers after deletion');
-          }
-        }
-      } catch (jsonError) {
-        console.error("Error updating JSON backup when removing answer:", jsonError);
+    // Save to localStorage after 10 seconds
+    if (typeof window !== 'undefined') {
+      // Clear any existing timeout for this question
+      if (saveTimeoutsRef.current[questionId]) {
+        clearTimeout(saveTimeoutsRef.current[questionId]);
       }
       
-      // 3. Update any in-progress session data
-      try {
-        const responsesStr = localStorage.getItem('questionnaireResponses');
-        if (responsesStr) {
-          const responses = JSON.parse(responsesStr);
+      // Clear any existing countdown interval
+      if (countdownIntervalsRef.current[questionId]) {
+        clearInterval(countdownIntervalsRef.current[questionId]);
+      }
+      
+      // Mark this question as having a pending save
+      setPendingSaves(prev => ({ ...prev, [questionId]: true }));
+      
+      // Initialize countdown to 10 seconds
+      setCountdowns(prev => ({ ...prev, [questionId]: 10 }));
+      
+      // Create countdown interval
+      countdownIntervalsRef.current[questionId] = setInterval(() => {
+        setCountdowns(prev => {
+          const newCount = (prev[questionId] || 10) - 1;
+          return { ...prev, [questionId]: newCount > 0 ? newCount : 0 };
+        });
+      }, 1000);
+      
+      // Set a new timeout to save after 10 seconds
+      saveTimeoutsRef.current[questionId] = setTimeout(() => {
+        try {
+          console.log(`Saving answer for ${questionId} after 10 second delay`);
           
-          // Check all sessions and remove the answer from any that have it
-          let updatedAnySession = false;
+          // Save direct question answer and timestamp
+          localStorage.setItem(`questionnaire_answer_${questionId}`, answer);
+          localStorage.setItem(`questionnaire_answer_${questionId}_timestamp`, new Date().toISOString());
           
-          Object.entries(responses).forEach(([sessionId, sessionData]: [string, any]) => {
-            if (sessionData.answers && sessionData.answers[questionId]) {
-              delete sessionData.answers[questionId];
-              updatedAnySession = true;
-            }
+          // Get the current answers state with the new answer included
+          const updatedAnswers = { ...answers, [questionId]: answer };
+          
+          // Update the JSON backup with all answers
+          localStorage.setItem('questionnaire_all_answers', JSON.stringify(updatedAnswers));
+          localStorage.setItem('questionnaire_all_answers_timestamp', new Date().toISOString());
+          
+          // Clear the pending status
+          setPendingSaves(prev => {
+            const updated = { ...prev };
+            delete updated[questionId];
+            return updated;
           });
           
-          if (updatedAnySession) {
-            localStorage.setItem('questionnaireResponses', JSON.stringify(responses));
-            console.log('Updated session data after answer deletion');
+          // Clear the countdown interval
+          if (countdownIntervalsRef.current[questionId]) {
+            clearInterval(countdownIntervalsRef.current[questionId]);
+            delete countdownIntervalsRef.current[questionId];
           }
+          
+          // Clear the countdown
+          setCountdowns(prev => {
+            const updated = { ...prev };
+            delete updated[questionId];
+            return updated;
+          });
+          
+          toast.success("Answer saved automatically");
+        } catch (error) {
+          console.error("Error auto-saving answer to localStorage:", error);
+          
+          // Clear the pending status even if there was an error
+          setPendingSaves(prev => {
+            const updated = { ...prev };
+            delete updated[questionId];
+            return updated;
+          });
+          
+          // Clear the countdown interval
+          if (countdownIntervalsRef.current[questionId]) {
+            clearInterval(countdownIntervalsRef.current[questionId]);
+            delete countdownIntervalsRef.current[questionId];
+          }
+          
+          // Clear the countdown
+          setCountdowns(prev => {
+            const updated = { ...prev };
+            delete updated[questionId];
+            return updated;
+          });
         }
-      } catch (sessionError) {
-        console.error("Error updating session data when removing answer:", sessionError);
-      }
-    } catch (error) {
-      console.error("Error removing answer from localStorage:", error);
-    }
-  };
-
-  const handleAnswerChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const answer = e.target.value;
-    
-    // Update state
-    setAnswers((prev) => ({ ...prev, [currentQuestion.id]: answer }));
-    
-    // Save to localStorage
-    if (typeof window !== 'undefined') {
-      saveLocalStorageAnswer(currentQuestion.id, answer);
+      }, 10000); // 10 seconds delay
     }
     
     // Notify parent
-    onQuestionAnswered?.(currentQuestion.id, answer);
+    onQuestionAnswered?.(questionId, answer);
   };
 
   const toggleSpeechRecognition = () => {
@@ -504,15 +825,46 @@ export function Questionnaire({
   const saveModalAnswer = () => {
     const questionId = questions[modalIndex].id;
     
-    // Update state
+    // Always save the current answer, even if it hasn't changed
     setAnswers((prev) => ({ ...prev, [questionId]: currentAnswer }));
     
-    // Save to localStorage
+    // Force save to localStorage immediately if possible,
+    // otherwise use the debounced version
     if (typeof window !== 'undefined') {
-      saveLocalStorageAnswer(questionId, currentAnswer);
+      // Clear any existing timeout for this question
+      if (saveTimeoutsRef.current[questionId]) {
+        clearTimeout(saveTimeoutsRef.current[questionId]);
+        delete saveTimeoutsRef.current[questionId];
+      }
+      
+      // Save directly to localStorage
+      try {
+        localStorage.setItem(`questionnaire_answer_${questionId}`, currentAnswer);
+        localStorage.setItem(`questionnaire_answer_${questionId}_timestamp`, new Date().toISOString());
+        
+        // Get the current answers state with the new answer included
+        const updatedAnswers = { ...answers, [questionId]: currentAnswer };
+        
+        // Update the JSON backup with all answers
+        localStorage.setItem('questionnaire_all_answers', JSON.stringify(updatedAnswers));
+        localStorage.setItem('questionnaire_all_answers_timestamp', new Date().toISOString());
+        
+        // Clear any pending status
+        setPendingSaves(prev => {
+          const updated = { ...prev };
+          delete updated[questionId];
+          return updated;
+        });
+        
+        console.log(`Saved modal answer for ${questionId} to localStorage immediately`);
+      } catch (error) {
+        console.error("Error saving modal answer to localStorage:", error);
+        // Fall back to debounced save if direct save fails
+        debouncedSaveAnswer(questionId, currentAnswer);
+      }
     }
     
-    // Notify parent
+    // Notify parent component
     onQuestionAnswered?.(questionId, currentAnswer);
     
     // Go to next question or close modal
@@ -531,15 +883,46 @@ export function Questionnaire({
     // Save current answer first
     const questionId = questions[modalIndex].id;
     
-    // Update state
+    // Always save the current answer, even if it hasn't changed
     setAnswers((prev) => ({ ...prev, [questionId]: currentAnswer }));
     
-    // Save to localStorage
+    // Force save to localStorage immediately if possible,
+    // otherwise use the debounced version
     if (typeof window !== 'undefined') {
-      saveLocalStorageAnswer(questionId, currentAnswer);
+      // Clear any existing timeout for this question
+      if (saveTimeoutsRef.current[questionId]) {
+        clearTimeout(saveTimeoutsRef.current[questionId]);
+        delete saveTimeoutsRef.current[questionId];
+      }
+      
+      // Save directly to localStorage
+      try {
+        localStorage.setItem(`questionnaire_answer_${questionId}`, currentAnswer);
+        localStorage.setItem(`questionnaire_answer_${questionId}_timestamp`, new Date().toISOString());
+        
+        // Get the current answers state with the new answer included
+        const updatedAnswers = { ...answers, [questionId]: currentAnswer };
+        
+        // Update the JSON backup with all answers
+        localStorage.setItem('questionnaire_all_answers', JSON.stringify(updatedAnswers));
+        localStorage.setItem('questionnaire_all_answers_timestamp', new Date().toISOString());
+        
+        // Clear any pending status
+        setPendingSaves(prev => {
+          const updated = { ...prev };
+          delete updated[questionId];
+          return updated;
+        });
+        
+        console.log(`Saved modal answer for ${questionId} to localStorage immediately before navigation`);
+      } catch (error) {
+        console.error("Error saving modal answer to localStorage:", error);
+        // Fall back to debounced save if direct save fails
+        debouncedSaveAnswer(questionId, currentAnswer);
+      }
     }
     
-    // Notify parent
+    // Notify parent component
     onQuestionAnswered?.(questionId, currentAnswer);
 
     if (direction === "next" && modalIndex < questions.length - 1) {
@@ -606,6 +989,98 @@ export function Questionnaire({
                   ...prev,
                   [currentQuestion.id]: newAnswer,
                 }));
+
+                // Save voice input with the same timeout mechanism
+                if (typeof window !== 'undefined') {
+                  const questionId = currentQuestion.id;
+                  
+                  // Clear any existing timeout for this question
+                  if (saveTimeoutsRef.current[questionId]) {
+                    clearTimeout(saveTimeoutsRef.current[questionId]);
+                  }
+                  
+                  // Clear any existing countdown interval
+                  if (countdownIntervalsRef.current[questionId]) {
+                    clearInterval(countdownIntervalsRef.current[questionId]);
+                  }
+                  
+                  // Mark this question as having a pending save
+                  setPendingSaves(prev => ({ ...prev, [questionId]: true }));
+                  
+                  // Initialize countdown to 10 seconds
+                  setCountdowns(prev => ({ ...prev, [questionId]: 10 }));
+                  
+                  // Create countdown interval
+                  countdownIntervalsRef.current[questionId] = setInterval(() => {
+                    setCountdowns(prev => {
+                      const newCount = (prev[questionId] || 10) - 1;
+                      return { ...prev, [questionId]: newCount > 0 ? newCount : 0 };
+                    });
+                  }, 1000);
+                  
+                  // Set a new timeout to save after 10 seconds
+                  saveTimeoutsRef.current[questionId] = setTimeout(() => {
+                    try {
+                      console.log(`Saving transcribed answer for ${questionId} after 10 second delay`);
+                      
+                      // Save direct question answer and timestamp
+                      localStorage.setItem(`questionnaire_answer_${questionId}`, newAnswer);
+                      localStorage.setItem(`questionnaire_answer_${questionId}_timestamp`, new Date().toISOString());
+                      
+                      // Get the current answers state with the new answer included
+                      const updatedAnswers = { ...answers, [questionId]: newAnswer };
+                      
+                      // Update the JSON backup with all answers
+                      localStorage.setItem('questionnaire_all_answers', JSON.stringify(updatedAnswers));
+                      localStorage.setItem('questionnaire_all_answers_timestamp', new Date().toISOString());
+                      
+                      // Clear the pending status
+                      setPendingSaves(prev => {
+                        const updated = { ...prev };
+                        delete updated[questionId];
+                        return updated;
+                      });
+                      
+                      // Clear the countdown interval
+                      if (countdownIntervalsRef.current[questionId]) {
+                        clearInterval(countdownIntervalsRef.current[questionId]);
+                        delete countdownIntervalsRef.current[questionId];
+                      }
+                      
+                      // Clear the countdown
+                      setCountdowns(prev => {
+                        const updated = { ...prev };
+                        delete updated[questionId];
+                        return updated;
+                      });
+                      
+                      toast.success("Transcribed answer saved automatically");
+                    } catch (error) {
+                      console.error("Error auto-saving transcribed answer to localStorage:", error);
+                      
+                      // Clear the pending status even if there was an error
+                      setPendingSaves(prev => {
+                        const updated = { ...prev };
+                        delete updated[questionId];
+                        return updated;
+                      });
+                      
+                      // Clear the countdown interval
+                      if (countdownIntervalsRef.current[questionId]) {
+                        clearInterval(countdownIntervalsRef.current[questionId]);
+                        delete countdownIntervalsRef.current[questionId];
+                      }
+                      
+                      // Clear the countdown
+                      setCountdowns(prev => {
+                        const updated = { ...prev };
+                        delete updated[questionId];
+                        return updated;
+                      });
+                    }
+                  }, 10000); // 10 seconds delay
+                }
+                
                 onQuestionAnswered?.(currentQuestion.id, newAnswer);
                 toast.success("Voice input processed successfully");
               } else {
@@ -823,20 +1298,31 @@ export function Questionnaire({
             <div className="space-y-4">
               <textarea
                 ref={textareaRef}
-                key={`textarea-${currentQuestion.id}-${answers[currentQuestion.id] || 'empty'}-${isClient ? 'client' : 'server'}`}
+                key={`textarea-${currentQuestion.id}-${isClient ? 'client' : 'server'}`}
                 className="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#13131b] min-h-[150px] focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-700 focus:outline-none transition-all"
                 placeholder="Type your answer here..."
                 value={answers[currentQuestion.id] || ""}
-                onChange={handleAnswerChange}
+                onChange={(e) => {
+                  const answer = e.target.value;
+                  handleAnswerChange(answer, currentQuestion.id);
+                }}
               />
-
+              
+              {/* Auto-save indicator */}
+              {pendingSaves[currentQuestion.id] && (
+                <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 mt-1 animate-pulse">
+                  <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                  <span>Changes will be saved in {countdowns[currentQuestion.id] || 10} seconds...</span>
+                </div>
+              )}
+              
               {transcriptionError && (
                 <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm border border-red-200 dark:border-red-800/30">
                   <AlertCircle className="h-4 w-4 inline-block mr-2" />
                   Error: {transcriptionError}
                 </div>
               )}
-
+              
               <div className="flex flex-wrap gap-3 justify-between">
                 <div className="flex items-center gap-2">
                   <button
@@ -848,14 +1334,53 @@ export function Questionnaire({
                         return newAnswers;
                       });
                       
-                      // Remove from localStorage
+                      // Immediately remove from localStorage (no delay)
                       if (typeof window !== 'undefined') {
-                        removeLocalStorageAnswer(currentQuestion.id);
+                        const questionId = currentQuestion.id;
+                        
+                        try {
+                          // 1. Remove direct question answer and timestamp
+                          localStorage.removeItem(`questionnaire_answer_${questionId}`);
+                          localStorage.removeItem(`questionnaire_answer_${questionId}_timestamp`);
+                          
+                          // 2. Update the JSON backup without this answer
+                          const savedAnswersJson = localStorage.getItem('questionnaire_all_answers');
+                          if (savedAnswersJson) {
+                            const allAnswers = JSON.parse(savedAnswersJson);
+                            if (allAnswers[questionId]) {
+                              delete allAnswers[questionId];
+                              localStorage.setItem('questionnaire_all_answers', JSON.stringify(allAnswers));
+                              localStorage.setItem('questionnaire_all_answers_timestamp', new Date().toISOString());
+                            }
+                          }
+                          
+                          // 3. Update any in-progress session data
+                          const responsesStr = localStorage.getItem('questionnaireResponses');
+                          if (responsesStr) {
+                            const responses = JSON.parse(responsesStr);
+                            let updated = false;
+                            
+                            Object.entries(responses).forEach(([sessionId, sessionData]: [string, any]) => {
+                              if (sessionData.answers && sessionData.answers[questionId]) {
+                                delete sessionData.answers[questionId];
+                                updated = true;
+                              }
+                            });
+                            
+                            if (updated) {
+                              localStorage.setItem('questionnaireResponses', JSON.stringify(responses));
+                            }
+                          }
+                          
+                          toast.success("Answer deleted");
+                        } catch (error) {
+                          console.error("Error removing answer from localStorage:", error);
+                          toast.error("Failed to delete answer");
+                        }
                       }
                       
                       // Notify parent component
                       onQuestionAnswered?.(currentQuestion.id, "");
-                      toast.success("Answer deleted");
                     }}
                     disabled={!answers[currentQuestion.id]}
                     className={`rounded-xl border border-red-500 dark:border-red-600 bg-white dark:bg-[#1e1e2d] hover:bg-red-100 dark:hover:bg-red-900/30 px-4 py-2 transition-colors flex items-center text-red-600 dark:text-red-500 ${
@@ -989,12 +1514,117 @@ export function Questionnaire({
                 )}
 
                 <textarea
-                  key={`modal-textarea-${modalIndex}-${currentAnswer}-${isClient ? 'client' : 'server'}`}
+                  key={`modal-textarea-${modalIndex}-${isClient ? 'client' : 'server'}`}
                   className="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#13131b] min-h-[200px] focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-700 focus:outline-none transition-all"
                   placeholder="Type your answer here..."
                   value={currentAnswer}
-                  onChange={(e) => setCurrentAnswer(e.target.value)}
+                  onChange={(e) => {
+                    const answer = e.target.value;
+                    setCurrentAnswer(answer);
+                    
+                    // Save to localStorage after 10 seconds
+                    if (typeof window !== 'undefined') {
+                      const questionId = questions[modalIndex].id;
+                      
+                      // Clear any existing timeout for this question
+                      if (saveTimeoutsRef.current[questionId]) {
+                        clearTimeout(saveTimeoutsRef.current[questionId]);
+                      }
+                      
+                      // Clear any existing countdown interval
+                      if (countdownIntervalsRef.current[questionId]) {
+                        clearInterval(countdownIntervalsRef.current[questionId]);
+                      }
+                      
+                      // Mark this question as having a pending save
+                      setPendingSaves(prev => ({ ...prev, [questionId]: true }));
+                      
+                      // Initialize countdown to 10 seconds
+                      setCountdowns(prev => ({ ...prev, [questionId]: 10 }));
+                      
+                      // Create countdown interval
+                      countdownIntervalsRef.current[questionId] = setInterval(() => {
+                        setCountdowns(prev => {
+                          const newCount = (prev[questionId] || 10) - 1;
+                          return { ...prev, [questionId]: newCount > 0 ? newCount : 0 };
+                        });
+                      }, 1000);
+                      
+                      // Set a new timeout to save after 10 seconds
+                      saveTimeoutsRef.current[questionId] = setTimeout(() => {
+                        try {
+                          console.log(`Saving modal answer for ${questionId} after 10 second delay`);
+                          
+                          // Save direct question answer and timestamp
+                          localStorage.setItem(`questionnaire_answer_${questionId}`, answer);
+                          localStorage.setItem(`questionnaire_answer_${questionId}_timestamp`, new Date().toISOString());
+                          
+                          // Update our answers state
+                          setAnswers((prev) => ({ ...prev, [questionId]: answer }));
+                          
+                          // Get the current answers state with the new answer included
+                          const updatedAnswers = { ...answers, [questionId]: answer };
+                          
+                          // Update the JSON backup with all answers
+                          localStorage.setItem('questionnaire_all_answers', JSON.stringify(updatedAnswers));
+                          localStorage.setItem('questionnaire_all_answers_timestamp', new Date().toISOString());
+                          
+                          // Clear the pending status
+                          setPendingSaves(prev => {
+                            const updated = { ...prev };
+                            delete updated[questionId];
+                            return updated;
+                          });
+                          
+                          // Clear the countdown interval
+                          if (countdownIntervalsRef.current[questionId]) {
+                            clearInterval(countdownIntervalsRef.current[questionId]);
+                            delete countdownIntervalsRef.current[questionId];
+                          }
+                          
+                          // Clear the countdown
+                          setCountdowns(prev => {
+                            const updated = { ...prev };
+                            delete updated[questionId];
+                            return updated;
+                          });
+                          
+                          toast.success("Answer saved automatically");
+                        } catch (error) {
+                          console.error("Error auto-saving modal answer to localStorage:", error);
+                          
+                          // Clear the pending status even if there was an error
+                          setPendingSaves(prev => {
+                            const updated = { ...prev };
+                            delete updated[questionId];
+                            return updated;
+                          });
+                          
+                          // Clear the countdown interval
+                          if (countdownIntervalsRef.current[questionId]) {
+                            clearInterval(countdownIntervalsRef.current[questionId]);
+                            delete countdownIntervalsRef.current[questionId];
+                          }
+                          
+                          // Clear the countdown
+                          setCountdowns(prev => {
+                            const updated = { ...prev };
+                            delete updated[questionId];
+                            return updated;
+                          });
+                        }
+                      }, 10000); // 10 seconds delay
+                    }
+                  }}
                 />
+                
+                {/* Modal auto-save indicator */}
+                {pendingSaves[questions[modalIndex]?.id] && (
+                  <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 mt-1 animate-pulse">
+                    <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+                    <span>Changes will be saved in {countdowns[questions[modalIndex]?.id] || 10} seconds...</span>
+                  </div>
+                )}
               </div>
 
               {/* Modal footer */}
