@@ -9,7 +9,6 @@ import { Questionnaire } from "@/components/questionnaire";
 import { InterviewChat } from "@/components/interview-chat";
 import { Pause, Mic, Clock, UserRound, Settings2 } from "lucide-react";
 import { useState } from "react";
-import Link from "next/link";
 
 // Sample questions for the interview
 const interviewQuestions = [
