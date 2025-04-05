@@ -1,31 +1,31 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Clock, Coffee } from "lucide-react"
-import { motion } from "framer-motion"
-import { NeedABreak, BathroomBreak } from "@/components/break-timer"
+import { useState } from "react";
+import { Clock, Coffee } from "lucide-react";
+import { motion } from "framer-motion";
+import { NeedABreak, BathroomBreak } from "@/components/break-timer";
 
 export interface BreakButtonsProps {
   /**
    * Custom class name for the container
    */
-  className?: string
+  className?: string;
   /**
    * Primary color for buttons and timers
    */
-  primaryColor?: string
+  primaryColor?: string;
   /**
    * Secondary color for buttons and timers
    */
-  secondaryColor?: string
+  secondaryColor?: string;
   /**
    * Callback function when a break starts
    */
-  onBreakStart?: (type: "regular" | "bathroom") => void
+  onBreakStart?: (type: "regular" | "bathroom") => void;
   /**
    * Callback function when a break ends
    */
-  onBreakEnd?: (type: "regular" | "bathroom") => void
+  onBreakEnd?: (type: "regular" | "bathroom") => void;
 }
 
 export function BreakButtons({
@@ -35,62 +35,62 @@ export function BreakButtons({
   onBreakStart,
   onBreakEnd,
 }: BreakButtonsProps) {
-  const [showRegularBreak, setShowRegularBreak] = useState(false)
-  const [showBathroomBreak, setShowBathroomBreak] = useState(false)
-  const [isRegularHovered, setIsRegularHovered] = useState(false)
-  const [isBathroomHovered, setIsBathroomHovered] = useState(false)
+  const [showRegularBreak, setShowRegularBreak] = useState(false);
+  const [showBathroomBreak, setShowBathroomBreak] = useState(false);
+  const [isRegularHovered, setIsRegularHovered] = useState(false);
+  const [isBathroomHovered, setIsBathroomHovered] = useState(false);
 
   const startRegularBreak = () => {
-    setShowRegularBreak(true)
-    onBreakStart?.("regular")
-  }
+    setShowRegularBreak(true);
+    onBreakStart?.("regular");
+  };
 
   const startBathroomBreak = () => {
-    setShowBathroomBreak(true)
-    onBreakStart?.("bathroom")
-  }
+    setShowBathroomBreak(true);
+    onBreakStart?.("bathroom");
+  };
 
   const endRegularBreak = () => {
-    setShowRegularBreak(false)
-    onBreakEnd?.("regular")
-  }
+    setShowRegularBreak(false);
+    onBreakEnd?.("regular");
+  };
 
   const endBathroomBreak = () => {
-    setShowBathroomBreak(false)
-    onBreakEnd?.("bathroom")
-  }
+    setShowBathroomBreak(false);
+    onBreakEnd?.("bathroom");
+  };
 
   // Animation variants
   const buttonVariants = {
     initial: { scale: 1 },
     hover: { scale: 1.05 },
     tap: { scale: 0.95 },
-    disabled: { scale: 1, opacity: 0.5 }
-  }
+    disabled: { scale: 1, opacity: 0.5 },
+  };
 
   const iconVariants = {
     initial: { rotate: 0 },
-    hover: { 
-      rotate: 15, 
-      transition: { 
-        repeat: Infinity, 
-        repeatType: "reverse" as const, 
-        duration: 1 
-      } 
-    }
-  }
+    hover: {
+      rotate: 15,
+      transition: {
+        repeat: Infinity,
+        repeatType: "reverse" as const,
+        duration: 1,
+      },
+    },
+  };
 
   const pulseVariants = {
     initial: { opacity: 0.7, scale: 1 },
-    animate: { 
-      opacity: [0.7, 1, 0.7], 
+    animate: {
+      opacity: [0.7, 1, 0.7],
       scale: [1, 1.05, 1],
-      transition: { 
-        repeat: Infinity, 
-        duration: 2
-      }
-    }
-  }
+      transition: {
+        repeat: Infinity,
+        duration: 2,
+      },
+    },
+  };
 
   return (
     <div className={`flex flex-wrap gap-3 ${className}`}>
@@ -114,20 +114,24 @@ export function BreakButtons({
       >
         {/* Background pulse effect */}
         {isRegularHovered && !showRegularBreak && !showBathroomBreak && (
-          <motion.div 
-            className="absolute inset-0 rounded-full" 
+          <motion.div
+            className="absolute inset-0 rounded-full"
             style={{ backgroundColor: primaryColor }}
             variants={pulseVariants}
             initial="initial"
             animate="animate"
           />
         )}
-        
+
         <div className="relative z-10 flex items-center gap-2">
           <motion.div
             variants={iconVariants}
             initial="initial"
-            animate={isRegularHovered && !showRegularBreak && !showBathroomBreak ? "hover" : "initial"}
+            animate={
+              isRegularHovered && !showRegularBreak && !showBathroomBreak
+                ? "hover"
+                : "initial"
+            }
           >
             <Clock size={16} />
           </motion.div>
@@ -155,20 +159,24 @@ export function BreakButtons({
       >
         {/* Background pulse effect */}
         {isBathroomHovered && !showRegularBreak && !showBathroomBreak && (
-          <motion.div 
-            className="absolute inset-0 rounded-full" 
+          <motion.div
+            className="absolute inset-0 rounded-full"
             style={{ backgroundColor: secondaryColor }}
             variants={pulseVariants}
             initial="initial"
             animate="animate"
           />
         )}
-        
+
         <div className="relative z-10 flex items-center gap-2">
           <motion.div
             variants={iconVariants}
             initial="initial"
-            animate={isBathroomHovered && !showRegularBreak && !showBathroomBreak ? "hover" : "initial"}
+            animate={
+              isBathroomHovered && !showRegularBreak && !showBathroomBreak
+                ? "hover"
+                : "initial"
+            }
           >
             <Coffee size={16} />
           </motion.div>
@@ -177,13 +185,20 @@ export function BreakButtons({
       </motion.button>
 
       {showRegularBreak && (
-        <NeedABreak primaryColor={primaryColor} onComplete={endRegularBreak} onCancel={endRegularBreak} />
+        <NeedABreak
+          primaryColor={primaryColor}
+          onComplete={endRegularBreak}
+          onCancel={endRegularBreak}
+        />
       )}
 
       {showBathroomBreak && (
-        <BathroomBreak primaryColor={secondaryColor} onComplete={endBathroomBreak} onCancel={endBathroomBreak} />
+        <BathroomBreak
+          primaryColor={secondaryColor}
+          onComplete={endBathroomBreak}
+          onCancel={endBathroomBreak}
+        />
       )}
     </div>
-  )
+  );
 }
-
