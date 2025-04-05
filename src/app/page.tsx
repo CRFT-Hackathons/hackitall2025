@@ -7,8 +7,9 @@ import TimeDisplayButton from "@/components/time-display-button";
 import { TimeRemaining } from "@/components/time-remaining";
 import { Questionnaire } from "@/components/questionnaire";
 import { TwoPersonChat } from "@/components/interview-chat";
-import { Pause, Mic, Clock, UserRound } from "lucide-react";
+import { Pause, Mic, Clock, UserRound, Settings2 } from "lucide-react";
 import { useState } from "react";
+import Link from "next/link";
 
 // Sample questions for the interview
 const interviewQuestions = [
@@ -92,7 +93,18 @@ export default function Home() {
               </p>
             </div>
 
-            <AccessibilityPanel />
+            <div className="flex gap-2">
+              <Link href="/onboarding">
+                <Button
+                  variant="outline"
+                  className="rounded-full border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-all shadow-none"
+                >
+                  <Settings2 className="h-4 w-4 mr-2 text-indigo-600 dark:text-indigo-400" />
+                  <span>Setup Preferences</span>
+                </Button>
+              </Link>
+              <AccessibilityPanel />
+            </div>
           </div>
 
           {/* Unique decorative line */}
