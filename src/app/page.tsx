@@ -7,20 +7,13 @@ import TimeDisplayButton from "@/components/time-display-button";
 import { TimeRemaining } from "@/components/time-remaining";
 import { Questionnaire } from "@/components/questionnaire";
 import { TwoPersonChat } from "@/components/interview-chat";
-import { useState } from "react";
-import { Questionnaire } from "@/components/questionnaire";
-import { useState } from "react";
 import {
-  Eye,
   Pause,
-  Volume2,
-  Globe,
   Mic,
   Clock,
-  ChevronRight,
-  ChevronLeft,
   UserRound,
 } from "lucide-react";
+import { useState } from "react";
 
 // Sample questions for the interview
 const interviewQuestions = [
@@ -130,48 +123,24 @@ export default function Home() {
                     >
                       Instructions
                     </TabsTrigger>
+                    <TabsTrigger
+                      value="chat"
+                      className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-indigo-900/30 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300 px-6"
+                    >
+                      Chat
+                    </TabsTrigger>
                   </TabsList>
 
                   <TabsContent
                     value="questions"
                     className="space-y-4 focus:outline-none"
                   >
-                    <div className="p-6 rounded-xl bg-slate-50 dark:bg-[#1a1a24] border border-slate-100 dark:border-slate-700/50">
-                      <div className="flex items-center mb-4">
-                        <span className="w-8 h-8 flex items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 font-medium mr-3">
-                          1
-                        </span>
-                        <h3 className="text-xl font-medium">
-                          Tell us about yourself
-                        </h3>
-                      </div>
-
-                      <p className="mb-6 text-slate-700 dark:text-slate-300 leading-relaxed">
-                        Tell us about a challenging project you worked on and
-                        how you overcame obstacles. What skills did you develop
-                        during this process?
-                      </p>
-
-                      <div className="space-y-4">
-                        <textarea
-                          className="w-full p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#13131b] min-h-[150px] focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-700 focus:outline-none transition-all"
-                          placeholder="Type your answer here..."
-                        />
-
-                        <div className="flex flex-wrap gap-3 justify-between">
-                          <Button
-                            variant="outline"
-                            className="rounded-xl border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
-                          >
-                            <Mic className="h-4 w-4 mr-2 text-indigo-600 dark:text-indigo-400" />
-                            Voice Input
-                          </Button>
-                          <Button className="rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 dark:from-indigo-500 dark:to-purple-500 text-white">
-                            Submit Answer
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
+                    <Questionnaire 
+                      questions={interviewQuestions}
+                      onQuestionAnswered={handleQuestionAnswered}
+                      onSubmit={handleSubmit}
+                      onQuestionChange={handleQuestionChange}
+                    />
                   </TabsContent>
 
                   <TabsContent
@@ -240,30 +209,14 @@ export default function Home() {
               </div>
             </Card>
 
-            {/* Time card */}
-            <Card className="p-5 border border-indigo-100 dark:border-indigo-900/50 bg-white dark:bg-[#16161d] rounded-xl">
-              <h3 className="text-lg font-medium mb-4 flex items-center">
-                <div className="w-1 h-6 bg-indigo-500 dark:bg-indigo-400 mr-3 rounded-full"></div>
-                Time Remaining
-              </h3>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center"></div>
-                  <Clock className="h-5 w-5 text-indigo-600 dark:text-indigo-400 mr-2" />
-                  <TimeDisplayButton />
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="rounded-full border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
-                >
-                  <Pause className="h-4 w-4 mr-1 text-indigo-600 dark:text-indigo-400" />
-                  Pause
-                </Button>
-              </div>
+            {/* Time remaining component */}
+            <Card className="border border-indigo-100 dark:border-indigo-900/50 bg-white dark:bg-[#16161d] rounded-xl overflow-hidden">
+              <TimeRemaining 
+                initialTime={2700} // 45 minutes
+                showBreakButtons={true}
+                className="px-5 py-5 mb-1"
+              />
             </Card>
-
             {/* Interview details card */}
             <Card className="p-5 border border-indigo-100 dark:border-indigo-900/50 bg-white dark:bg-[#16161d] rounded-xl">
               <h3 className="text-lg font-medium mb-4 flex items-center">
