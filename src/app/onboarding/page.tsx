@@ -27,7 +27,7 @@ import {
   ChevronRight,
   Home,
 } from "lucide-react";
-import Link from "next/link";
+import { PersonIcon } from "@radix-ui/react-icons";
 
 export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -62,30 +62,37 @@ export default function OnboardingPage() {
     const savedKeyboardNavigation = localStorage.getItem("keyboardNavigation");
     const savedEyeTracking = localStorage.getItem("eyeTracking");
     const savedVoiceCommands = localStorage.getItem("voiceCommands");
-    const savedSimplifiedInterface = localStorage.getItem("simplifiedInterface");
+    const savedSimplifiedInterface = localStorage.getItem(
+      "simplifiedInterface"
+    );
     const savedProfanityFilter = localStorage.getItem("useProfanityFilter");
 
     if (savedFontSize) setFontSize(parseInt(savedFontSize));
-    if (savedUseDyslexicFont) setUseDyslexicFont(savedUseDyslexicFont === "true");
+    if (savedUseDyslexicFont)
+      setUseDyslexicFont(savedUseDyslexicFont === "true");
     if (savedColorBlindMode) setColorBlindMode(savedColorBlindMode);
-    if (savedDisableAnimations) setDisableAnimations(savedDisableAnimations === "true");
+    if (savedDisableAnimations)
+      setDisableAnimations(savedDisableAnimations === "true");
     if (savedHighContrast) setHighContrast(savedHighContrast === "true");
     if (savedSpeechRate) setSpeechRate(parseFloat(savedSpeechRate));
     if (savedTextToSpeech) setTextToSpeech(savedTextToSpeech === "true");
     if (savedVoiceInput) setVoiceInput(savedVoiceInput === "true");
-    if (savedKeyboardNavigation) setKeyboardNavigation(savedKeyboardNavigation === "true");
+    if (savedKeyboardNavigation)
+      setKeyboardNavigation(savedKeyboardNavigation === "true");
     if (savedEyeTracking) setEyeTracking(savedEyeTracking === "true");
     if (savedVoiceCommands) setVoiceCommands(savedVoiceCommands === "true");
-    if (savedSimplifiedInterface) setSimplifiedInterface(savedSimplifiedInterface === "true");
-    if (savedProfanityFilter) setUseProfanityFilter(savedProfanityFilter === "true");
+    if (savedSimplifiedInterface)
+      setSimplifiedInterface(savedSimplifiedInterface === "true");
+    if (savedProfanityFilter)
+      setUseProfanityFilter(savedProfanityFilter === "true");
   }, []);
-  
+
   // Apply font size to the document
   useEffect(() => {
     document.documentElement.style.fontSize = `${fontSize}px`;
     localStorage.setItem("fontSize", fontSize.toString());
   }, [fontSize]);
-  
+
   // Save preferences to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("useDyslexicFont", useDyslexicFont.toString());
@@ -100,24 +107,24 @@ export default function OnboardingPage() {
     localStorage.setItem("voiceCommands", voiceCommands.toString());
     localStorage.setItem("simplifiedInterface", simplifiedInterface.toString());
     localStorage.setItem("useProfanityFilter", useProfanityFilter.toString());
-    
+
     // Apply dyslexic font if enabled
     if (useDyslexicFont) {
       document.body.classList.add("dyslexic-font");
     } else {
       document.body.classList.remove("dyslexic-font");
     }
-    
+
     // Apply color blind mode
     document.body.setAttribute("data-color-blind-mode", colorBlindMode);
-    
+
     // Apply high contrast
     if (highContrast) {
       document.body.classList.add("high-contrast");
     } else {
       document.body.classList.remove("high-contrast");
     }
-    
+
     // Apply animations disable
     if (disableAnimations) {
       document.body.classList.add("reduce-motion");
@@ -136,7 +143,7 @@ export default function OnboardingPage() {
     eyeTracking,
     voiceCommands,
     simplifiedInterface,
-    useProfanityFilter
+    useProfanityFilter,
   ]);
 
   // Step configuration
@@ -154,14 +161,16 @@ export default function OnboardingPage() {
             Welcome to InAble - An Accessible Interview Platform
           </h2>
           <p className="text-slate-600 dark:text-slate-400 text-center max-w-md mb-8">
-            We'll guide you through setting up accessibility features to make your interview experience more comfortable and effective.
+            We'll guide you through setting up accessibility features to make
+            your interview experience more comfortable and effective.
           </p>
         </div>
       ),
     },
     {
       title: "Visual Preferences",
-      description: "Adjust your visual settings for better readability and comfort.",
+      description:
+        "Adjust your visual settings for better readability and comfort.",
       content: (
         <div className="space-y-6">
           <div className="flex items-center gap-3 mb-6">
@@ -216,7 +225,7 @@ export default function OnboardingPage() {
                 className="data-[state=checked]:bg-indigo-500 dark:data-[state=checked]:bg-indigo-600"
               />
             </div>
-            
+
             <div className="flex items-center justify-between">
               <Label htmlFor="colorBlindMode" className="flex items-center">
                 <div className="w-1 h-4 bg-indigo-500 dark:bg-indigo-400 mr-2 rounded-full"></div>
@@ -389,7 +398,10 @@ export default function OnboardingPage() {
             </div>
 
             <div className="flex items-center justify-between">
-              <Label htmlFor="simplifiedInterface" className="flex items-center">
+              <Label
+                htmlFor="simplifiedInterface"
+                className="flex items-center"
+              >
                 <div className="w-1 h-4 bg-indigo-500 dark:bg-indigo-400 mr-2 rounded-full"></div>
                 Simplified Interface
               </Label>
@@ -429,11 +441,12 @@ export default function OnboardingPage() {
             You're All Set!
           </h2>
           <p className="text-slate-600 dark:text-slate-400 text-center max-w-md mb-8">
-            Your accessibility preferences have been saved. You can always change them later from the Accessibility panel.
+            Your accessibility preferences have been saved. You can always
+            change them later from the Accessibility panel.
           </p>
           <div className="flex gap-4">
             <Button
-              onClick={() => router.push('/')}
+              onClick={() => router.push("/")}
               className="rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 dark:from-indigo-500 dark:to-purple-500 text-white"
             >
               <Home className="mr-2 h-4 w-4" />
@@ -474,7 +487,7 @@ export default function OnboardingPage() {
         {/* Logo and header */}
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <Accessibility className="text-indigo-400 h-8 w-auto" />
+            <PersonIcon className="text-indigo-400 h-8 w-auto" />
             <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
               InAble
             </h1>
@@ -525,7 +538,7 @@ export default function OnboardingPage() {
               <ChevronLeft className="h-4 w-4 mr-2" />
               Previous
             </Button>
-            
+
             {currentStep < steps.length - 1 ? (
               <Button
                 onClick={handleNext}
@@ -540,4 +553,4 @@ export default function OnboardingPage() {
       </div>
     </main>
   );
-} 
+}
