@@ -62,6 +62,9 @@ export function Questionnaire({
   // Notify parent component when current question changes
   useEffect(() => {
     onQuestionChange?.(currentIndex)
+    
+    // Sync modal index with current index when current index changes
+    setModalIndex(currentIndex)
   }, [currentIndex, onQuestionChange])
 
   const handleNext = () => {
@@ -99,8 +102,32 @@ export function Questionnaire({
     if (modalIndex < questions.length - 1) {
       setModalIndex(modalIndex + 1)
       setCurrentAnswer(answers[questions[modalIndex + 1].id] || "")
+      
+      // Sync the main view with the modal navigation
+      setCurrentIndex(modalIndex + 1)
     } else {
       setShowModal(false)
+    }
+  }
+  
+  const navigateModalQuestion = (direction: 'next' | 'prev') => {
+    // Save current answer first
+    const questionId = questions[modalIndex].id
+    setAnswers(prev => ({ ...prev, [questionId]: currentAnswer }))
+    onQuestionAnswered?.(questionId, currentAnswer)
+    
+    if (direction === 'next' && modalIndex < questions.length - 1) {
+      const nextIndex = modalIndex + 1
+      setModalIndex(nextIndex)
+      setCurrentAnswer(answers[questions[nextIndex].id] || "")
+      // Sync the main view with the modal navigation
+      setCurrentIndex(nextIndex)
+    } else if (direction === 'prev' && modalIndex > 0) {
+      const prevIndex = modalIndex - 1
+      setModalIndex(prevIndex)
+      setCurrentAnswer(answers[questions[prevIndex].id] || "")
+      // Sync the main view with the modal navigation  
+      setCurrentIndex(prevIndex)
     }
   }
 
@@ -264,13 +291,7 @@ export function Questionnaire({
 
               <div className="p-4 border-t border-gray-200 dark:border-gray-800 flex justify-between">
                 <button
-                  onClick={() => {
-                    if (modalIndex > 0) {
-                      const prevAnswer = answers[questions[modalIndex - 1].id] || ""
-                      setModalIndex(modalIndex - 1)
-                      setCurrentAnswer(prevAnswer)
-                    }
-                  }}
+                  onClick={() => navigateModalQuestion('prev')}
                   disabled={modalIndex === 0}
                   className="rounded-xl border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-[#1e1e2d] px-4 py-2 text-indigo-600 dark:text-indigo-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -279,7 +300,7 @@ export function Questionnaire({
                 </button>
 
                 <button
-                  onClick={saveModalAnswer}
+                  onClick={modalIndex === questions.length - 1 ? saveModalAnswer : () => navigateModalQuestion('next')}
                   disabled={!currentAnswer.trim() && questions[modalIndex].required}
                   className="rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 dark:from-indigo-500 dark:to-purple-500 text-white px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >

@@ -144,7 +144,7 @@ export function InterviewChat({
   }
 
   return (
-    <div className={`flex flex-col h-[500px] rounded-lg border border-gray-200 dark:border-gray-800 relative ${className}`}>
+    <div className={`flex flex-col h-[500px] rounded-lg border-2 border-gray-200 dark:border-gray-800 relative ${className}`}>
       {/* Header */}
       <div className="p-4 border-b border-gray-200 dark:border-gray-800">
         <h2 className="text-lg font-medium">{title}</h2>
@@ -223,7 +223,10 @@ export function InterviewChat({
           value={input}
           onChange={handleInputChange}
           placeholder={isPaused ? "Interview paused..." : placeholder}
-          className={`flex-1 px-4 py-2 rounded-md border-2 border-indigo-300 dark:border-indigo-700 bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-indigo-500 dark:focus:border-indigo-500 ${inputClassName}`}
+          className={`flex-1 px-4 py-2 rounded-md border-4 border-indigo-300 dark:border-indigo-700 bg-background 
+          focus:outline-none focus:ring-3 focus:ring-indigo-500/50 focus:border-indigo-500 dark:focus:border-indigo-500 
+          shadow-sm focus:shadow-md focus:shadow-indigo-300 dark:focus:shadow-indigo-900/30
+          transition-all duration-200 ${inputClassName}`}
           aria-label="Type your response"
           disabled={isPaused}
         />
