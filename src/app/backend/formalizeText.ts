@@ -23,7 +23,6 @@ const formalizationPrompt = `
     Return only the modified/verified text in no XML format just plain text, without any additional commentary.
   </output>
 </task>
-
 `;
 
 export async function formalizeText(

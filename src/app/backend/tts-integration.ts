@@ -33,7 +33,13 @@ export async function synthesizeSpeech(
       throw new Error("Failed to generate audio");
     }
 
-    await writeFile("output.mp3", response.audioContent, "binary");
+    const publicDir = "./public";
+    const fileName = `output-${Date.now()}.mp3`;
+    const filePath = `${publicDir}/${fileName}`;
+
+    await writeFile(filePath, response.audioContent as Buffer, "binary");
+
+    return `/output-${Date.now()}.mp3`; // Return the public URL path to the file
   } catch (error) {
     console.error("TTS Error:", error);
     return null;

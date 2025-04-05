@@ -28,6 +28,9 @@ import {
   Home,
 } from "lucide-react";
 import { PersonIcon } from "@radix-ui/react-icons";
+import { synthesizeSpeech } from "@/app/backend/tts-integration";
+import { formalizeText } from "@/app/backend/formalizeText";
+import { toast } from "sonner"; // Make sure you have this toast library installed
 
 export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -487,7 +490,7 @@ export default function OnboardingPage() {
         {/* Logo and header */}
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <PersonIcon className="text-indigo-400 h-8 w-auto" />
+            <PersonIcon className="text-indigo-600 dark:text-indigo-400 h-8 w-auto" />
             <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
               InAble
             </h1>

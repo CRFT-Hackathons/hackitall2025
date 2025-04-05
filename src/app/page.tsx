@@ -90,7 +90,7 @@ export default function Home() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <UserRound className="text-indigo-400 h-10 w-auto" />
+                <UserRound className="text-indigo-600 dark:text-indingo-400 h-10 w-auto" />
                 <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
                   InAble
                 </h1>
