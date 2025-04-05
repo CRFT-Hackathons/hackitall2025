@@ -1,7 +1,29 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Clock, Eye, EyeOff, Coffee, Bath, AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+
+// Custom hook for more accurate interval timing
+function useInterval(callback: () => void, delay: number | null) {
+  const savedCallback = useRef<() => void>();
+
+  // Remember the latest callback
+  useEffect(() => {
+    savedCallback.current = callback;
+  }, [callback]);
+
+  // Set up the interval
+  useEffect(() => {
+    function tick() {
+      savedCallback.current?.();
+    }
+    
+    if (delay !== null) {
+      const id = setInterval(tick, delay);
+      return () => clearInterval(id);
+    }
+  }, [delay]);
+}
 
 interface TimeRemainingProps {
   /**
@@ -35,8 +57,9 @@ export function TimeRemaining({
   const [breakType, setBreakType] = useState<"regular" | "bathroom" | null>(null);
   const [hasUsedRegularBreak, setHasUsedRegularBreak] = useState(false);
   const [hasUsedBathroomBreak, setHasUsedBathroomBreak] = useState(false);
-  const [pauseReason, setPauseReason] = useState("");
   const [breakStartTime, setBreakStartTime] = useState<number | null>(null);
+  const [remainingBreakTime, setRemainingBreakTime] = useState<number>(0);
+  const [breakProgress, setBreakProgress] = useState<number>(0);
 
   // Load saved state from localStorage on component mount
   useEffect(() => {
@@ -72,6 +95,12 @@ export function TimeRemaining({
         setBreakStartTime(breakStartTime);
         setShowBreakOverlay(true);
         setIsRunning(false);
+        
+        // Calculate remaining break time and progress
+        const elapsed = now - breakStartTime;
+        const remaining = Math.max(0, Math.floor((breakDuration - elapsed) / 1000));
+        setRemainingBreakTime(remaining);
+        setBreakProgress(elapsed / breakDuration);
       } else {
         // Break duration has passed, clear it
         localStorage.removeItem("breakType");
@@ -121,12 +150,10 @@ export function TimeRemaining({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialTime]);
   
-  // Main timer effect
-  useEffect(() => {
-    let timerId: NodeJS.Timeout | null = null;
-
-    if (isRunning && timeLeft > 0) {
-      timerId = setInterval(() => {
+  // Main timer effect using our custom useInterval hook
+  useInterval(
+    () => {
+      if (timeLeft > 0) {
         setTimeLeft((prevTime) => {
           const newTime = prevTime - 1;
           // Update localStorage with current time and update timestamp
@@ -134,25 +161,43 @@ export function TimeRemaining({
           localStorage.setItem("lastUpdateTime", Date.now().toString());
           return newTime;
         });
-      }, 1000);
-    } else if (timeLeft === 0) {
-      setIsRunning(false);
-      localStorage.setItem("isRunning", "false");
-      onTimeUp?.();
-    }
-
-    return () => {
-      if (timerId) {
-        clearInterval(timerId);
+      } else {
+        setIsRunning(false);
+        localStorage.setItem("isRunning", "false");
+        onTimeUp?.();
       }
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isRunning, timeLeft, onTimeUp]);
+    },
+    isRunning ? 1000 : null
+  );
   
   // Update isRunning in localStorage when it changes
   useEffect(() => {
     localStorage.setItem("isRunning", isRunning.toString());
   }, [isRunning]);
+
+  // Update break timer using our custom useInterval hook
+  useInterval(
+    () => {
+      if (!breakStartTime || !breakType) return;
+      
+      const breakDuration = breakType === "regular" ? 300000 : 120000; // 5 min or 2 min in ms
+      const now = Date.now();
+      const elapsedTime = now - breakStartTime;
+      
+      // Calculate remaining time in seconds
+      const remaining = Math.max(0, Math.floor((breakDuration - elapsedTime) / 1000));
+      setRemainingBreakTime(remaining);
+      
+      // Calculate progress (0 to 1)
+      const progress = Math.min(1, elapsedTime / breakDuration);
+      setBreakProgress(progress);
+      
+      if (elapsedTime >= breakDuration) {
+        endBreak();
+      }
+    },
+    breakStartTime ? 1000 : null
+  );
 
   // Format time as MM:SS
   const formatTime = (seconds: number) => {
@@ -171,7 +216,13 @@ export function TimeRemaining({
   const startBreak = (type: "regular" | "bathroom") => {
     setShowBreakOverlay(true);
     setBreakType(type);
-    setBreakStartTime(Date.now());
+    const now = Date.now();
+    setBreakStartTime(now);
+    
+    // Initialize break time values
+    const breakDuration = type === "regular" ? 300000 : 120000; // 5 min or 2 min in ms
+    setRemainingBreakTime(Math.floor(breakDuration / 1000));
+    setBreakProgress(0);
     
     // Mark break as used in state and localStorage
     if (type === "regular") {
@@ -185,7 +236,7 @@ export function TimeRemaining({
     // Pause the main timer while on break
     setIsRunning(false);
     localStorage.setItem("isRunning", "false");
-    localStorage.setItem("breakStartTime", Date.now().toString());
+    localStorage.setItem("breakStartTime", now.toString());
     localStorage.setItem("breakType", type);
   };
 
@@ -193,6 +244,8 @@ export function TimeRemaining({
     setShowBreakOverlay(false);
     setBreakType(null);
     setBreakStartTime(null);
+    setRemainingBreakTime(0);
+    setBreakProgress(0);
     
     // Resume the main timer
     setIsRunning(true);
@@ -200,24 +253,6 @@ export function TimeRemaining({
     localStorage.removeItem("breakStartTime");
     localStorage.removeItem("breakType");
   };
-  
-  // Update break timer display and end break when time is up
-  useEffect(() => {
-    if (!breakStartTime || !breakType) return;
-    
-    const breakDuration = breakType === "regular" ? 300000 : 120000; // 5 min or 2 min in ms
-    const breakInterval = setInterval(() => {
-      const now = Date.now();
-      const elapsedTime = now - breakStartTime;
-      
-      if (elapsedTime >= breakDuration) {
-        endBreak();
-      }
-    }, 1000);
-    
-    return () => clearInterval(breakInterval);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [breakStartTime, breakType]);
 
   return (
     <div className={`rounded-xl ${className}`}>
@@ -326,8 +361,7 @@ export function TimeRemaining({
                   strokeDashoffset={
                     46 *
                     (1 -
-                     (breakStartTime ? (Date.now() - breakStartTime) / 
-                       (breakType === "regular" ? 300000 : 120000) : 0))
+                     (breakStartTime ? breakProgress : 0))
                   }
                   className="transition-all duration-1000"
                 />
@@ -342,7 +376,7 @@ export function TimeRemaining({
                 : "We'll wait for you to return"}
             </p>
             <div className="text-4xl font-light mb-8 text-indigo-400">
-              {formatTime(breakStartTime ? Math.floor((Date.now() - breakStartTime) / 1000) : 0)}
+              {formatTime(remainingBreakTime)}
             </div>
 
             <div className="mb-6 flex items-center gap-2 px-5 py-3 bg-amber-900/20 border border-amber-800/30 rounded-lg text-amber-300 max-w-xs text-center">

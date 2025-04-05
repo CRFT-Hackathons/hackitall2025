@@ -6,13 +6,12 @@ import { motion, AnimatePresence } from "framer-motion"
 
 interface Message {
   id: string
-  role: "user1" | "user2"
+  role: "candidate"
   content: string
 }
 
-interface UserChatProps {
-  user1Name: string;
-  user2Name?: string;
+interface InterviewChatProps {
+  candidateName: string;
   title: string;
   className: string;
   messageClassName?: string;
@@ -22,20 +21,19 @@ interface UserChatProps {
   initialMessages?: Message[];
 }
 
-export function TwoPersonChat({
-  user1Name,
-  user2Name = "User 2",
+export function InterviewChat({
+  candidateName = "Candidate",
   title,
   className = "",
   messageClassName = "",
   inputClassName = "",
   buttonClassName = "",
-  placeholder = "Type your message...",
+  placeholder = "Type your response...",
   initialMessages = [],
-}: UserChatProps) {
+}: InterviewChatProps) {
   const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [input, setInput] = useState("")
-  const [currentUser, setCurrentUser] = useState<"user1" | "user2">("user1")
+  const [isTyping, setIsTyping] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [isMounted, setIsMounted] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
@@ -45,12 +43,12 @@ export function TwoPersonChat({
   const [bathroomTimeoutActive, setBathroomTimeoutActive] = useState(false)
   const [bathroomTimeLeft, setBathroomTimeLeft] = useState(120) // 2 minutes
 
-  // Scroll to bottom when messages change
+  // Scroll to bottom when messages change or when typing
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
     }
-  }, [messages])
+  }, [messages, input, isTyping])
 
   // Handle timeout countdown
   useEffect(() => {
@@ -87,6 +85,15 @@ export function TwoPersonChat({
   useEffect(() => {
     setIsMounted(true)
   }, [])
+  
+  // Set isTyping based on input state
+  useEffect(() => {
+    if (input.trim()) {
+      setIsTyping(true)
+    } else {
+      setIsTyping(false)
+    }
+  }, [input])
 
   const toggleRecording = () => {
     setIsRecording(!isRecording)
@@ -115,16 +122,21 @@ export function TwoPersonChat({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim() && !isPaused) {
-      // Add user message
-      const userMessage = {
+      // Add candidate message
+      const candidateMessage = {
         id: String(Date.now()),
-        role: currentUser,
+        role: "candidate",
         content: input.trim(),
       };
-      setMessages((prev) => [...prev, userMessage as Message]);
+      setMessages((prev) => [...prev, candidateMessage as Message]);
       setInput("");
-      setCurrentUser(currentUser === "user1" ? "user2" : "user1");
+      setIsTyping(false);
+      // No turn switching - always remain as the candidate
     }
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value);
   }
 
   if (!isMounted) {
@@ -137,7 +149,7 @@ export function TwoPersonChat({
       <div className="p-4 border-b border-gray-200 dark:border-gray-800">
         <h2 className="text-lg font-medium">{title}</h2>
         <div className="text-sm text-gray-500">
-          Current turn: {currentUser === "user1" ? user1Name : user2Name}
+          You are responding as: {candidateName}
         </div>
       </div>
 
@@ -146,25 +158,39 @@ export function TwoPersonChat({
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`flex ${message.role === "user1" ? "justify-end" : "justify-start"} ${messageClassName}`}
+            className={`flex justify-end ${messageClassName}`}
           >
             <div
-              className={`max-w-[80%] rounded-lg px-4 py-2 backdrop-blur-sm ${
-                message.role === "user1"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground dark:bg-gray-800/80"
-              }`}
+              className="max-w-[80%] rounded-lg px-4 py-2 backdrop-blur-sm bg-primary text-primary-foreground"
             >
               <div className="text-xs opacity-70 mb-1">
-                {message.role === "user1" ? user1Name : user2Name}
+                {candidateName}
               </div>
               {message.content}
             </div>
           </div>
         ))}
+        
+        {/* Real-time typing indicator */}
+        {isTyping && input.trim() && (
+          <div className={`flex justify-end ${messageClassName}`}>
+            <div className="max-w-[80%] rounded-lg px-4 py-2 backdrop-blur-sm bg-primary text-primary-foreground opacity-80">
+              <div className="text-xs opacity-70 mb-1">
+                {candidateName}
+              </div>
+              {input}
+              <motion.span
+                initial={{ opacity: 0 }}
+                animate={{ opacity: [0, 1, 0] }}
+                transition={{ repeat: Infinity, duration: 1.5 }}
+              >|</motion.span>
+            </div>
+          </div>
+        )}
+        
         {isRecording && (
-          <div className="flex justify-start">
-            <div className="max-w-[80%] rounded-lg px-4 py-2 bg-muted text-muted-foreground dark:bg-gray-800/80 flex items-center space-x-2">
+          <div className="flex justify-end">
+            <div className="max-w-[80%] rounded-lg px-4 py-2 bg-primary text-primary-foreground bg-opacity-80 flex items-center space-x-2">
               <div className="flex justify-center items-end h-5 gap-[2px]" aria-label="Audio visualization">
                 {[...Array(8)].map((_, i) => (
                   <motion.div
@@ -195,10 +221,10 @@ export function TwoPersonChat({
         <input
           type="text"
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={handleInputChange}
           placeholder={isPaused ? "Interview paused..." : placeholder}
-          className={`flex-1 px-4 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-background focus:outline-none focus:ring-2 focus:ring-primary ${inputClassName}`}
-          aria-label="Type your message"
+          className={`flex-1 px-4 py-2 rounded-md border-2 border-indigo-300 dark:border-indigo-700 bg-background focus:outline-none focus:ring-2 focus:ring-primary focus:border-indigo-500 dark:focus:border-indigo-500 ${inputClassName}`}
+          aria-label="Type your response"
           disabled={isPaused}
         />
         
@@ -232,41 +258,6 @@ export function TwoPersonChat({
           </div>
         )}
       </form>
-
-      {/* Controls */}
-      {/* <div className="flex flex-wrap gap-3 justify-between p-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 rounded-b-lg">
-        <button
-          onClick={togglePause}
-          disabled={timeoutActive || bathroomTimeoutActive}
-          className={`px-3 py-1.5 text-sm rounded-full flex items-center gap-1.5 transition-colors bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed`}
-          aria-label={isPaused ? "Resume interview" : "Pause interview"}
-        >
-          {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
-          <span>{isPaused ? "Resume" : "Pause"}</span>
-        </button>
-
-        <div className="flex gap-2">
-          <button
-            onClick={activateBathroomTimeout}
-            disabled={timeoutActive || bathroomTimeoutActive}
-            className={`px-3 py-1.5 text-sm rounded-full flex items-center gap-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-800/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
-            aria-label="Take a bathroom break"
-          >
-            <Coffee className="h-4 w-4" />
-            <span>Bathroom Break</span>
-          </button>
-
-          <button
-            onClick={activateTimeout}
-            disabled={timeoutActive || bathroomTimeoutActive}
-            className={`px-3 py-1.5 text-sm rounded-full flex items-center gap-1.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-800/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
-            aria-label="Take a break"
-          >
-            <Clock className="h-4 w-4" />
-            <span>Need a Break</span>
-          </button>
-        </div>
-      </div> */}
 
       {/* Timeout overlay */}
       <AnimatePresence>

@@ -6,7 +6,7 @@ import AccessibilityPanel from "@/components/accessibility-panel";
 import TimeDisplayButton from "@/components/time-display-button";
 import { TimeRemaining } from "@/components/time-remaining";
 import { Questionnaire } from "@/components/questionnaire";
-import { TwoPersonChat } from "@/components/interview-chat";
+import { InterviewChat } from "@/components/interview-chat";
 import { Pause, Mic, Clock, UserRound, Settings2 } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
@@ -176,9 +176,8 @@ export default function Home() {
 
                   <TabsContent value="chat" className="focus:outline-none">
                     <div className="p-6 rounded-xl bg-slate-50 dark:bg-[#1a1a24] border border-slate-100 dark:border-slate-700/50">
-                      <TwoPersonChat
-                        user1Name="Interviewer"
-                        user2Name="Candidate"
+                      <InterviewChat
+                        candidateName="Candidate"
                         title="Interview Chat"
                         className="h-[400px]"
                       />
