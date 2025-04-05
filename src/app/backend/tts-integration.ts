@@ -2,6 +2,8 @@
 
 import { TextToSpeechClient } from "@google-cloud/text-to-speech";
 import { writeFile } from "fs/promises";
+import { join } from "path";
+import { randomUUID } from "crypto";
 
 export async function synthesizeSpeech(
   text: string,
@@ -9,6 +11,8 @@ export async function synthesizeSpeech(
   speed: number
 ) {
   try {
+    console.log("TTS Request:", { text, languageCode, speed });
+
     const client = new TextToSpeechClient({
       credentials: {
         client_email: process.env.GOOGLE_CLIENT_EMAIL,
@@ -30,16 +34,29 @@ export async function synthesizeSpeech(
     });
 
     if (!response.audioContent) {
-      throw new Error("Failed to generate audio");
+      throw new Error("Failed to generate audio content");
     }
 
-    const publicDir = "./public";
-    const fileName = `output-${Date.now()}.mp3`;
-    const filePath = `${publicDir}/${fileName}`;
+    console.log("Audio content generated successfully");
 
+    // Generate a unique filename
+    const uniqueId = randomUUID();
+    const fileName = `speech-${uniqueId}.mp3`;
+
+    // Ensure we're using the correct public directory path
+    const publicDir = join(process.cwd(), "public");
+    const filePath = join(publicDir, fileName);
+
+    console.log("Writing audio file to:", filePath);
+
+    // Write the file
     await writeFile(filePath, response.audioContent as Buffer, "binary");
 
-    return `/output-${Date.now()}.mp3`; // Return the public URL path to the file
+    // Return the public URL path to the file
+    const publicUrl = `/${fileName}`;
+    console.log("Generated public URL:", publicUrl);
+
+    return publicUrl;
   } catch (error) {
     console.error("TTS Error:", error);
     return null;
