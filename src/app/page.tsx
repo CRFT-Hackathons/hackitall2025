@@ -8,11 +8,8 @@ import { TimeRemaining } from "@/components/time-remaining";
 import { Questionnaire, AnswerData } from "@/components/questionnaire";
 import { InterviewChat } from "@/components/interview-chat";
 import {
-  Pause,
-  Mic,
   Clock,
   UserRound,
-  Settings2,
   MessageSquare,
   Book,
   Accessibility,
@@ -41,6 +38,7 @@ const allInterviewQuestions = [
     required: true,
     image:
       "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    requireVideoAns: true,
   },
   {
     id: "conflict_resolution",
@@ -56,6 +54,7 @@ const allInterviewQuestions = [
     required: true,
     image:
       "https://images.unsplash.com/photo-1646255911174-3172baff41e2?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    requireVideoAns: false,
   },
   {
     id: "problem_solving",
@@ -71,6 +70,7 @@ const allInterviewQuestions = [
     required: true,
     image:
       "https://images.unsplash.com/photo-1587093336587-eeca6cb17cf2?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    requireVideoAns: true,
   },
   {
     id: "communication",
@@ -86,6 +86,7 @@ const allInterviewQuestions = [
     required: true,
     image:
       "https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    requireVideoAns: false,
   },
   {
     id: "adaptability",
@@ -101,6 +102,7 @@ const allInterviewQuestions = [
     required: true,
     image:
       "https://images.unsplash.com/photo-1460530628918-ebce15e46c1f?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    requireVideoAns: true,
   },
   {
     id: "time_management",
@@ -118,6 +120,7 @@ const allInterviewQuestions = [
     required: true,
     image:
       "https://images.unsplash.com/photo-1506452819137-0422416856b8?q=80&w=1973&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    requireVideoAns: false,
   },
   {
     id: "ethical_dilemma",
@@ -133,6 +136,7 @@ const allInterviewQuestions = [
     required: true,
     image:
       "https://images.unsplash.com/photo-1695720247431-2790feab65c0?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    requireVideoAns: false,
   },
   {
     id: "creativity",
@@ -149,6 +153,7 @@ const allInterviewQuestions = [
     required: true,
     image:
       "https://images.unsplash.com/photo-1613579917953-d35e6b72d32b?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    requireVideoAns: true,
   },
   {
     id: "goals",
@@ -163,6 +168,7 @@ const allInterviewQuestions = [
     required: true,
     image:
       "https://images.unsplash.com/photo-1506784926709-22f1ec395907?q=80&w=2068&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    requireVideoAns: true,
   },
   {
     id: "teamwork",
@@ -178,6 +184,7 @@ const allInterviewQuestions = [
     required: true,
     image:
       "https://images.unsplash.com/photo-1557426272-fc759fdf7a8d?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    requireVideoAns: true,
   },
 ];
 
