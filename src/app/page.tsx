@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import WhiteboardModal from "~/components/white-board-modal";
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 
 // Sample questions for the interview
 const allInterviewQuestions = [
@@ -429,7 +429,7 @@ function HomeContent() {
                         <span className="hidden sm:inline">Chat</span>
                       </TabsTrigger>
                     </TabsList>
-                    
+
                     <TabsContent
                       value="questions"
                       className="space-y-4 focus:outline-none"
@@ -450,11 +450,14 @@ function HomeContent() {
                             Interview Complete!
                           </h2>
                           <p className="text-slate-600 dark:text-slate-400 text-center max-w-md">
-                            Thank you for completing your interview. Your responses have been recorded.
+                            Thank you for completing your interview. Your
+                            responses have been recorded.
                           </p>
                           <div className="flex gap-4 mt-6">
                             <Button
-                              onClick={() => window.location.href = '/feedback'}
+                              onClick={() =>
+                                (window.location.href = "/feedback")
+                              }
                               className="bg-indigo-600 hover:bg-indigo-700 text-white px-6"
                             >
                               Provide Feedback
@@ -463,7 +466,7 @@ function HomeContent() {
                         </div>
                       )}
                     </TabsContent>
-                    
+
                     <TabsContent
                       value="instructions"
                       className="focus:outline-none"
@@ -472,66 +475,84 @@ function HomeContent() {
                         <h3 className="text-2xl font-medium mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
                           Interview Instructions
                         </h3>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                           <div className="p-6 rounded-xl bg-white/80 dark:bg-slate-800/50 border border-indigo-100 dark:border-indigo-800/30 shadow-sm transform transition-transform duration-300 hover:scale-[1.02]">
                             <div className="flex items-center mb-4">
                               <div className="rounded-full p-3 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 mr-4">
                                 <Clock className="h-5 w-5" />
                               </div>
-                              <h4 className="font-medium text-lg">Take Your Time</h4>
+                              <h4 className="font-medium text-lg">
+                                Take Your Time
+                              </h4>
                             </div>
                             <p className="text-slate-600 dark:text-slate-300 ml-14">
-                              Answer each question thoroughly, thinking about your past experiences and how they demonstrate your skills.
+                              Answer each question thoroughly, thinking about
+                              your past experiences and how they demonstrate
+                              your skills.
                             </p>
                           </div>
-                          
+
                           <div className="p-6 rounded-xl bg-white/80 dark:bg-slate-800/50 border border-indigo-100 dark:border-indigo-800/30 shadow-sm transform transition-transform duration-300 hover:scale-[1.02]">
                             <div className="flex items-center mb-4">
                               <div className="rounded-full p-3 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 mr-4">
                                 <Accessibility className="h-5 w-5" />
                               </div>
-                              <h4 className="font-medium text-lg">Accessibility Tools</h4>
+                              <h4 className="font-medium text-lg">
+                                Accessibility Tools
+                              </h4>
                             </div>
                             <p className="text-slate-600 dark:text-slate-300 ml-14">
-                              Use the accessibility panel to customize your experience with font size, contrast settings, and more.
+                              Use the accessibility panel to customize your
+                              experience with font size, contrast settings, and
+                              more.
                             </p>
                           </div>
-                          
+
                           <div className="p-6 rounded-xl bg-white/80 dark:bg-slate-800/50 border border-indigo-100 dark:border-indigo-800/30 shadow-sm transform transition-transform duration-300 hover:scale-[1.02]">
                             <div className="flex items-center mb-4">
                               <div className="rounded-full p-3 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 mr-4">
                                 <Coffee className="h-5 w-5" />
                               </div>
-                              <h4 className="font-medium text-lg">Take Breaks</h4>
+                              <h4 className="font-medium text-lg">
+                                Take Breaks
+                              </h4>
                             </div>
                             <p className="text-slate-600 dark:text-slate-300 ml-14">
-                              If you need a moment to collect your thoughts, use the break button in the timer section. You can take one break during the interview.
+                              If you need a moment to collect your thoughts, use
+                              the break button in the timer section. You can
+                              take one break during the interview.
                             </p>
                           </div>
-                          
+
                           <div className="p-6 rounded-xl bg-white/80 dark:bg-slate-800/50 border border-indigo-100 dark:border-indigo-800/30 shadow-sm transform transition-transform duration-300 hover:scale-[1.02]">
                             <div className="flex items-center mb-4">
                               <div className="rounded-full p-3 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 mr-4">
                                 <Save className="h-5 w-5" />
                               </div>
-                              <h4 className="font-medium text-lg">Auto-saving</h4>
+                              <h4 className="font-medium text-lg">
+                                Auto-saving
+                              </h4>
                             </div>
                             <p className="text-slate-600 dark:text-slate-300 ml-14">
-                              Your answers are automatically saved as you type. If you need to leave and come back, your progress will be preserved.
+                              Your answers are automatically saved as you type.
+                              If you need to leave and come back, your progress
+                              will be preserved.
                             </p>
                           </div>
                         </div>
-                        
+
                         <div className="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 flex items-center gap-3">
                           <AlertTriangle className="h-5 w-5 text-amber-500 dark:text-amber-400 shrink-0" />
                           <p className="text-sm text-amber-800 dark:text-amber-300">
-                            Remember to prepare a professional environment before starting video recordings. Ensure good lighting and a clean background.
+                            Remember to prepare a professional environment
+                            before starting video recordings. Ensure good
+                            lighting and a clean background.
                           </p>
                         </div>
                       </div>
                     </TabsContent>
-                    
+
                     <TabsContent value="chat" className="focus:outline-none">
                       <InterviewChat
                         candidateName="Candidate"
@@ -542,7 +563,9 @@ function HomeContent() {
                   </Tabs>
                 ) : (
                   <div className="flex justify-center py-10">
-                    <div className="animate-pulse text-indigo-600 dark:text-indigo-400">Loading interview content...</div>
+                    <div className="animate-pulse text-indigo-600 dark:text-indigo-400">
+                      Loading interview content...
+                    </div>
                   </div>
                 )}
               </div>
@@ -656,23 +679,27 @@ function HomeContent() {
 }
 
 // Create a dynamic version of HomeContent with SSR disabled
-const DynamicHomeContent = dynamic(() => Promise.resolve(HomeContent), { ssr: false });
+const DynamicHomeContent = dynamic(() => Promise.resolve(HomeContent), {
+  ssr: false,
+});
 
 // Wrapper component to ensure client-side only rendering
 export default function Home() {
   const [mounted, setMounted] = useState(false);
-  
+
   useEffect(() => {
     setMounted(true);
   }, []);
-  
+
   if (!mounted) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f8f9fa] dark:bg-[#0f0f13]">
-        <div className="animate-pulse text-indigo-600 dark:text-indigo-400">Loading interview platform...</div>
+        <div className="animate-pulse text-indigo-600 dark:text-indigo-400">
+          Loading interview platform...
+        </div>
       </div>
     );
   }
-  
+
   return <DynamicHomeContent />;
 }

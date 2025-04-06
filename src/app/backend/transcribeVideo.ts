@@ -19,7 +19,7 @@ async function convertVideoToAudio(videoBlob: Blob): Promise<Blob> {
   await ffmpeg.writeFile(inputFileName, await fetchFile(videoBlob));
 
   // Convert the video to audio (MP3 format)
-  await ffmpeg.exec(['-i', inputFileName, outputFileName]);
+  await ffmpeg.exec(["-i", inputFileName, outputFileName]);
 
   // Read the output audio file from FFmpeg's filesystem
   const audioData = await ffmpeg.readFile(outputFileName);
