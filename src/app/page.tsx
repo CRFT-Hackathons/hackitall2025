@@ -25,96 +25,152 @@ const allInterviewQuestions = [
     title: "Leadership Experience",
     description:
       "Describe a situation where you had to lead a team through a challenging project. What leadership style did you use, how did you motivate your team members, and what was the outcome?",
+    descriptionHighlight: `<p>
+      Describe a situation where you had to <mark>lead a team through a challenging project</mark>. 
+      What <mark>leadership style</mark> did you use, 
+      how did you <mark>motivate your team members</mark>, 
+      and what was the <mark>outcome</mark>?
+    </p>`,
     required: true,
-    requireVideoAns: true,
     image:
-      "https://media.istockphoto.com/id/1457075312/vector/personal-development-plan-for-career-success-build-specialist-skill-or-competence-to.jpg",
+      "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
   {
     id: "conflict_resolution",
     title: "Conflict Resolution",
     description:
       "Tell us about a time when you faced a significant conflict in a team or workplace. How did you approach the situation, what steps did you take to resolve it, and what was the outcome?",
+    descriptionHighlight: `<p>
+      Tell us about a time when you <mark>faced a significant conflict</mark> in a team or workplace. 
+      How did you <mark>approach the situation</mark>, 
+      what <mark>steps did you take to resolve it</mark>, 
+      and what was the <mark>outcome</mark>?
+    </p>`,
     required: true,
-    requireVideoAns: true,
-    image: "https://www.thebalancemoney.com/conflict-resolution-skills-2063739",
+    image:
+      "https://images.unsplash.com/photo-1646255911174-3172baff41e2?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
   {
     id: "problem_solving",
     title: "Problem-Solving Approach",
     description:
       "Explain your approach to solving complex problems. Describe a specific example where you used critical thinking and analytical skills to overcome a difficult challenge in your work or studies.",
+    descriptionHighlight: `<p>
+      Explain your <mark>approach to solving complex problems</mark>. 
+      Describe a specific example where you used 
+      <mark>critical thinking and analytical skills</mark> 
+      to <mark>overcome a difficult challenge</mark> in your work or studies.
+    </p>`,
     required: true,
-    requireVideoAns: false,
-    image: "https://asana.com/resources/problem-solving-techniques",
+    image:
+      "https://images.unsplash.com/photo-1587093336587-eeca6cb17cf2?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
   {
     id: "communication",
     title: "Communication Skills",
     description:
       "Describe a situation where effective communication was crucial to success. What communication techniques did you use, what challenges did you face, and how did you ensure your message was understood?",
+    descriptionHighlight: `<p>
+      Describe a situation where <mark>effective communication was crucial to success</mark>. 
+      What <mark>communication techniques</mark> did you use, 
+      what <mark>challenges</mark> did you face, 
+      and how did you <mark>ensure your message was understood</mark>?
+    </p>`,
     required: true,
-    requireVideoAns: false,
     image:
-      "https://www.indeed.com/career-advice/career-development/communication-process",
+      "https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
   {
     id: "adaptability",
     title: "Adaptability",
     description:
       "Tell us about a time when you had to adapt to a significant change or unexpected situation. How did you handle the transition, what strategies did you use to remain effective, and what did you learn?",
+    descriptionHighlight: `<p>
+      Tell us about a time when you had to <mark>adapt to a significant change</mark> or unexpected situation. 
+      How did you <mark>handle the transition</mark>, 
+      what <mark>strategies</mark> did you use to remain effective, 
+      and what did you <mark>learn</mark>?
+    </p>`,
     required: true,
-    requireVideoAns: false,
-    image: "https://www.betterup.com/blog/adaptability-skills",
+    image:
+      "https://images.unsplash.com/photo-1460530628918-ebce15e46c1f?q=80&w=2069&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
   {
     id: "time_management",
     title: "Time Management",
     description:
       "Describe how you organize your work and manage competing priorities. Give an example of a time when you had multiple deadlines to meet and explain your approach to ensuring all tasks were completed effectively.",
+    descriptionHighlight: `<p>
+      Describe how you <mark>organize your work</mark> and 
+      <mark>manage competing priorities</mark>. 
+      Give an example of a time when you had 
+      <mark>multiple deadlines</mark> to meet 
+      and explain your approach to 
+      <mark>ensuring all tasks were completed effectively</mark>.
+    </p>`,
     required: true,
-    requireVideoAns: true,
-    image: "https://www.mindtools.com/pages/article/newHTE_00.htm",
+    image:
+      "https://images.unsplash.com/photo-1506452819137-0422416856b8?q=80&w=1973&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
   {
     id: "ethical_dilemma",
     title: "Ethical Decision Making",
     description:
       "Describe an ethical dilemma you faced in your professional or academic life. How did you approach the situation, what factors did you consider, and how did you ultimately resolve it?",
+    descriptionHighlight: `<p>
+      Describe an <mark>ethical dilemma</mark> you faced in your professional or academic life. 
+      How did you <mark>approach the situation</mark>, 
+      what <mark>factors</mark> did you consider, 
+      and how did you <mark>ultimately resolve it</mark>?
+    </p>`,
     required: true,
-    requireVideoAns: true,
-
-    image: "https://ethicsunwrapped.utexas.edu/glossary/ethical-dilemma",
+    image:
+      "https://images.unsplash.com/photo-1695720247431-2790feab65c0?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
   {
     id: "creativity",
     title: "Creative Thinking",
     description:
       "Give an example of a time when you used creative thinking to solve a problem or improve a process. What was your inspiration, how did you implement your idea, and what was the impact?",
+    descriptionHighlight: `<p>
+      Give an example of a time when you used 
+      <mark>creative thinking to solve a problem</mark> or improve a process. 
+      What was your <mark>inspiration</mark>, 
+      how did you <mark>implement your idea</mark>, 
+      and what was the <mark>impact</mark>?
+    </p>`,
     required: true,
-    requireVideoAns: true,
-
-    image: "https://www.creativethinking.net/what-is-creative-thinking/",
+    image:
+      "https://images.unsplash.com/photo-1613579917953-d35e6b72d32b?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
   {
     id: "goals",
     title: "Career Goals",
     description:
-      "What are your short-term</h> and long-term career goals? How have your past experiences shaped these goals, and what specific steps are you taking to achieve them?",
+      "What are your short-term and long-term career goals? How have your past experiences shaped these goals, and what specific steps are you taking to achieve them?",
+    descriptionHighlight: `<p>
+      What are your <mark>short-term and long-term career goals</mark>? 
+      How have your <mark>past experiences shaped these goals</mark>, 
+      and what <mark>specific steps</mark> are you taking to achieve them?
+    </p>`,
     required: true,
-    requireVideoAns: true,
-
-    image: "https://www.thebalancemoney.com/career-planning-4161927",
+    image:
+      "https://images.unsplash.com/photo-1506784926709-22f1ec395907?q=80&w=2068&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
   {
     id: "teamwork",
     title: "Team Collaboration",
     description:
       "Describe a successful team project you worked on. What was your specific role, how did you contribute to the team's success, and what did you learn about effective collaboration?",
+    descriptionHighlight: `<p>
+      Describe a <mark>successful team project</mark> you worked on. 
+      What was your <mark>specific role</mark>, 
+      how did you <mark>contribute to the team's success</mark>, 
+      and what did you learn about <mark>effective collaboration</mark>?
+    </p>`,
     required: true,
-    requireVideoAns: true,
-
-    image: "https://www.atlassian.com/blog/teamwork",
+    image:
+      "https://images.unsplash.com/photo-1557426272-fc759fdf7a8d?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
 ];
 

@@ -48,6 +48,7 @@ export default function AccessibilityPanel() {
   const [eyeTracking, setEyeTracking] = useState(false);
   const [voiceCommands, setVoiceCommands] = useState(false);
   const [simplifiedInterface, setSimplifiedInterface] = useState(false);
+  const [isHighlight, setIsHighlight] = useState(false);
 
   // Load settings from localStorage on component mount
   useEffect(() => {
@@ -74,6 +75,11 @@ export default function AccessibilityPanel() {
       const savedFontSize = localStorage.getItem("fontSize");
       if (savedFontSize) {
         setFontSize(parseInt(savedFontSize, 10));
+      }
+
+      const savedHighlight = localStorage.getItem("isHighlight");
+      if (savedHighlight === "true") {
+        setIsHighlight(true);
       }
 
       // Load speech rate
@@ -271,6 +277,7 @@ export default function AccessibilityPanel() {
     setEyeTracking(false);
     setVoiceCommands(false);
     setSimplifiedInterface(false);
+    setIsHighlight(false);
 
     // Clear the applied styles
     document.body.style.fontFamily = "";
@@ -299,6 +306,7 @@ export default function AccessibilityPanel() {
     localStorage.removeItem("eyeTracking");
     localStorage.removeItem("voiceCommands");
     localStorage.removeItem("simplifiedInterface");
+    localStorage.removeItem("isHighlight");
 
     toast("Settings reset!", {
       description: "Your settings have been reset to defaults.",
@@ -399,6 +407,22 @@ export default function AccessibilityPanel() {
                   value={[fontSize]}
                   onValueChange={(value) => setFontSize(value[0])}
                   className="slider-track [&>span]:slider-range [&>span>span]:slider-thumb"
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <Label htmlFor="highlightMode" className="flex items-center">
+                  <div className="w-1 h-4 bg-indigo-500 dark:bg-indigo-400 mr-2 rounded-full"></div>
+                  Highlight Keywords
+                </Label>
+                <Switch
+                  id="highlightMode"
+                  checked={isHighlight}
+                  onCheckedChange={(checked) => {
+                    setIsHighlight(checked);
+                    localStorage.setItem("isHighlight", checked.toString());
+                  }}
+                  className="data-[state=checked]:bg-indigo-500 dark:data-[state=checked]:bg-indigo-600"
                 />
               </div>
 

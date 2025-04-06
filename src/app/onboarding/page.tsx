@@ -29,9 +29,6 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { PersonIcon } from "@radix-ui/react-icons";
-import { synthesizeSpeech } from "@/app/backend/tts-integration";
-import { formalizeText } from "@/app/backend/formalizeText";
-import { toast } from "sonner"; // Make sure you have this toast library installed
 
 export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -52,6 +49,7 @@ export default function OnboardingPage() {
   const [eyeTracking, setEyeTracking] = useState(false);
   const [voiceCommands, setVoiceCommands] = useState(false);
   const [simplifiedInterface, setSimplifiedInterface] = useState(false);
+  const [isHighlight, setIsHighlight] = useState(false);
 
   // Load settings from localStorage if they exist
   useEffect(() => {
@@ -70,6 +68,7 @@ export default function OnboardingPage() {
       "simplifiedInterface"
     );
     const savedProfanityFilter = localStorage.getItem("useProfanityFilter");
+    const savedIsHighlight = localStorage.getItem("isHighlight");
 
     if (savedFontSize) setFontSize(parseInt(savedFontSize));
     if (savedUseDyslexicFont)
@@ -89,6 +88,7 @@ export default function OnboardingPage() {
       setSimplifiedInterface(savedSimplifiedInterface === "true");
     if (savedProfanityFilter)
       setUseProfanityFilter(savedProfanityFilter === "true");
+    if (savedIsHighlight) setIsHighlight(savedIsHighlight === "true");
   }, []);
 
   // Apply font size to the document
@@ -111,6 +111,7 @@ export default function OnboardingPage() {
     localStorage.setItem("voiceCommands", voiceCommands.toString());
     localStorage.setItem("simplifiedInterface", simplifiedInterface.toString());
     localStorage.setItem("useProfanityFilter", useProfanityFilter.toString());
+    localStorage.setItem("isHighlight", isHighlight.toString());
 
     // Apply dyslexic font if enabled
     if (useDyslexicFont) {
@@ -214,6 +215,19 @@ export default function OnboardingPage() {
                 value={[fontSize]}
                 onValueChange={(value) => setFontSize(value[0])}
                 className="slider-track [&>span]:slider-range [&>span>span]:slider-thumb"
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <Label htmlFor="highlightKeywords" className="flex items-center">
+                <div className="w-1 h-4 bg-indigo-500 dark:bg-indigo-400 mr-2 rounded-full"></div>
+                Highlight Keywords
+              </Label>
+              <Switch
+                id="highlightKeywords"
+                checked={isHighlight}
+                onCheckedChange={setIsHighlight}
+                className="data-[state=checked]:bg-indigo-500 dark:data-[state=checked]:bg-indigo-600"
               />
             </div>
 
