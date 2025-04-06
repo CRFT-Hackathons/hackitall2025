@@ -413,7 +413,10 @@ export default function AccessibilityPanel() {
               <div className="flex items-center justify-between">
                 <Label htmlFor="highlightMode" className="flex items-center">
                   <div className="w-1 h-4 bg-indigo-500 dark:bg-indigo-400 mr-2 rounded-full"></div>
-                  Highlight Keywords
+                  Highlight Key Terms
+                  <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                    Emphasizes important concepts in questions
+                  </span>
                 </Label>
                 <Switch
                   id="highlightMode"
@@ -421,9 +424,40 @@ export default function AccessibilityPanel() {
                   onCheckedChange={(checked) => {
                     setIsHighlight(checked);
                     localStorage.setItem("isHighlight", checked.toString());
+                    
+                    // Dispatch a custom event that other components can listen for
+                    if (typeof window !== 'undefined') {
+                      const event = new CustomEvent('highlightingChanged', { detail: { isHighlight: checked } });
+                      window.dispatchEvent(event);
+                    }
+                    
+                    // Display toast with meaningful message
+                    toast.success(
+                      checked 
+                        ? "Key terms highlighting enabled" 
+                        : "Key terms highlighting disabled", 
+                      {
+                        description: checked
+                          ? "Important terms will be highlighted to improve focus"
+                          : "Question text will be displayed without highlighting"
+                      }
+                    );
                   }}
                   className="data-[state=checked]:bg-indigo-500 dark:data-[state=checked]:bg-indigo-600"
+                  aria-label={isHighlight ? "Disable key terms highlighting" : "Enable key terms highlighting"}
+                  title={isHighlight ? "Turn off highlighting of key terms in questions" : "Highlight important terms in questions to improve focus"}
                 />
+              </div>
+              
+              {/* Information box about key term highlighting benefits */}
+              <div className="p-3 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 text-sm text-indigo-700 dark:text-indigo-300 mt-2">
+                <h4 className="font-medium mb-1">Why highlight key terms?</h4>
+                <ul className="space-y-1 list-disc pl-4 text-xs">
+                  <li>Improves focus for users with attention deficits</li>
+                  <li>Helps identify important concepts in complex questions</li>
+                  <li>Makes interview preparation more effective</li>
+                  <li>Particularly useful for cognitive accessibility needs</li>
+                </ul>
               </div>
 
               <div className="flex items-center justify-between">

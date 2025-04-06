@@ -250,6 +250,22 @@ export default function Home() {
       ? Math.round((currentQuestionIndex / totalQuestions) * 100)
       : 0;
 
+  // Listen for highlighting changes from accessibility panel
+  useEffect(() => {
+    if (isClient) {
+      const handleHighlightingChange = () => {
+        // Force refresh questions to trigger highlighting update
+        const questionsCopy = [...questions];
+        setQuestions(questionsCopy);
+      };
+      
+      window.addEventListener('highlightingChanged', handleHighlightingChange);
+      return () => {
+        window.removeEventListener('highlightingChanged', handleHighlightingChange);
+      };
+    }
+  }, [isClient, questions]);
+
   // Optimized with useCallback and fixed the type to match what Questionnaire sends
   const handleQuestionAnswered = useCallback(
     (id: string | number, answer: AnswerData) => {
