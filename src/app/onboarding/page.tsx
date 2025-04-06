@@ -27,6 +27,7 @@ import {
   ChevronRight,
   Home,
   ArrowRight,
+  Shield,
 } from "lucide-react";
 import { PersonIcon } from "@radix-ui/react-icons";
 
@@ -169,6 +170,37 @@ export default function OnboardingPage() {
             We'll guide you through setting up accessibility features to make
             your interview experience more comfortable and effective.
           </p>
+          
+          {/* GDPR Compliance Disclaimer - More compact design with Learn More button */}
+          <div className="w-full max-w-lg mx-auto">
+            <div className="p-4 rounded-lg bg-gradient-to-br from-sky-50/80 to-indigo-50/80 dark:from-slate-800/40 dark:to-indigo-900/20 border border-sky-100/50 dark:border-indigo-800/20 shadow-sm">
+              <div className="flex gap-3">
+                <div className="rounded-full p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 shrink-0 h-8 w-8 flex items-center justify-center">
+                  <Shield className="h-4 w-4" />
+                </div>
+                <div className="space-y-2 flex-1">
+                  <h3 className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                    Data Privacy & Protection
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">
+                    By continuing, you agree that your interview data will be processed in accordance with GDPR. Your accessibility preferences are stored locally on your device.
+                  </p>
+                  <div className="flex justify-between items-center pt-1 text-xs">
+                    <button 
+                      className="text-blue-600 dark:text-blue-400 hover:underline font-medium flex items-center"
+                      onClick={() => window.open('/privacy', '_blank')}
+                    >
+                      Learn more
+                      <ChevronRight className="h-3 w-3 ml-1" />
+                    </button>
+                    <span className="text-slate-500 dark:text-slate-400">
+                      <span className="text-blue-600 dark:text-blue-400 cursor-pointer hover:underline">Terms</span> & <span className="text-blue-600 dark:text-blue-400 cursor-pointer hover:underline">Privacy</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       ),
     },
