@@ -1,33 +1,54 @@
-"use client";
+"use client"
 
-import { useState, useRef, useEffect } from "react";
-import {
-  Send,
-  Loader2,
-  Mic,
-  MicOff,
-  Pause,
-  Play,
-  Clock,
-  Coffee,
-} from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import type React from "react"
+
+import { useState, useRef, useEffect } from "react"
+import { Send, Mic, MicOff, Pause, Clock, Coffee } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 
 interface Message {
-  id: string;
-  role: "candidate";
-  content: string;
+  id: string
+  role: "candidate" | "assistant"
+  content: string
 }
+const defaultInitialMessages: Message[] = [
+  {
+    id: "1",
+    role: "assistant",
+    content: "Hello! Do you have any difficulties using the platform that I can help with?",
+  },
+  {
+    id: "2",
+    role: "candidate",
+    content: "Yeah, some parts of the platform seem really slow today.",
+  },
+  {
+    id: "3",
+    role: "assistant",
+    content: "Thanks for letting me know. Could you specify which part of the platform is slow or unresponsive?",
+  },
+  {
+    id: "4",
+    role: "candidate",
+    content: "Mainly the accessibilty menu and the speech-to-text. It takes a while to load or doesn’t load at all sometimes.",
+  },
+  {
+    id: "5",
+    role: "assistant",
+    content: "I understand. Are you seeing any error messages, or is it just the loading time that’s affected?",
+  },
+]
+
 
 interface InterviewChatProps {
-  candidateName: string;
-  title: string;
-  className: string;
-  messageClassName?: string;
-  inputClassName?: string;
-  buttonClassName?: string;
-  placeholder?: string;
-  initialMessages?: Message[];
+  candidateName: string
+  title: string
+  className: string
+  messageClassName?: string
+  inputClassName?: string
+  buttonClassName?: string
+  placeholder?: string
+  initialMessages?: Message[]
 }
 
 export function InterviewChat({
@@ -38,118 +59,127 @@ export function InterviewChat({
   inputClassName = "",
   buttonClassName = "",
   placeholder = "Type your response...",
-  initialMessages = [],
+  initialMessages = defaultInitialMessages,
 }: InterviewChatProps) {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
-  const [input, setInput] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [isMounted, setIsMounted] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const [timeoutActive, setTimeoutActive] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
-  const [bathroomTimeoutActive, setBathroomTimeoutActive] = useState(false);
-  const [bathroomTimeLeft, setBathroomTimeLeft] = useState(120); // 2 minutes
+  const [messages, setMessages] = useState<Message[]>(initialMessages)
+  const [input, setInput] = useState("")
+  const [isTyping, setIsTyping] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [isMounted, setIsMounted] = useState(false)
+  const [isRecording, setIsRecording] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
+  const [timeoutActive, setTimeoutActive] = useState(false)
+  const [timeLeft, setTimeLeft] = useState(300) // 5 minutes
+  const [bathroomTimeoutActive, setBathroomTimeoutActive] = useState(false)
+  const [bathroomTimeLeft, setBathroomTimeLeft] = useState(120) // 2 minutes
 
   // Scroll to bottom when messages change or when typing
   useEffect(() => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" })
     }
-  }, [messages, input, isTyping]);
+  }, [messages, input, isTyping])
 
   // Handle timeout countdown
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    let bathroomTimer: NodeJS.Timeout;
+    let timer: NodeJS.Timeout
+    let bathroomTimer: NodeJS.Timeout
 
     if (timeoutActive && timeLeft > 0) {
       timer = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
+        setTimeLeft((prev) => prev - 1)
+      }, 1000)
     } else if (timeLeft === 0) {
-      setTimeoutActive(false);
-      setIsPaused(false);
+      setTimeoutActive(false)
+      setIsPaused(false)
       // Could add toast notification here
     }
 
     if (bathroomTimeoutActive && bathroomTimeLeft > 0) {
       bathroomTimer = setInterval(() => {
-        setBathroomTimeLeft((prev) => prev - 1);
-      }, 1000);
+        setBathroomTimeLeft((prev) => prev - 1)
+      }, 1000)
     } else if (bathroomTimeLeft === 0) {
-      setBathroomTimeoutActive(false);
-      setIsPaused(false);
+      setBathroomTimeoutActive(false)
+      setIsPaused(false)
       // Could add toast notification here
     }
 
     return () => {
-      clearInterval(timer);
-      clearInterval(bathroomTimer);
-    };
-  }, [timeoutActive, timeLeft, bathroomTimeoutActive, bathroomTimeLeft]);
+      clearInterval(timer)
+      clearInterval(bathroomTimer)
+    }
+  }, [timeoutActive, timeLeft, bathroomTimeoutActive, bathroomTimeLeft])
 
   // Prevent hydration issues
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
+    setIsMounted(true)
+  }, [])
 
   // Set isTyping based on input state
   useEffect(() => {
     if (input.trim()) {
-      setIsTyping(true);
+      setIsTyping(true)
     } else {
-      setIsTyping(false);
+      setIsTyping(false)
     }
-  }, [input]);
+  }, [input])
 
   const toggleRecording = () => {
-    setIsRecording(!isRecording);
-  };
+    setIsRecording(!isRecording)
+  }
 
   const togglePause = () => {
-    setIsPaused(!isPaused);
-  };
+    setIsPaused(!isPaused)
+  }
 
   const activateTimeout = () => {
-    setTimeoutActive(true);
-    setIsPaused(true);
-  };
+    setTimeoutActive(true)
+    setIsPaused(true)
+  }
 
   const activateBathroomTimeout = () => {
-    setBathroomTimeoutActive(true);
-    setIsPaused(true);
-  };
+    setBathroomTimeoutActive(true)
+    setIsPaused(true)
+  }
 
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
-  };
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs < 10 ? "0" : ""}${secs}`
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     if (input.trim() && !isPaused) {
       // Add candidate message
       const candidateMessage = {
         id: String(Date.now()),
         role: "candidate",
         content: input.trim(),
-      };
-      setMessages((prev) => [...prev, candidateMessage as Message]);
-      setInput("");
-      setIsTyping(false);
-      // No turn switching - always remain as the candidate
+      }
+      setMessages((prev:any) => [...prev, candidateMessage])
+      setInput("")
+      setIsTyping(false)
+
+      // Simulate assistant response after a short delay
+      setTimeout(() => {
+        const assistantMessage = {
+          id: String(Date.now() + 1),
+          role: "assistant",
+          content: "Thank you for your response. That's very insightful! Let's move on to the next question...",
+        }
+        setMessages((prev:any) => [...prev, assistantMessage])
+      }, 1500)
     }
-  };
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInput(e.target.value);
-  };
+    setInput(e.target.value)
+  }
 
   if (!isMounted) {
-    return null;
+    return null
   }
 
   return (
@@ -159,9 +189,7 @@ export function InterviewChat({
       {/* Header */}
       <div className="p-4 border-b border-gray-200 dark:border-gray-800">
         <h2 className="text-lg font-medium">{title}</h2>
-        <div className="text-sm text-gray-500">
-          You are responding as: {candidateName}
-        </div>
+        <div className="text-sm text-gray-500">You are responding as: {candidateName}</div>
       </div>
 
       {/* Messages */}
@@ -169,10 +197,18 @@ export function InterviewChat({
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`flex justify-end ${messageClassName}`}
+            className={`flex ${message.role === "candidate" ? "justify-end" : "justify-start"} ${messageClassName}`}
           >
-            <div className="max-w-[80%] rounded-lg px-4 py-2 backdrop-blur-sm bg-primary text-primary-foreground">
-              <div className="text-xs opacity-70 mb-1">{candidateName}</div>
+            <div
+              className={`max-w-[80%] rounded-lg px-4 py-2 backdrop-blur-sm ${
+                message.role === "candidate"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+              }`}
+            >
+              <div className="text-xs opacity-70 mb-1">
+                {message.role === "candidate" ? candidateName : "Assistant"}
+              </div>
               {message.content}
             </div>
           </div>
@@ -187,7 +223,7 @@ export function InterviewChat({
               <motion.span
                 initial={{ opacity: 0 }}
                 animate={{ opacity: [0, 1, 0] }}
-                transition={{ repeat: Infinity, duration: 1.5 }}
+                transition={{ repeat: Number.POSITIVE_INFINITY, duration: 1.5 }}
               >
                 |
               </motion.span>
@@ -198,10 +234,7 @@ export function InterviewChat({
         {isRecording && (
           <div className="flex justify-end">
             <div className="max-w-[80%] rounded-lg px-4 py-2 bg-primary text-primary-foreground bg-opacity-80 flex items-center space-x-2">
-              <div
-                className="flex justify-center items-end h-5 gap-[2px]"
-                aria-label="Audio visualization"
-              >
+              <div className="flex justify-center items-end h-5 gap-[2px]" aria-label="Audio visualization">
                 {[...Array(8)].map((_, i) => (
                   <motion.div
                     key={i}
@@ -210,7 +243,7 @@ export function InterviewChat({
                     animate={{
                       height: [3, Math.random() * 12 + 3, 3],
                       transition: {
-                        repeat: Infinity,
+                        repeat: Number.POSITIVE_INFINITY,
                         duration: 1,
                         delay: i * 0.05,
                         ease: "easeInOut",
@@ -227,10 +260,7 @@ export function InterviewChat({
       </div>
 
       {/* Input */}
-      <form
-        onSubmit={handleSubmit}
-        className="p-4 border-t border-gray-200 dark:border-gray-800 flex gap-2 relative"
-      >
+      <form onSubmit={handleSubmit} className="p-4 border-t border-gray-200 dark:border-gray-800 flex gap-2 relative">
         <input
           type="text"
           value={input}
@@ -252,11 +282,7 @@ export function InterviewChat({
             aria-label={isRecording ? "Stop recording" : "Start recording"}
             className="p-2 rounded-md bg-red-500/20 text-red-500 border border-red-500/30 hover:bg-red-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isRecording ? (
-              <MicOff className="h-5 w-5" />
-            ) : (
-              <Mic className="h-5 w-5" />
-            )}
+            {isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
           </button>
 
           <button
@@ -309,13 +335,8 @@ export function InterviewChat({
               </svg>
             </div>
             <h3 className="text-xl font-light mb-2 text-white">BREAK TIME</h3>
-            <p className="text-gray-400 mb-4 text-sm">
-              Take a moment to breathe
-            </p>
-            <div
-              className="text-3xl font-light text-indigo-400"
-              aria-live="polite"
-            >
+            <p className="text-gray-400 mb-4 text-sm">Take a moment to breathe</p>
+            <div className="text-3xl font-light text-indigo-400" aria-live="polite">
               {formatTime(timeLeft)}
             </div>
           </motion.div>
@@ -346,28 +367,20 @@ export function InterviewChat({
                   strokeWidth="2"
                   fill="transparent"
                   strokeDasharray={2 * Math.PI * 38}
-                  strokeDashoffset={
-                    2 * Math.PI * 38 * (1 - bathroomTimeLeft / 120)
-                  }
+                  strokeDashoffset={2 * Math.PI * 38 * (1 - bathroomTimeLeft / 120)}
                   className="text-purple-500 transition-all duration-1000"
                 />
               </svg>
             </div>
-            <h3 className="text-xl font-light mb-2 text-white">
-              BATHROOM BREAK
-            </h3>
-            <p className="text-gray-400 mb-4 text-sm">
-              We'll wait for you to return
-            </p>
-            <div
-              className="text-3xl font-light text-purple-400"
-              aria-live="polite"
-            >
+            <h3 className="text-xl font-light mb-2 text-white">BATHROOM BREAK</h3>
+            <p className="text-gray-400 mb-4 text-sm">We'll wait for you to return</p>
+            <div className="text-3xl font-light text-purple-400" aria-live="polite">
               {formatTime(bathroomTimeLeft)}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
-  );
+  )
 }
+
