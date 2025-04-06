@@ -20,6 +20,8 @@
     "@clerk/elements": "^0.17.1",
     "@clerk/nextjs": "^6.0.2",
     "@faker-js/faker": "^9.1.0",
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/util": "^0.12.2",
     "@google-cloud/speech": "^7.0.1",
     "@google-cloud/text-to-speech": "^6.0.1",
     "@google/genai": "^0.7.0",
