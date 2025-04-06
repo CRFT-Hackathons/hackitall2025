@@ -19,9 +19,11 @@ import {
   Coffee,
   Save,
   AlertTriangle,
+  Check,
 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import WhiteboardModal from "~/components/white-board-modal";
+import dynamic from 'next/dynamic';
 
 // Sample questions for the interview
 const allInterviewQuestions = [
@@ -185,7 +187,8 @@ function getRandomQuestions(count = 5) {
   return shuffled.slice(0, count);
 }
 
-export default function Home() {
+// Main component that will be wrapped with dynamic import
+function HomeContent() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string | number, AnswerData>>(
     {}
@@ -193,6 +196,7 @@ export default function Home() {
   const [questions, setQuestions] = useState<typeof allInterviewQuestions>([]);
   const [isClient, setIsClient] = useState(false);
   const [isResumedSession, setIsResumedSession] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   // Initialize questions on client-side only
   useEffect(() => {
@@ -309,6 +313,7 @@ export default function Home() {
   ) => {
     // Store answers directly without type conversion
     setAnswers(submittedAnswers);
+    setIsSubmitted(true);
 
     // Save answers to localStorage
     if (isClient) {
@@ -316,6 +321,7 @@ export default function Home() {
         "interviewAnswers",
         JSON.stringify(submittedAnswers)
       );
+      localStorage.setItem("isSubmitted", "true");
     }
 
     // Optionally clear the stored questions to generate new ones for the next session
@@ -334,12 +340,24 @@ export default function Home() {
     setAnswers({});
     setCurrentQuestionIndex(0);
     setIsResumedSession(false);
+    setIsSubmitted(false);
 
     // Update localStorage
     localStorage.setItem("interviewQuestions", JSON.stringify(newQuestions));
     localStorage.removeItem("interviewAnswers");
     localStorage.setItem("currentQuestionIndex", "0");
+    localStorage.removeItem("isSubmitted");
   };
+
+  // Check if submitted when component mounts
+  useEffect(() => {
+    if (isClient) {
+      const storedSubmitted = localStorage.getItem("isSubmitted");
+      if (storedSubmitted === "true") {
+        setIsSubmitted(true);
+      }
+    }
+  }, [isClient]);
 
   return (
     <main className="min-h-screen bg-[#f8f9fa] dark:bg-[#0f0f13]">
@@ -386,119 +404,147 @@ export default function Home() {
             {/* Main question card */}
             <Card className="overflow-hidden border border-indigo-100 dark:border-indigo-900/50 bg-gradient-to-br from-white via-white to-indigo-50/30 dark:from-[#16161d] dark:via-[#16161d] dark:to-indigo-900/10 rounded-xl">
               <div className="p-6 relative z-10">
-                <Tabs defaultValue="questions" className="w-full">
-                  <TabsList className="mb-6 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-full w-full grid grid-cols-3 gap-1">
-                    <TabsTrigger
+                {isClient ? (
+                  <Tabs defaultValue="questions" className="w-full">
+                    <TabsList className="mb-6 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-full w-full grid grid-cols-3 gap-1">
+                      <TabsTrigger
+                        value="questions"
+                        className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-indigo-900/30 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300 py-1.5 flex items-center justify-center gap-2 text-xs"
+                      >
+                        <UserRound className="h-4 w-4 sm:mr-1" />
+                        <span className="hidden sm:inline">Questions</span>
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="instructions"
+                        className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-indigo-900/30 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300 py-1.5 flex items-center justify-center gap-2 text-xs"
+                      >
+                        <Book className="h-4 w-4 sm:mr-1" />
+                        <span className="hidden sm:inline">Instructions</span>
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="chat"
+                        className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-indigo-900/30 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300 py-1.5 flex items-center justify-center gap-2 text-xs"
+                      >
+                        <MessageSquare className="h-4 w-4 sm:mr-1" />
+                        <span className="hidden sm:inline">Chat</span>
+                      </TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent
                       value="questions"
-                      className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-indigo-900/30 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300 py-1.5 flex items-center justify-center gap-2 text-xs"
+                      className="space-y-4 focus:outline-none"
                     >
-                      <UserRound className="h-4 w-4 sm:mr-1" />
-                      <span className="hidden sm:inline">Questions</span>
-                    </TabsTrigger>
-                    <TabsTrigger
+                      {!isSubmitted ? (
+                        <Questionnaire
+                          questions={displayQuestions}
+                          onQuestionAnswered={handleQuestionAnswered}
+                          onSubmit={handleSubmit}
+                          onQuestionChange={handleQuestionChange}
+                        />
+                      ) : (
+                        <div className="flex flex-col items-center py-10 space-y-6">
+                          <div className="bg-green-100 dark:bg-green-900/30 p-6 rounded-full">
+                            <Check className="w-16 h-16 text-green-600 dark:text-green-400" />
+                          </div>
+                          <h2 className="text-2xl font-bold text-center">
+                            Interview Complete!
+                          </h2>
+                          <p className="text-slate-600 dark:text-slate-400 text-center max-w-md">
+                            Thank you for completing your interview. Your responses have been recorded.
+                          </p>
+                          <div className="flex gap-4 mt-6">
+                            <Button
+                              onClick={() => window.location.href = '/feedback'}
+                              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6"
+                            >
+                              Provide Feedback
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </TabsContent>
+                    
+                    <TabsContent
                       value="instructions"
-                      className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-indigo-900/30 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300 py-1.5 flex items-center justify-center gap-2 text-xs"
+                      className="focus:outline-none"
                     >
-                      <Book className="h-4 w-4 sm:mr-1" />
-                      <span className="hidden sm:inline">Instructions</span>
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="chat"
-                      className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-indigo-900/30 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300 py-1.5 flex items-center justify-center gap-2 text-xs"
-                    >
-                      <MessageSquare className="h-4 w-4 sm:mr-1" />
-                      <span className="hidden sm:inline">Chat</span>
-                    </TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent
-                    value="questions"
-                    className="space-y-4 focus:outline-none"
-                  >
-                    <Questionnaire
-                      questions={displayQuestions}
-                      onQuestionAnswered={handleQuestionAnswered}
-                      onSubmit={handleSubmit}
-                      onQuestionChange={handleQuestionChange}
-                    />
-                  </TabsContent>
-
-                  <TabsContent
-                    value="instructions"
-                    className="focus:outline-none"
-                  >
-                    <div className="p-8 rounded-xl bg-gradient-to-br from-white via-white to-indigo-50/30 dark:from-[#1a1a24] dark:via-[#1a1a24] dark:to-indigo-900/10 border border-slate-100 dark:border-slate-700/50 shadow-sm">
-                      <h3 className="text-2xl font-medium mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
-                        Interview Instructions
-                      </h3>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div className="p-6 rounded-xl bg-white/80 dark:bg-slate-800/50 border border-indigo-100 dark:border-indigo-800/30 shadow-sm transform transition-transform duration-300 hover:scale-[1.02]">
-                          <div className="flex items-center mb-4">
-                            <div className="rounded-full p-3 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 mr-4">
-                              <Clock className="h-5 w-5" />
+                      <div className="p-8 rounded-xl bg-gradient-to-br from-white via-white to-indigo-50/30 dark:from-[#1a1a24] dark:via-[#1a1a24] dark:to-indigo-900/10 border border-slate-100 dark:border-slate-700/50 shadow-sm">
+                        <h3 className="text-2xl font-medium mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
+                          Interview Instructions
+                        </h3>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                          <div className="p-6 rounded-xl bg-white/80 dark:bg-slate-800/50 border border-indigo-100 dark:border-indigo-800/30 shadow-sm transform transition-transform duration-300 hover:scale-[1.02]">
+                            <div className="flex items-center mb-4">
+                              <div className="rounded-full p-3 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 mr-4">
+                                <Clock className="h-5 w-5" />
+                              </div>
+                              <h4 className="font-medium text-lg">Take Your Time</h4>
                             </div>
-                            <h4 className="font-medium text-lg">Take Your Time</h4>
+                            <p className="text-slate-600 dark:text-slate-300 ml-14">
+                              Answer each question thoroughly, thinking about your past experiences and how they demonstrate your skills.
+                            </p>
                           </div>
-                          <p className="text-slate-600 dark:text-slate-300 ml-14">
-                            Answer each question thoroughly, thinking about your past experiences and how they demonstrate your skills.
-                          </p>
+                          
+                          <div className="p-6 rounded-xl bg-white/80 dark:bg-slate-800/50 border border-indigo-100 dark:border-indigo-800/30 shadow-sm transform transition-transform duration-300 hover:scale-[1.02]">
+                            <div className="flex items-center mb-4">
+                              <div className="rounded-full p-3 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 mr-4">
+                                <Accessibility className="h-5 w-5" />
+                              </div>
+                              <h4 className="font-medium text-lg">Accessibility Tools</h4>
+                            </div>
+                            <p className="text-slate-600 dark:text-slate-300 ml-14">
+                              Use the accessibility panel to customize your experience with font size, contrast settings, and more.
+                            </p>
+                          </div>
+                          
+                          <div className="p-6 rounded-xl bg-white/80 dark:bg-slate-800/50 border border-indigo-100 dark:border-indigo-800/30 shadow-sm transform transition-transform duration-300 hover:scale-[1.02]">
+                            <div className="flex items-center mb-4">
+                              <div className="rounded-full p-3 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 mr-4">
+                                <Coffee className="h-5 w-5" />
+                              </div>
+                              <h4 className="font-medium text-lg">Take Breaks</h4>
+                            </div>
+                            <p className="text-slate-600 dark:text-slate-300 ml-14">
+                              If you need a moment to collect your thoughts, use the break button in the timer section. You can take one break during the interview.
+                            </p>
+                          </div>
+                          
+                          <div className="p-6 rounded-xl bg-white/80 dark:bg-slate-800/50 border border-indigo-100 dark:border-indigo-800/30 shadow-sm transform transition-transform duration-300 hover:scale-[1.02]">
+                            <div className="flex items-center mb-4">
+                              <div className="rounded-full p-3 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 mr-4">
+                                <Save className="h-5 w-5" />
+                              </div>
+                              <h4 className="font-medium text-lg">Auto-saving</h4>
+                            </div>
+                            <p className="text-slate-600 dark:text-slate-300 ml-14">
+                              Your answers are automatically saved as you type. If you need to leave and come back, your progress will be preserved.
+                            </p>
+                          </div>
                         </div>
                         
-                        <div className="p-6 rounded-xl bg-white/80 dark:bg-slate-800/50 border border-indigo-100 dark:border-indigo-800/30 shadow-sm transform transition-transform duration-300 hover:scale-[1.02]">
-                          <div className="flex items-center mb-4">
-                            <div className="rounded-full p-3 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 mr-4">
-                              <Accessibility className="h-5 w-5" />
-                            </div>
-                            <h4 className="font-medium text-lg">Accessibility Tools</h4>
-                          </div>
-                          <p className="text-slate-600 dark:text-slate-300 ml-14">
-                            Use the accessibility panel to customize your experience with font size, contrast settings, and more.
-                          </p>
-                        </div>
-                        
-                        <div className="p-6 rounded-xl bg-white/80 dark:bg-slate-800/50 border border-indigo-100 dark:border-indigo-800/30 shadow-sm transform transition-transform duration-300 hover:scale-[1.02]">
-                          <div className="flex items-center mb-4">
-                            <div className="rounded-full p-3 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 mr-4">
-                              <Coffee className="h-5 w-5" />
-                            </div>
-                            <h4 className="font-medium text-lg">Take Breaks</h4>
-                          </div>
-                          <p className="text-slate-600 dark:text-slate-300 ml-14">
-                            If you need a moment to collect your thoughts, use the break button in the timer section. You can take one break during the interview.
-                          </p>
-                        </div>
-                        
-                        <div className="p-6 rounded-xl bg-white/80 dark:bg-slate-800/50 border border-indigo-100 dark:border-indigo-800/30 shadow-sm transform transition-transform duration-300 hover:scale-[1.02]">
-                          <div className="flex items-center mb-4">
-                            <div className="rounded-full p-3 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 mr-4">
-                              <Save className="h-5 w-5" />
-                            </div>
-                            <h4 className="font-medium text-lg">Auto-saving</h4>
-                          </div>
-                          <p className="text-slate-600 dark:text-slate-300 ml-14">
-                            Your answers are automatically saved as you type. If you need to leave and come back, your progress will be preserved.
+                        <div className="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 flex items-center gap-3">
+                          <AlertTriangle className="h-5 w-5 text-amber-500 dark:text-amber-400 shrink-0" />
+                          <p className="text-sm text-amber-800 dark:text-amber-300">
+                            Remember to prepare a professional environment before starting video recordings. Ensure good lighting and a clean background.
                           </p>
                         </div>
                       </div>
-                      
-                      <div className="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 flex items-center gap-3">
-                        <AlertTriangle className="h-5 w-5 text-amber-500 dark:text-amber-400 shrink-0" />
-                        <p className="text-sm text-amber-800 dark:text-amber-300">
-                          Remember to prepare a professional environment before starting video recordings. Ensure good lighting and a clean background.
-                        </p>
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="chat" className="focus:outline-none">
-                    <InterviewChat
-                      candidateName="Candidate"
-                      title="Interview Chat"
-                      className="h-[400px] "
-                    />
-                  </TabsContent>
-                </Tabs>
+                    </TabsContent>
+                    
+                    <TabsContent value="chat" className="focus:outline-none">
+                      <InterviewChat
+                        candidateName="Candidate"
+                        title="Interview Chat"
+                        className="h-[400px] "
+                      />
+                    </TabsContent>
+                  </Tabs>
+                ) : (
+                  <div className="flex justify-center py-10">
+                    <div className="animate-pulse text-indigo-600 dark:text-indigo-400">Loading interview content...</div>
+                  </div>
+                )}
               </div>
             </Card>
           </div>
@@ -607,4 +653,26 @@ export default function Home() {
       </div>
     </main>
   );
+}
+
+// Create a dynamic version of HomeContent with SSR disabled
+const DynamicHomeContent = dynamic(() => Promise.resolve(HomeContent), { ssr: false });
+
+// Wrapper component to ensure client-side only rendering
+export default function Home() {
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
+  if (!mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f8f9fa] dark:bg-[#0f0f13]">
+        <div className="animate-pulse text-indigo-600 dark:text-indigo-400">Loading interview platform...</div>
+      </div>
+    );
+  }
+  
+  return <DynamicHomeContent />;
 }
