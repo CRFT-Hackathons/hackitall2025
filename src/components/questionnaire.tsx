@@ -1069,7 +1069,6 @@ export function Questionnaire({
                       ref={recordedVideoRef}
                       src={videoUrl}
                       controls
-                      autoPlay
                       playsInline
                       className="absolute inset-0 w-full h-full object-contain bg-black"
                       onError={(e) => {
