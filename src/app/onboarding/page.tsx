@@ -17,7 +17,7 @@ import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
-  Accessibility,
+  UserRound,
   Eye,
   Volume2,
   Brain,
@@ -162,7 +162,7 @@ export default function OnboardingPage() {
       content: (
         <div className="flex flex-col items-center justify-center py-10">
           <div className="mb-8 bg-indigo-100 dark:bg-indigo-900/30 p-6 rounded-full">
-            <Accessibility className="w-20 h-20 text-indigo-600 dark:text-indigo-400" />
+            <UserRound className="w-20 h-20 text-indigo-600 dark:text-indigo-400" />
           </div>
           <h2 className="text-2xl font-bold text-center mb-4">
             Welcome to InAble - An Accessible Interview Platform
@@ -171,7 +171,7 @@ export default function OnboardingPage() {
             We'll guide you through setting up accessibility features to make
             your interview experience more comfortable and effective.
           </p>
-          
+
           {/* GDPR Compliance Disclaimer - More compact design with Learn More button */}
           <div className="w-full max-w-lg mx-auto">
             <div className="p-4 rounded-lg bg-gradient-to-br from-sky-50/80 to-indigo-50/80 dark:from-slate-800/40 dark:to-indigo-900/20 border border-sky-100/50 dark:border-indigo-800/20 shadow-sm">
@@ -184,18 +184,26 @@ export default function OnboardingPage() {
                     Data Privacy & Protection
                   </h3>
                   <p className="text-xs text-slate-600 dark:text-slate-400">
-                    By continuing, you agree that your interview data will be processed in accordance with GDPR. Your accessibility preferences are stored locally on your device.
+                    By continuing, you agree that your interview data will be
+                    processed in accordance with GDPR. Your accessibility
+                    preferences are stored locally on your device.
                   </p>
                   <div className="flex justify-between items-center pt-1 text-xs">
-                    <button 
+                    <button
                       className="text-blue-600 dark:text-blue-400 hover:underline font-medium flex items-center"
-                      onClick={() => window.open('/privacy', '_blank')}
+                      onClick={() => window.open("/privacy", "_blank")}
                     >
                       Learn more
                       <ChevronRight className="h-3 w-3 ml-1" />
                     </button>
                     <span className="text-slate-500 dark:text-slate-400">
-                      <span className="text-blue-600 dark:text-blue-400 cursor-pointer hover:underline">Terms</span> & <span className="text-blue-600 dark:text-blue-400 cursor-pointer hover:underline">Privacy</span>
+                      <span className="text-blue-600 dark:text-blue-400 cursor-pointer hover:underline">
+                        Terms
+                      </span>{" "}
+                      &{" "}
+                      <span className="text-blue-600 dark:text-blue-400 cursor-pointer hover:underline">
+                        Privacy
+                      </span>
                     </span>
                   </div>
                 </div>
@@ -533,17 +541,20 @@ export default function OnboardingPage() {
             Your accessibility preferences have been saved. You can always
             change them later from the Accessibility panel.
           </p>
-          
+
           {/* Important disclaimer - smaller version */}
           <div className="w-full max-w-lg mb-6 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800/50 overflow-hidden">
             <div className="flex items-center p-2.5 gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-500 shrink-0" />
               <div className="text-xs text-amber-800 dark:text-amber-300">
-                <span className="font-medium">Before you start:</span> Ensure stable internet, charged device, quiet space, and 45min availability. Each break option can be used <span className="font-medium underline">once</span> only.
+                <span className="font-medium">Before you start:</span> Ensure
+                stable internet, charged device, quiet space, and 45min
+                availability. Each break option can be used{" "}
+                <span className="font-medium underline">once</span> only.
               </div>
             </div>
           </div>
-          
+
           <div className="flex gap-4">
             <Button
               onClick={() => router.push("/")}
