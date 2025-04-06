@@ -617,34 +617,34 @@ export function Questionnaire({
     try {
       setIsTtsLoading(true);
       const textToRead = `${currentQuestion.title}. ${currentQuestion.description}`;
+      // Use the server-side TTS integration with the current language
       const audioUrl = await synthesizeSpeech(
         textToRead,
         currentLanguage,
         speechRate
       );
+      
       if (!audioUrl) throw new Error("Failed to generate speech");
 
-      if (audioRef.current) {
-        // Clean up old audio URL if it exists
-        if (audioUrlRef.current) {
-          URL.revokeObjectURL(audioUrlRef.current);
-        }
-        
-        audioRef.current.src = audioUrl;
-        audioRef.current.onended = () => {
-          setIsPlayingAudio(false);
-        };
-        audioRef.current.onpause = () => {
-          setIsPlayingAudio(false);
-        };
-        audioRef.current.onplay = () => {
-          setIsPlayingAudio(true);
-        };
-        
-        audioRef.current.play();
-        setIsPlayingAudio(true);
-        audioUrlRef.current = audioUrl;
+      // Create a new audio element if not exists
+      if (!audioRef.current) {
+        audioRef.current = new Audio();
       }
+      
+      // Set up audio events
+      audioRef.current.onended = () => setIsPlayingAudio(false);
+      audioRef.current.onpause = () => setIsPlayingAudio(false);
+      audioRef.current.onerror = (e) => {
+        console.error("Audio playback error:", e);
+        toast.error("Error playing audio");
+        setIsPlayingAudio(false);
+      };
+      
+      // Set the source and play
+      audioRef.current.src = audioUrl;
+      await audioRef.current.play();
+      setIsPlayingAudio(true);
+      toast.success(`Playing in ${getLanguageName(currentLanguage)}`);
     } catch (error) {
       console.error("Error generating or playing audio:", error);
       toast.error("Failed to play audio");
@@ -653,13 +653,39 @@ export function Questionnaire({
     }
   };
 
-  useEffect(() => {
-    audioUrlRef.current = null;
+  // Helper function to get language name for display
+  const getLanguageName = (langCode: string): string => {
+    const languageMap: Record<string, string> = {
+      'en-US': 'English',
+      'ro-RO': 'Romanian',
+      'it-IT': 'Italian',
+      'es-ES': 'Spanish'
+    };
+    return languageMap[langCode] || langCode;
+  };
+
+  // Function to stop TTS playback
+  const stopTTS = () => {
     if (audioRef.current) {
       audioRef.current.pause();
-      audioRef.current = null;
+      audioRef.current.currentTime = 0;
       setIsPlayingAudio(false);
     }
+  };
+
+  // Update TTS button to toggle playback
+  const toggleTTS = () => {
+    if (isPlayingAudio) {
+      stopTTS();
+    } else {
+      speakQuestion();
+    }
+  };
+
+  // Clean up audio on question change
+  useEffect(() => {
+    stopTTS();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentIndex]);
 
   // --- VIDEO FUNCTIONS ---
@@ -950,7 +976,7 @@ export function Questionnaire({
             )}
           </div>
           <button
-            onClick={() => speakQuestion()}
+            onClick={toggleTTS}
             disabled={isTtsLoading || !currentQuestion}
             className={`rounded-full p-2 ${
               isPlayingAudio
@@ -964,18 +990,20 @@ export function Questionnaire({
                 ? "Generating audio..."
                 : isPlayingAudio
                 ? "Stop audio"
-                : "Read question aloud"
+                : `Read question aloud in ${getLanguageName(currentLanguage)}`
             }
             title={
               isTtsLoading
                 ? "Generating audio..."
                 : isPlayingAudio
                 ? "Stop audio"
-                : "Read question aloud"
+                : `Read question aloud in ${getLanguageName(currentLanguage)}`
             }
           >
             {isTtsLoading ? (
               <Loader2 className="h-6 w-6 animate-spin" />
+            ) : isPlayingAudio ? (
+              <StopCircle className="h-6 w-6" />
             ) : (
               <Volume2 className="h-6 w-6" />
             )}
