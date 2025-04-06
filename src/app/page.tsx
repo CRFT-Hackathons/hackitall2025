@@ -1,22 +1,13 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AccessibilityPanel from "@/components/accessibility-panel";
-import TimeDisplayButton from "@/components/time-display-button";
 import { TimeRemaining } from "@/components/time-remaining";
 import { Questionnaire, AnswerData } from "@/components/questionnaire";
 import { InterviewChat } from "@/components/interview-chat";
-import {
-  Pause,
-  Mic,
-  Clock,
-  UserRound,
-  Settings2,
-  MessageSquare,
-  Book,
-} from "lucide-react";
+import { UserRound, MessageSquare, Book } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
+import WhiteboardModal from "~/components/white-board-modal";
 
 // Sample questions for the interview
 const allInterviewQuestions = [
@@ -296,7 +287,9 @@ export default function Home() {
     },
     [isClient]
   );
-  const handleSubmit = (submittedAnswers: Record<string | number, AnswerData>) => {
+  const handleSubmit = (
+    submittedAnswers: Record<string | number, AnswerData>
+  ) => {
     // Store answers directly without type conversion
     setAnswers(submittedAnswers);
 
@@ -552,6 +545,7 @@ export default function Home() {
                 </li>
               </ul>
             </Card>
+            <WhiteboardModal />
           </div>
         </div>
       </div>
