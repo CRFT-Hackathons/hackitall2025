@@ -132,11 +132,7 @@ export function BreakTimer({
                 strokeWidth="2"
                 fill="transparent"
                 strokeDasharray={2 * Math.PI * 46}
-                initial={{ strokeDashoffset: 0 }}
-                animate={{
-                  strokeDashoffset:
-                    2 * Math.PI * 46 * (1 - timeLeft / duration),
-                }}
+                strokeDashoffset={2 * Math.PI * 46 * (timeLeft / duration)}
                 transition={{
                   duration: 1,
                   ease: "linear",

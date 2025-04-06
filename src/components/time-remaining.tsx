@@ -291,12 +291,48 @@ export function TimeRemaining({
 
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <Clock className="h-5 w-5 text-indigo-600 dark:text-indigo-400 mr-2" />
+            <div className="relative w-12 h-12">
+              <div className="w-12 h-12 rounded-full bg-indigo-500/10 flex items-center justify-center">
+                <Clock className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <svg className="absolute top-0 left-0 w-12 h-12 -rotate-90" aria-hidden="true">
+                {/* Background circle */}
+                <circle
+                  cx="24"
+                  cy="24"
+                  r="22"
+                  stroke="#6366f110"
+                  strokeWidth="3"
+                  fill="transparent"
+                />
+                {/* Animated progress circle */}
+                <circle
+                  cx="24"
+                  cy="24"
+                  r="22"
+                  stroke="#6366f1"
+                  strokeWidth="3"
+                  fill="transparent"
+                  strokeDasharray={2 * Math.PI * 22}
+                  strokeDashoffset={2 * Math.PI * 22 * (1 - timeLeft / initialTime)}
+                  strokeLinecap="round"
+                  className="transition-all duration-1000 ease-linear"
+                />
+              </svg>
+            </div>
 
-            <div
-              className={`text-2xl font-medium text-indigo-600 dark:text-gray-200 font-mono tabular-nums ${
+            <motion.div
+              className={`ml-3 text-2xl font-medium text-indigo-600 dark:text-gray-200 font-mono tabular-nums ${
                 isTimeHidden ? "blur-[6px]" : ""
               }`}
+              animate={{
+                scale: timeLeft <= 300 && !isTimeHidden ? [1, 1.03, 1] : 1,
+                color: timeLeft <= 300 && !isTimeHidden ? ["#6366f1", "#ef4444", "#6366f1"] : "#6366f1",
+              }}
+              transition={{
+                repeat: timeLeft <= 300 && !isTimeHidden ? Infinity : 0,
+                duration: 2,
+              }}
               onClick={() => {
                 const newValue = !isTimeHidden;
                 setIsTimeHidden(newValue);
@@ -304,12 +340,12 @@ export function TimeRemaining({
               }}
             >
               {formatTime(timeLeft)}
-            </div>
+            </motion.div>
           </div>
 
           {showBreakButtons && !breakType && (
             <div className="flex space-x-2">
-              <button
+              <motion.button
                 onClick={() => startBreak("regular")}
                 disabled={hasUsedRegularBreak}
                 className={`rounded-full border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-[#1e1e2d] hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-xs px-3 py-1 text-indigo-600 dark:text-indigo-400 transition-colors ${
@@ -320,11 +356,13 @@ export function TimeRemaining({
                     ? "You've already used your break"
                     : "Take a break"
                 }
+                whileHover={!hasUsedRegularBreak ? { scale: 1.05 } : {}}
+                whileTap={!hasUsedRegularBreak ? { scale: 0.95 } : {}}
               >
                 <Clock className="h-3 w-3 mr-1 inline-block" />
                 Break
-              </button>
-              <button
+              </motion.button>
+              <motion.button
                 onClick={() => startBreak("bathroom")}
                 disabled={hasUsedBathroomBreak}
                 className={`rounded-full border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-[#1e1e2d] hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-xs px-3 py-1 text-indigo-600 dark:text-indigo-400 transition-colors ${
@@ -335,10 +373,12 @@ export function TimeRemaining({
                     ? "You've already used your bathroom break"
                     : "Take a bathroom break"
                 }
+                whileHover={!hasUsedBathroomBreak ? { scale: 1.05 } : {}}
+                whileTap={!hasUsedBathroomBreak ? { scale: 0.95 } : {}}
               >
                 <Bath className="h-3 w-3 mr-1 inline-block" />
                 <span>Bathroom Break</span>
-              </button>
+              </motion.button>
             </div>
           )}
         </div>
@@ -362,22 +402,28 @@ export function TimeRemaining({
                   <Bath size={32} className="text-purple-500" />
                 )}
               </div>
-              <svg
-                className="absolute top-0 left-0 w-24 h-24 -rotate-90"
-                aria-hidden="true"
-              >
+              <svg className="absolute top-0 left-0 w-24 h-24 -rotate-90" aria-hidden="true">
+                {/* Background circle */}
+                <circle
+                  cx="48"
+                  cy="48"
+                  r="46"
+                  stroke={breakType === "regular" ? "#6366f110" : "#8b5cf610"}
+                  strokeWidth="4"
+                  fill="transparent"
+                />
+                {/* Animated progress circle */}
                 <circle
                   cx="48"
                   cy="48"
                   r="46"
                   stroke={breakType === "regular" ? "#6366f1" : "#8b5cf6"}
-                  strokeWidth="2"
+                  strokeWidth="4"
                   fill="transparent"
                   strokeDasharray={2 * Math.PI * 46}
-                  strokeDashoffset={
-                    46 * (1 - (breakStartTime ? breakProgress : 0))
-                  }
-                  className="transition-all duration-1000"
+                  strokeDashoffset={2 * Math.PI * 46 * (1 - breakProgress)}
+                  strokeLinecap="round"
+                  className="transition-all duration-1000 ease-linear"
                 />
               </svg>
             </div>
@@ -389,9 +435,28 @@ export function TimeRemaining({
                 ? "Take a moment to breathe"
                 : "We'll wait for you to return"}
             </p>
-            <div className="text-4xl font-light mb-8 text-indigo-400">
+            <motion.div
+              className={`text-4xl font-light mb-8 ${
+                breakType === "regular" ? "text-indigo-400" : "text-purple-400"
+              }`}
+              animate={{
+                scale: remainingBreakTime <= 10 ? [1, 1.05, 1] : 1,
+                color: remainingBreakTime <= 10 
+                  ? [
+                      breakType === "regular" ? "#6366f1" : "#8b5cf6", 
+                      "#ef4444", 
+                      breakType === "regular" ? "#6366f1" : "#8b5cf6"
+                    ] 
+                  : breakType === "regular" ? "#6366f1" : "#8b5cf6",
+              }}
+              transition={{
+                repeat: remainingBreakTime <= 10 ? Infinity : 0,
+                duration: 1.5,
+              }}
+              aria-live="polite"
+            >
               {formatTime(remainingBreakTime)}
-            </div>
+            </motion.div>
 
             <div className="mb-6 flex items-center gap-2 px-5 py-3 bg-amber-900/20 border border-amber-800/30 rounded-lg text-amber-300 max-w-xs text-center">
               <AlertTriangle size={20} className="shrink-0" />
@@ -400,12 +465,17 @@ export function TimeRemaining({
               </p>
             </div>
 
-            <button
+            <motion.button
               onClick={endBreak}
               className="px-4 py-2 rounded-full text-white/70 hover:text-white/90 border border-white/20 hover:border-white/30 transition-colors"
+              whileHover={{ scale: 1.05, borderColor: "rgba(255, 255, 255, 0.4)" }}
+              whileTap={{ scale: 0.95 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
             >
               End Break Early
-            </button>
+            </motion.button>
           </motion.div>
         )}
       </AnimatePresence>
