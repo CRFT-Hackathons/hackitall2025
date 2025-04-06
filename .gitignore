@@ -41,3 +41,7 @@ yarn-error.log*
 next-env.d.ts
 
 public/speech-*
+
+
+src-tauri/target/
+src-tauri/gen/schemas
