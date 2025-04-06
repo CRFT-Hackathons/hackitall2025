@@ -375,7 +375,7 @@ export function TimeRemaining({
           </button>
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center">
             <Clock className="h-5 w-5 text-indigo-600 dark:text-indigo-400 mr-2" />
             <div
@@ -388,7 +388,7 @@ export function TimeRemaining({
             </div>
           </div>
           {showBreakButtons && !breakType && (
-            <div className="flex space-x-2">
+            <div className="flex gap-2 flex-wrap">
               <button
                 onClick={() => startBreak("regular")}
                 disabled={hasUsedRegularBreak}

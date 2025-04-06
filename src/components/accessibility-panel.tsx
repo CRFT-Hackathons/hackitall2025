@@ -333,7 +333,7 @@ export default function AccessibilityPanel() {
           <span>Accessibility</span>
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-md border-l border-indigo-100 dark:border-indigo-900 bg-white dark:bg-[#0f0f13] rounded-l-2xl">
+      <SheetContent className="w-full sm:max-w-md border-l border-indigo-100 dark:border-indigo-900 bg-white dark:bg-[#0f0f13] rounded-l-2xl max-h-screen overflow-y-scroll">
         <SheetHeader className="mb-6">
           <SheetTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
             Accessibility Settings
