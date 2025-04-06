@@ -597,8 +597,8 @@ export default function OnboardingPage() {
           </p>
         </div>
 
-        {/* Progress indicators */}
-        <div className="flex justify-center space-x-1 mb-8">
+        {/* Progress indicators - Updated for better responsiveness */}
+        <div className="hidden md:flex justify-center space-x-1 mb-8">
           {steps.map((_, index) => (
             <span
               key={index}
@@ -611,6 +611,26 @@ export default function OnboardingPage() {
               }`}
             />
           ))}
+        </div>
+
+        {/* Mobile-friendly step indicator */}
+        <div className="md:hidden flex items-center justify-between mb-6 px-2">
+          <div className="flex items-center">
+            <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
+              Step {currentStep + 1}/{steps.length}
+            </span>
+          </div>
+          <div className="flex-1 mx-4">
+            <div className="h-1 w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-indigo-600 dark:bg-indigo-400 rounded-full transition-all duration-300"
+                style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+              ></div>
+            </div>
+          </div>
+          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+            {steps[currentStep].title}
+          </span>
         </div>
 
         {/* Main card with step content */}

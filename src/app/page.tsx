@@ -387,27 +387,27 @@ export default function Home() {
             <Card className="overflow-hidden border border-indigo-100 dark:border-indigo-900/50 bg-gradient-to-br from-white via-white to-indigo-50/30 dark:from-[#16161d] dark:via-[#16161d] dark:to-indigo-900/10 rounded-xl">
               <div className="p-6 relative z-10">
                 <Tabs defaultValue="questions" className="w-full">
-                  <TabsList className="mb-6 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-full w-fit">
+                  <TabsList className="mb-6 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-full w-full grid grid-cols-3 gap-1">
                     <TabsTrigger
                       value="questions"
-                      className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-indigo-900/30 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300 px-6 flex items-center gap-2"
+                      className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-indigo-900/30 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300 py-1.5 flex items-center justify-center gap-2 text-xs"
                     >
-                      <UserRound className="h-4 w-4" />
-                      Questions
+                      <UserRound className="h-4 w-4 sm:mr-1" />
+                      <span className="hidden sm:inline">Questions</span>
                     </TabsTrigger>
                     <TabsTrigger
                       value="instructions"
-                      className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-indigo-900/30 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300 px-6 flex items-center gap-2"
+                      className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-indigo-900/30 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300 py-1.5 flex items-center justify-center gap-2 text-xs"
                     >
-                      <Book className="h-4 w-4" />
-                      Instructions
+                      <Book className="h-4 w-4 sm:mr-1" />
+                      <span className="hidden sm:inline">Instructions</span>
                     </TabsTrigger>
                     <TabsTrigger
                       value="chat"
-                      className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-indigo-900/30 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300 px-6 flex items-center gap-2"
+                      className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-indigo-900/30 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300 py-1.5 flex items-center justify-center gap-2 text-xs"
                     >
-                      <MessageSquare className="h-4 w-4" />
-                      Chat
+                      <MessageSquare className="h-4 w-4 sm:mr-1" />
+                      <span className="hidden sm:inline">Chat</span>
                     </TabsTrigger>
                   </TabsList>
 
