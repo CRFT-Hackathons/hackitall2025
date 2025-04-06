@@ -14,12 +14,13 @@ import {
   Download,
   Video,
   CameraOff,
-  Trash2, // Added Trash icon
+  Trash2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { transcribeAudio } from "../app/backend/stt-integration";
 import { synthesizeSpeech } from "../app/backend/tts-integration";
 import { toast } from "sonner";
+import { PiHighlighterDuotone } from "react-icons/pi";
 
 // Define the structure for an answer, which can include text and/or video
 export interface AnswerData {
@@ -1215,7 +1216,7 @@ export function Questionnaire({
                           : "Enable keyword highlighting to improve focus on important terms"
                       }
                     >
-                      {isHighlight ? "Hide Key Terms" : "Highlight Key Terms"}
+                      <PiHighlighterDuotone className="h-6 w-6" />
                     </button>
                   </div>
                   {/* Expand Button */}

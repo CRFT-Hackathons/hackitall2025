@@ -265,28 +265,39 @@ export default function OnboardingPage() {
                 onCheckedChange={(checked) => {
                   setIsHighlight(checked);
                   localStorage.setItem("isHighlight", checked.toString());
-                  
+
                   // Dispatch custom event for consistency with the accessibility panel
-                  if (typeof window !== 'undefined') {
-                    const event = new CustomEvent('highlightingChanged', { 
-                      detail: { isHighlight: checked } 
+                  if (typeof window !== "undefined") {
+                    const event = new CustomEvent("highlightingChanged", {
+                      detail: { isHighlight: checked },
                     });
                     window.dispatchEvent(event);
                   }
                 }}
                 className="data-[state=checked]:bg-indigo-500 dark:data-[state=checked]:bg-indigo-600"
-                aria-label={isHighlight ? "Disable key terms highlighting" : "Enable key terms highlighting"}
-                title={isHighlight ? "Turn off highlighting of key terms in questions" : "Highlight important terms in questions to improve focus"}
+                aria-label={
+                  isHighlight
+                    ? "Disable key terms highlighting"
+                    : "Enable key terms highlighting"
+                }
+                title={
+                  isHighlight
+                    ? "Turn off highlighting of key terms in questions"
+                    : "Highlight important terms in questions to improve focus"
+                }
               />
             </div>
-            
+
             {/* Information box about key term highlighting benefits */}
             <div className="p-3 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 text-sm text-indigo-700 dark:text-indigo-300">
               <h4 className="font-medium mb-1">Why highlight key terms?</h4>
               <ul className="space-y-1 list-disc pl-4 text-xs">
                 <li>Helps with focus and attention, especially for ADHD</li>
                 <li>Makes complex questions easier to understand</li>
-                <li>Identifies important concepts that should be addressed in answers</li>
+                <li>
+                  Identifies important concepts that should be addressed in
+                  answers
+                </li>
                 <li>Beneficial for users with reading disabilities</li>
               </ul>
             </div>
