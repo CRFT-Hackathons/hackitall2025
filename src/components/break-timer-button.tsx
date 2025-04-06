@@ -1,50 +1,50 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Clock, Coffee, Timer } from "lucide-react"
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Clock, Coffee, Timer } from "lucide-react";
 
 export interface BreakTimerProps {
   /**
    * Duration of the break in seconds
    */
-  duration?: number
+  duration?: number;
   /**
    * Title displayed during the break
    */
-  title?: string
+  title?: string;
   /**
    * Subtitle displayed during the break
    */
-  subtitle?: string
+  subtitle?: string;
   /**
    * Icon to display (defaults to Clock)
    */
-  icon?: "clock" | "coffee" | "timer"
+  icon?: "clock" | "coffee" | "timer";
   /**
    * Primary color (used for icon and timer)
    */
-  primaryColor?: string
+  primaryColor?: string;
   /**
    * Background color for the timer overlay
    */
-  backgroundColor?: string
+  backgroundColor?: string;
   /**
    * Callback function when timer completes
    */
-  onComplete?: () => void
+  onComplete?: () => void;
   /**
    * Callback function when timer is canceled
    */
-  onCancel?: () => void
+  onCancel?: () => void;
   /**
    * Whether to show a cancel button
    */
-  showCancelButton?: boolean
+  showCancelButton?: boolean;
   /**
    * Custom class name for the container
    */
-  className?: string
+  className?: string;
 }
 
 export function BreakTimer({
@@ -59,47 +59,47 @@ export function BreakTimer({
   showCancelButton = true,
   className = "",
 }: BreakTimerProps) {
-  const [timeLeft, setTimeLeft] = useState(duration)
-  const [isActive, setIsActive] = useState(true)
+  const [timeLeft, setTimeLeft] = useState(duration);
+  const [isActive, setIsActive] = useState(true);
 
   // Handle timeout countdown
   useEffect(() => {
-    let timer: NodeJS.Timeout
+    let timer: NodeJS.Timeout;
 
     if (isActive && timeLeft > 0) {
       timer = setInterval(() => {
-        setTimeLeft((prev) => prev - 1)
-      }, 1000)
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
     } else if (timeLeft === 0) {
-      setIsActive(false)
-      onComplete?.()
+      setIsActive(false);
+      onComplete?.();
     }
 
-    return () => clearInterval(timer)
-  }, [isActive, timeLeft, onComplete])
+    return () => clearInterval(timer);
+  }, [isActive, timeLeft, onComplete]);
 
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins}:${secs < 10 ? "0" : ""}${secs}`
-  }
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+  };
 
   const handleCancel = () => {
-    setIsActive(false)
-    onCancel?.()
-  }
+    setIsActive(false);
+    onCancel?.();
+  };
 
   const getIcon = () => {
     switch (icon) {
       case "coffee":
-        return <Coffee size={32} style={{ color: primaryColor }} />
+        return <Coffee size={32} style={{ color: primaryColor }} />;
       case "timer":
-        return <Timer size={32} style={{ color: primaryColor }} />
+        return <Timer size={32} style={{ color: primaryColor }} />;
       case "clock":
       default:
-        return <Clock size={32} style={{ color: primaryColor }} />
+        return <Clock size={32} style={{ color: primaryColor }} />;
     }
-  }
+  };
 
   return (
     <AnimatePresence>
@@ -120,7 +120,10 @@ export function BreakTimer({
             >
               {getIcon()}
             </div>
-            <svg className="absolute top-0 left-0 w-24 h-24 -rotate-90" aria-hidden="true">
+            <svg
+              className="absolute top-0 left-0 w-24 h-24 -rotate-90"
+              aria-hidden="true"
+            >
               <circle
                 cx="48"
                 cy="48"
@@ -136,7 +139,11 @@ export function BreakTimer({
           </div>
           <h3 className="text-xl font-light mb-2 text-white">{title}</h3>
           <p className="text-white/60 mb-4 text-sm">{subtitle}</p>
-          <div className="text-4xl font-light mb-8" style={{ color: primaryColor }} aria-live="polite">
+          <div
+            className="text-4xl font-light mb-8"
+            style={{ color: primaryColor }}
+            aria-live="polite"
+          >
             {formatTime(timeLeft)}
           </div>
 
@@ -144,10 +151,12 @@ export function BreakTimer({
             <button
               onClick={handleCancel}
               className="px-4 py-2 rounded-full text-white/70 hover:text-white/90 border border-white/20 hover:border-white/30 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
-              style={{
-                "--tw-ring-color": primaryColor,
-                "--tw-ring-offset-color": backgroundColor,
-              } as React.CSSProperties}
+              style={
+                {
+                  "--tw-ring-color": primaryColor,
+                  "--tw-ring-offset-color": backgroundColor,
+                } as React.CSSProperties
+              }
             >
               End Break Early
             </button>
@@ -155,13 +164,15 @@ export function BreakTimer({
         </motion.div>
       )}
     </AnimatePresence>
-  )
+  );
 }
 
 /**
  * A component that displays a 5-minute break timer
  */
-export function NeedABreak(props: Omit<BreakTimerProps, "duration" | "title" | "subtitle" | "icon">) {
+export function NeedABreak(
+  props: Omit<BreakTimerProps, "duration" | "title" | "subtitle" | "icon">
+) {
   return (
     <BreakTimer
       duration={300} // 5 minutes
@@ -170,13 +181,15 @@ export function NeedABreak(props: Omit<BreakTimerProps, "duration" | "title" | "
       icon="clock"
       {...props}
     />
-  )
+  );
 }
 
 /**
  * A component that displays a 2-minute bathroom break timer
  */
-export function BathroomBreak(props: Omit<BreakTimerProps, "duration" | "title" | "subtitle" | "icon">) {
+export function BathroomBreak(
+  props: Omit<BreakTimerProps, "duration" | "title" | "subtitle" | "icon">
+) {
   return (
     <BreakTimer
       duration={120} // 2 minutes
@@ -185,6 +198,5 @@ export function BathroomBreak(props: Omit<BreakTimerProps, "duration" | "title" 
       icon="timer"
       {...props}
     />
-  )
+  );
 }
-

@@ -63,6 +63,9 @@ export function TimeRemaining({
   const [remainingBreakTime, setRemainingBreakTime] = useState<number>(0);
   const [breakProgress, setBreakProgress] = useState<number>(0);
 
+  // Ref for the rain audio during break
+  const breakAudioRef = useRef<HTMLAudioElement>(null);
+
   // Load saved state from localStorage on component mount
   useEffect(() => {
     // Load time hiding preference
@@ -214,6 +217,23 @@ export function TimeRemaining({
     },
     breakStartTime ? 1000 : null
   );
+
+  // Auto-play rain sound when break overlay is active
+  useEffect(() => {
+    if (breakType && breakAudioRef.current) {
+      console.log("Break overlay active. Attempting to play rain sound.");
+      const playPromise = breakAudioRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => console.log("Rain sound playback started successfully."))
+          .catch((error) => console.error("Error playing rain sound:", error));
+      }
+    } else if (!breakType && breakAudioRef.current) {
+      console.log("Break ended. Stopping rain sound.");
+      breakAudioRef.current.pause();
+      breakAudioRef.current.currentTime = 0;
+    }
+  }, [breakType]);
 
   // Format time as MM:SS
   const formatTime = (seconds: number) => {
@@ -409,6 +429,14 @@ export function TimeRemaining({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Hidden audio element for rain sound during break */}
+      {breakType && (
+        <audio ref={breakAudioRef} loop>
+          <source src="/rain.mp3" type="audio/mpeg" />
+          Your browser does not support the audio element.
+        </audio>
+      )}
     </div>
   );
 }
