@@ -262,34 +262,40 @@ export function Questionnaire({
       if (event.detail && event.detail.language) {
         // Map language code to voice language code
         const languageMap: Record<string, string> = {
-          'en': 'en-US',
-          'ro': 'ro-RO',
-          'it': 'it-IT',
-          'es': 'es-ES'
+          en: "en-US",
+          ro: "ro-RO",
+          it: "it-IT",
+          es: "es-ES",
         };
-        
-        setCurrentLanguage(languageMap[event.detail.language] || 'en-US');
+
+        setCurrentLanguage(languageMap[event.detail.language] || "en-US");
       }
     };
-    
-    window.addEventListener('languageChanged', handleLanguageChange as EventListener);
-    
+
+    window.addEventListener(
+      "languageChanged",
+      handleLanguageChange as EventListener
+    );
+
     // Check for stored language preference
-    if (typeof window !== 'undefined') {
-      const savedLang = localStorage.getItem('preferredLanguage');
+    if (typeof window !== "undefined") {
+      const savedLang = localStorage.getItem("preferredLanguage");
       if (savedLang) {
         const languageMap: Record<string, string> = {
-          'en': 'en-US',
-          'ro': 'ro-RO',
-          'it': 'it-IT',
-          'es': 'es-ES'
+          en: "en-US",
+          ro: "ro-RO",
+          it: "it-IT",
+          es: "es-ES",
         };
-        setCurrentLanguage(languageMap[savedLang] || 'en-US');
+        setCurrentLanguage(languageMap[savedLang] || "en-US");
       }
     }
-    
+
     return () => {
-      window.removeEventListener('languageChanged', handleLanguageChange as EventListener);
+      window.removeEventListener(
+        "languageChanged",
+        handleLanguageChange as EventListener
+      );
     };
   }, []);
 
@@ -610,27 +616,66 @@ export function Questionnaire({
     }
   };
 
-  // Function to speak question with TTS
   const speakQuestion = async () => {
     if (!currentQuestion) return;
-    
+
     try {
       setIsTtsLoading(true);
       const textToRead = `${currentQuestion.title}. ${currentQuestion.description}`;
-      // Use the server-side TTS integration with the current language
+
+      // --- START: Read latest speechRate directly ---
+      let currentSpeechRate = 1.0; // Default rate
+      if (typeof window !== "undefined") {
+        try {
+          const storedRate = localStorage.getItem("speechRate");
+          if (storedRate) {
+            const parsedRate = parseFloat(storedRate);
+            // Use the parsed rate only if it's a valid number
+            if (!isNaN(parsedRate)) {
+              currentSpeechRate = parsedRate;
+              // Optional: If the state is out of sync, update it now too.
+              // This helps keep the state eventually consistent for other potential uses,
+              // though the primary goal here is using the correct rate *now*.
+              if (parsedRate !== speechRate) {
+                setSpeechRate(parsedRate);
+              }
+            } else {
+              console.warn(
+                "Invalid speechRate found in localStorage:",
+                storedRate
+              );
+              // Fallback to the current state value if localStorage is invalid
+              currentSpeechRate = speechRate;
+            }
+          } else {
+            // Fallback to the current state value if localStorage is empty
+            currentSpeechRate = speechRate;
+          }
+        } catch (error) {
+          console.error("Error reading speechRate from localStorage:", error);
+          // Fallback to the current state value on error
+          currentSpeechRate = speechRate;
+        }
+      } else {
+        // Fallback for SSR or environments without window
+        currentSpeechRate = speechRate;
+      }
+      // --- END: Read latest speechRate directly ---
+
+      // Use the server-side TTS integration with the current language and the *directly read* rate
       const audioUrl = await synthesizeSpeech(
         textToRead,
         currentLanguage,
-        speechRate
+        currentSpeechRate // Use the rate read directly from localStorage
       );
-      
+
       if (!audioUrl) throw new Error("Failed to generate speech");
 
       // Create a new audio element if not exists
       if (!audioRef.current) {
         audioRef.current = new Audio();
       }
-      
+
       // Set up audio events
       audioRef.current.onended = () => setIsPlayingAudio(false);
       audioRef.current.onpause = () => setIsPlayingAudio(false);
@@ -639,12 +684,16 @@ export function Questionnaire({
         toast.error("Error playing audio");
         setIsPlayingAudio(false);
       };
-      
+
       // Set the source and play
       audioRef.current.src = audioUrl;
       await audioRef.current.play();
       setIsPlayingAudio(true);
-      toast.success(`Playing in ${getLanguageName(currentLanguage)}`);
+      toast.success(
+        `Playing in ${getLanguageName(
+          currentLanguage
+        )} at rate ${currentSpeechRate.toFixed(1)}x`
+      ); // Added rate to toast
     } catch (error) {
       console.error("Error generating or playing audio:", error);
       toast.error("Failed to play audio");
@@ -656,10 +705,10 @@ export function Questionnaire({
   // Helper function to get language name for display
   const getLanguageName = (langCode: string): string => {
     const languageMap: Record<string, string> = {
-      'en-US': 'English',
-      'ro-RO': 'Romanian',
-      'it-IT': 'Italian',
-      'es-ES': 'Spanish'
+      "en-US": "English",
+      "ro-RO": "Romanian",
+      "it-IT": "Italian",
+      "es-ES": "Spanish",
     };
     return languageMap[langCode] || langCode;
   };
