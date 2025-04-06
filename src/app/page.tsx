@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AccessibilityPanel from "@/components/accessibility-panel";
 import TimeDisplayButton from "@/components/time-display-button";
 import { TimeRemaining } from "@/components/time-remaining";
-import { Questionnaire } from "@/components/questionnaire";
+import { Questionnaire, AnswerData } from "@/components/questionnaire";
 import { InterviewChat } from "@/components/interview-chat";
 import {
   Pause,
@@ -16,7 +16,7 @@ import {
   MessageSquare,
   Book,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 // Sample questions for the interview
 const allInterviewQuestions = [
@@ -100,7 +100,7 @@ const allInterviewQuestions = [
     id: "goals",
     title: "Career Goals",
     description:
-      "What are your short-term and long-term career goals? How have your past experiences shaped these goals, and what specific steps are you taking to achieve them?",
+      "What are your short-term</h> and long-term career goals? How have your past experiences shaped these goals, and what specific steps are you taking to achieve them?",
     required: true,
     requireVideoAns: true,
 
@@ -126,7 +126,9 @@ function getRandomQuestions(count = 5) {
 
 export default function Home() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [answers, setAnswers] = useState<Record<string | number, AnswerData>>(
+    {}
+  );
   const [questions, setQuestions] = useState<typeof allInterviewQuestions>([]);
   const [isClient, setIsClient] = useState(false);
   const [isResumedSession, setIsResumedSession] = useState(false);
@@ -192,24 +194,36 @@ export default function Home() {
       ? Math.round((currentQuestionIndex / totalQuestions) * 100)
       : 0;
 
-  const handleQuestionAnswered = (id: string | number, answer: string) => {
-    const newAnswers = { ...answers, [id]: answer };
-    setAnswers(newAnswers);
+  // Optimized with useCallback and fixed the type to match what Questionnaire sends
+  const handleQuestionAnswered = useCallback(
+    (id: string | number, answer: AnswerData) => {
+      // Use functional update to prevent state update during render
+      setAnswers((prev) => {
+        const newAnswers = { ...prev, [id]: answer };
 
-    // Save answers to localStorage
-    if (isClient) {
-      localStorage.setItem("interviewAnswers", JSON.stringify(newAnswers));
-    }
-  };
+        // Save answers to localStorage
+        if (isClient) {
+          localStorage.setItem("interviewAnswers", JSON.stringify(newAnswers));
+        }
 
-  const handleQuestionChange = (index: number) => {
-    setCurrentQuestionIndex(index);
+        return newAnswers;
+      });
+    },
+    [isClient]
+  );
 
-    // Save current index to localStorage
-    if (isClient) {
-      localStorage.setItem("currentQuestionIndex", index.toString());
-    }
-  };
+  // Add useCallback to prevent recreating the handler on every render
+  const handleQuestionChange = useCallback(
+    (index: number) => {
+      setCurrentQuestionIndex(index);
+
+      // Save current index to localStorage
+      if (isClient) {
+        localStorage.setItem("currentQuestionIndex", index.toString());
+      }
+    },
+    [isClient]
+  );
 
   const handleSubmit = (submittedAnswers: Record<string, string>) => {
     setAnswers(submittedAnswers);

@@ -22,7 +22,7 @@ import { synthesizeSpeech } from "../app/backend/tts-integration";
 import { toast } from "sonner";
 
 // Define the structure for an answer, which can include text and/or video
-interface AnswerData {
+export interface AnswerData {
   text?: string;
   video?: Blob; // Store video as Blob
 }
@@ -262,6 +262,13 @@ export function Questionnaire({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentIndex, questions]);
 
+  // Effect to notify parent when answers change
+  useEffect(() => {
+    if (currentQuestionId && answers[currentQuestionId]) {
+      onQuestionAnswered?.(currentQuestionId, answers[currentQuestionId]);
+    }
+  }, [answers, currentQuestionId, onQuestionAnswered]);
+
   // Navigation Handlers
   const handleNext = () => {
     if (currentIndex < questions.length - 1) {
@@ -285,7 +292,7 @@ export function Questionnaire({
     setAnswers((prev) => {
       const existingAnswer = prev[currentQuestionId] || {};
       const updatedAnswer = { ...existingAnswer, text: newText };
-      onQuestionAnswered?.(currentQuestionId, updatedAnswer); // Notify parent
+      // Remove the direct call to onQuestionAnswered - now handled by the effect
       return { ...prev, [currentQuestionId]: updatedAnswer };
     });
   };
@@ -297,7 +304,7 @@ export function Questionnaire({
       const updatedAnswers = { ...prev };
       // Keep the key but clear the data
       updatedAnswers[currentQuestionId] = {};
-      onQuestionAnswered?.(currentQuestionId, {}); // Notify parent
+      // Remove the direct call to onQuestionAnswered - now handled by the effect
       return updatedAnswers;
     });
     // If it was a video question, reset the preview
@@ -319,7 +326,7 @@ export function Questionnaire({
     setAnswers((prev) => {
       const existingAnswer = prev[questionId] || {};
       const updatedAnswer = { ...existingAnswer, text: currentAnswerText };
-      onQuestionAnswered?.(questionId, updatedAnswer);
+      // Remove direct call to onQuestionAnswered - handled by the useEffect
       return { ...prev, [questionId]: updatedAnswer };
     });
 
@@ -338,7 +345,7 @@ export function Questionnaire({
     setAnswers((prev) => {
       const existingAnswer = prev[questionId] || {};
       const updatedAnswer = { ...existingAnswer, text: currentAnswerText };
-      onQuestionAnswered?.(questionId, updatedAnswer);
+      // Remove direct call to onQuestionAnswered - handled by the useEffect
       return { ...prev, [questionId]: updatedAnswer };
     });
 
@@ -740,6 +747,132 @@ export function Questionnaire({
                 />
               </div>
             )}
+            <hr className="my-8" />
+
+            {/* --- VIDEO RECORDING SECTION (Conditional Rendering) --- */}
+            {currentQuestion?.requireVideoAns && (
+              <div className="flex mb-8 flex-col gap-4">
+                <div className="flex items-center">
+                  <div className="w-1 h-6 bg-indigo-500 dark:bg-indigo-400 mr-3 rounded-full"></div>
+                  <h3 className="flex gap-2 items-center text-lg font-medium text-gray-800 dark:text-gray-200">
+                    <Video className="h-5 w-5 mr-2" />
+                    {showVideoPreview
+                      ? "Video Response Preview"
+                      : "Record Video Response"}
+                  </h3>
+                </div>
+
+                <div className="relative w-full max-w-2xl mx-auto rounded-lg overflow-hidden bg-black aspect-video border border-slate-200 dark:border-slate-700">
+                  {/* Live video feed */}
+                  <video
+                    ref={liveVideoRef}
+                    playsInline
+                    className={`w-full h-full object-cover transition-opacity duration-300 ${
+                      showVideoPreview
+                        ? "opacity-0 pointer-events-none"
+                        : "opacity-100"
+                    }`}
+                  />
+
+                  {/* Recorded video playback */}
+                  {showVideoPreview && videoUrl && (
+                    <video
+                      ref={recordedVideoRef}
+                      src={videoUrl}
+                      controls
+                      autoPlay
+                      playsInline
+                      className="absolute inset-0 w-full h-full object-contain bg-black"
+                      onError={(e) => {
+                        console.error("Error playing preview video:", e);
+                        toast.error("Could not play recorded video preview.");
+                      }}
+                    />
+                  )}
+
+                  {/* Overlay for when no stream is active */}
+                  {!videoStream && !showVideoPreview && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50">
+                      <button
+                        onClick={startVideoStream}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg px-4 py-2 flex items-center"
+                      >
+                        <Video className="h-4 w-4 mr-2" />
+                        Start Camera
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Recording indicator */}
+                  {isVideoRecording && (
+                    <div className="absolute top-4 right-4 flex items-center bg-red-600 text-white px-3 py-1 rounded-full text-sm animate-pulse z-10">
+                      <span className="h-2 w-2 bg-white rounded-full mr-2"></span>
+                      Recording
+                    </div>
+                  )}
+                </div>
+
+                {/* Video controls */}
+                <div className="mt-4 flex flex-wrap justify-center gap-3">
+                  {showVideoPreview ? (
+                    <>
+                      {/* Controls for preview mode */}
+                      <button
+                        onClick={retakeVideo}
+                        className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white flex items-center"
+                      >
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Retake Video
+                      </button>
+                      <button
+                        onClick={downloadVideo}
+                        disabled={!currentQuestionAnswer?.video} // Disable if no video blob exists
+                        className="px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Download Video
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      {/* Controls for recording mode */}
+                      <button
+                        onClick={toggleVideoRecording}
+                        disabled={!videoStream}
+                        className={`px-4 py-2 rounded-xl text-white flex items-center transition-colors ${
+                          isVideoRecording
+                            ? "bg-red-600 hover:bg-red-700"
+                            : "bg-indigo-600 hover:bg-indigo-700"
+                        } ${
+                          !videoStream ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
+                      >
+                        {isVideoRecording ? (
+                          <>
+                            <StopCircle className="h-4 w-4 mr-2" />
+                            Stop Recording
+                          </>
+                        ) : (
+                          <>
+                            <span className="h-3 w-3 rounded-full bg-red-500 mr-2 border border-white"></span>
+                            Start Recording
+                          </>
+                        )}
+                      </button>
+                      {videoStream && !isVideoRecording && (
+                        <button
+                          onClick={stopVideoStream}
+                          className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-[#1e1e2d] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center"
+                        >
+                          <CameraOff className="h-4 w-4 mr-2" />
+                          Turn Off Camera
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Conditionally render textarea if video isn't required OR if it is */}
             {/* You might want to hide textarea if ONLY video is required */}
@@ -851,126 +984,6 @@ export function Questionnaire({
           )}
         </button>
       </div>
-
-      {/* --- VIDEO RECORDING SECTION (Conditional Rendering) --- */}
-      {currentQuestion?.requireVideoAns && (
-        <div className="mt-8 p-6 rounded-xl bg-slate-50 dark:bg-[#1a1a24] border border-slate-100 dark:border-slate-700/50">
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center">
-            <Video className="h-5 w-5 mr-2" />
-            {showVideoPreview
-              ? "Video Response Preview"
-              : "Record Video Response"}
-          </h2>
-
-          <div className="relative w-full max-w-2xl mx-auto rounded-lg overflow-hidden bg-black aspect-video border border-slate-200 dark:border-slate-700">
-            {/* Live video feed */}
-            <video
-              ref={liveVideoRef}
-              playsInline
-              className={`w-full h-full object-cover transition-opacity duration-300 ${
-                showVideoPreview
-                  ? "opacity-0 pointer-events-none"
-                  : "opacity-100"
-              }`}
-            />
-
-            {/* Recorded video playback */}
-            {showVideoPreview && videoUrl && (
-              <video
-                ref={recordedVideoRef}
-                src={videoUrl}
-                controls
-                autoPlay
-                playsInline
-                className="absolute inset-0 w-full h-full object-contain bg-black"
-                onError={(e) => {
-                  console.error("Error playing preview video:", e);
-                  toast.error("Could not play recorded video preview.");
-                }}
-              />
-            )}
-
-            {/* Overlay for when no stream is active */}
-            {!videoStream && !showVideoPreview && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50">
-                <button
-                  onClick={startVideoStream}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg px-4 py-2 flex items-center"
-                >
-                  <Video className="h-4 w-4 mr-2" />
-                  Start Camera
-                </button>
-              </div>
-            )}
-
-            {/* Recording indicator */}
-            {isVideoRecording && (
-              <div className="absolute top-4 right-4 flex items-center bg-red-600 text-white px-3 py-1 rounded-full text-sm animate-pulse z-10">
-                <span className="h-2 w-2 bg-white rounded-full mr-2"></span>
-                Recording
-              </div>
-            )}
-          </div>
-
-          {/* Video controls */}
-          <div className="mt-4 flex flex-wrap justify-center gap-3">
-            {showVideoPreview ? (
-              <>
-                {/* Controls for preview mode */}
-                <button
-                  onClick={retakeVideo}
-                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white flex items-center"
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Retake Video
-                </button>
-                <button
-                  onClick={downloadVideo}
-                  disabled={!currentQuestionAnswer?.video} // Disable if no video blob exists
-                  className="px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Download Video
-                </button>
-              </>
-            ) : (
-              <>
-                {/* Controls for recording mode */}
-                <button
-                  onClick={toggleVideoRecording}
-                  disabled={!videoStream}
-                  className={`px-4 py-2 rounded-xl text-white flex items-center transition-colors ${
-                    isVideoRecording
-                      ? "bg-red-600 hover:bg-red-700"
-                      : "bg-indigo-600 hover:bg-indigo-700"
-                  } ${!videoStream ? "opacity-50 cursor-not-allowed" : ""}`}
-                >
-                  {isVideoRecording ? (
-                    <>
-                      <StopCircle className="h-4 w-4 mr-2" />
-                      Stop Recording
-                    </>
-                  ) : (
-                    <>
-                      <span className="h-3 w-3 rounded-full bg-red-500 mr-2 border border-white"></span>
-                      Start Recording
-                    </>
-                  )}
-                </button>
-                {videoStream && !isVideoRecording && (
-                  <button
-                    onClick={stopVideoStream}
-                    className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-[#1e1e2d] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center"
-                  >
-                    <CameraOff className="h-4 w-4 mr-2" />
-                    Turn Off Camera
-                  </button>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* QUESTION MODAL */}
       {/* ... (Modal remains largely the same, ensure it uses currentAnswerText state) ... */}
