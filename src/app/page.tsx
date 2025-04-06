@@ -15,6 +15,10 @@ import {
   Settings2,
   MessageSquare,
   Book,
+  Accessibility,
+  Coffee,
+  Save,
+  AlertTriangle,
 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import WhiteboardModal from "~/components/white-board-modal";
@@ -423,28 +427,67 @@ export default function Home() {
                     value="instructions"
                     className="focus:outline-none"
                   >
-                    <div className="p-6 rounded-xl bg-slate-50 dark:bg-[#1a1a24] border border-slate-100 dark:border-slate-700/50">
-                      <h3 className="text-xl font-medium mb-4">
+                    <div className="p-8 rounded-xl bg-gradient-to-br from-white via-white to-indigo-50/30 dark:from-[#1a1a24] dark:via-[#1a1a24] dark:to-indigo-900/10 border border-slate-100 dark:border-slate-700/50 shadow-sm">
+                      <h3 className="text-2xl font-medium mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
                         Interview Instructions
                       </h3>
-                      <ul className="space-y-3 text-slate-700 dark:text-slate-300">
-                        <li className="flex items-start">
-                          <span className="inline-block w-1.5 h-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400 mt-2 mr-2"></span>
-                          Take your time to answer each question thoroughly.
-                        </li>
-                        <li className="flex items-start">
-                          <span className="inline-block w-1.5 h-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400 mt-2 mr-2"></span>
-                          Use the accessibility tools in the toolbar as needed.
-                        </li>
-                        <li className="flex items-start">
-                          <span className="inline-block w-1.5 h-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400 mt-2 mr-2"></span>
-                          If you need a break, use the Timeout button.
-                        </li>
-                        <li className="flex items-start">
-                          <span className="inline-block w-1.5 h-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400 mt-2 mr-2"></span>
-                          Your answers will be automatically saved as you type.
-                        </li>
-                      </ul>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div className="p-6 rounded-xl bg-white/80 dark:bg-slate-800/50 border border-indigo-100 dark:border-indigo-800/30 shadow-sm transform transition-transform duration-300 hover:scale-[1.02]">
+                          <div className="flex items-center mb-4">
+                            <div className="rounded-full p-3 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 mr-4">
+                              <Clock className="h-5 w-5" />
+                            </div>
+                            <h4 className="font-medium text-lg">Take Your Time</h4>
+                          </div>
+                          <p className="text-slate-600 dark:text-slate-300 ml-14">
+                            Answer each question thoroughly, thinking about your past experiences and how they demonstrate your skills.
+                          </p>
+                        </div>
+                        
+                        <div className="p-6 rounded-xl bg-white/80 dark:bg-slate-800/50 border border-indigo-100 dark:border-indigo-800/30 shadow-sm transform transition-transform duration-300 hover:scale-[1.02]">
+                          <div className="flex items-center mb-4">
+                            <div className="rounded-full p-3 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 mr-4">
+                              <Accessibility className="h-5 w-5" />
+                            </div>
+                            <h4 className="font-medium text-lg">Accessibility Tools</h4>
+                          </div>
+                          <p className="text-slate-600 dark:text-slate-300 ml-14">
+                            Use the accessibility panel to customize your experience with font size, contrast settings, and more.
+                          </p>
+                        </div>
+                        
+                        <div className="p-6 rounded-xl bg-white/80 dark:bg-slate-800/50 border border-indigo-100 dark:border-indigo-800/30 shadow-sm transform transition-transform duration-300 hover:scale-[1.02]">
+                          <div className="flex items-center mb-4">
+                            <div className="rounded-full p-3 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 mr-4">
+                              <Coffee className="h-5 w-5" />
+                            </div>
+                            <h4 className="font-medium text-lg">Take Breaks</h4>
+                          </div>
+                          <p className="text-slate-600 dark:text-slate-300 ml-14">
+                            If you need a moment to collect your thoughts, use the break button in the timer section. You can take one break during the interview.
+                          </p>
+                        </div>
+                        
+                        <div className="p-6 rounded-xl bg-white/80 dark:bg-slate-800/50 border border-indigo-100 dark:border-indigo-800/30 shadow-sm transform transition-transform duration-300 hover:scale-[1.02]">
+                          <div className="flex items-center mb-4">
+                            <div className="rounded-full p-3 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 mr-4">
+                              <Save className="h-5 w-5" />
+                            </div>
+                            <h4 className="font-medium text-lg">Auto-saving</h4>
+                          </div>
+                          <p className="text-slate-600 dark:text-slate-300 ml-14">
+                            Your answers are automatically saved as you type. If you need to leave and come back, your progress will be preserved.
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 flex items-center gap-3">
+                        <AlertTriangle className="h-5 w-5 text-amber-500 dark:text-amber-400 shrink-0" />
+                        <p className="text-sm text-amber-800 dark:text-amber-300">
+                          Remember to prepare a professional environment before starting video recordings. Ensure good lighting and a clean background.
+                        </p>
+                      </div>
                     </div>
                   </TabsContent>
 
