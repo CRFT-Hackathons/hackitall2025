@@ -224,8 +224,8 @@ export default function Home() {
     },
     [isClient]
   );
-
-  const handleSubmit = (submittedAnswers: Record<string, string>) => {
+  const handleSubmit = (submittedAnswers: Record<string | number, AnswerData>) => {
+    // Store answers directly without type conversion
     setAnswers(submittedAnswers);
 
     // Save answers to localStorage

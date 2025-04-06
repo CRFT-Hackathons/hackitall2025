@@ -262,10 +262,23 @@ export function Questionnaire({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentIndex, questions]);
 
-  // Effect to notify parent when answers change
+  // Fix the effect to safely call onQuestionAnswered only when answers actually change
   useEffect(() => {
-    if (currentQuestionId && answers[currentQuestionId]) {
-      onQuestionAnswered?.(currentQuestionId, answers[currentQuestionId]);
+    if (currentQuestionId && onQuestionAnswered) {
+      const currentAnswer = answers[currentQuestionId];
+      if (currentAnswer) {
+        // Use setTimeout to move the state update out of the render cycle
+        const timerId = setTimeout(() => {
+          try {
+            onQuestionAnswered(currentQuestionId, currentAnswer);
+          } catch (error) {
+            console.error("Error in onQuestionAnswered callback:", error);
+          }
+        }, 0);
+        
+        // Clear timeout on cleanup
+        return () => clearTimeout(timerId);
+      }
     }
   }, [answers, currentQuestionId, onQuestionAnswered]);
 
@@ -408,7 +421,8 @@ export function Questionnaire({
                     ? `${currentText}\n${transcription}`
                     : transcription;
                   const updatedAnswer = { ...existingAnswer, text: newText };
-                  onQuestionAnswered?.(currentQuestionId, updatedAnswer);
+                  
+                  // Don't directly call onQuestionAnswered here, it will be handled by the useEffect
                   return { ...prev, [currentQuestionId]: updatedAnswer };
                 });
                 toast.success("Voice input added successfully");
@@ -587,16 +601,22 @@ export function Questionnaire({
           type: options.mimeType || "video/webm",
         });
 
-        // *** Store Blob in the answers state ***
-        setAnswers((prev) => {
-          const existingAnswer = prev[currentQuestionId] || {};
-          const updatedAnswer = { ...existingAnswer, video: blob };
-          onQuestionAnswered?.(currentQuestionId, updatedAnswer); // Notify parent
-          return { ...prev, [currentQuestionId]: updatedAnswer };
-        });
+        // Make sure currentQuestionId is valid before updating
+        if (currentQuestionId) {
+          // *** Store Blob in the answers state ***
+          setAnswers((prev) => {
+            const existingAnswer = prev[currentQuestionId] || {};
+            const updatedAnswer = { ...existingAnswer, video: blob };
+            
+            // Don't call onQuestionAnswered directly here anymore, the useEffect will handle it safely
+            return { ...prev, [currentQuestionId]: updatedAnswer };
+          });
 
-        // Preview state is handled by the useEffect watching answers
-        toast.success("Recording complete. Preview ready.");
+          toast.success("Recording complete. Preview ready.");
+        } else {
+          console.error("No current question ID available when recording stopped");
+          toast.error("Could not save recording to current question");
+        }
       };
 
       videoRecorder.current.start();
@@ -635,7 +655,8 @@ export function Questionnaire({
       // Create a new object without the video property
       const { video, ...rest } = existingAnswer;
       const updatedAnswer = { ...rest };
-      onQuestionAnswered?.(currentQuestionId, updatedAnswer); // Notify parent
+      
+      // Don't call onQuestionAnswered directly here anymore, the useEffect will handle it safely
       return { ...prev, [currentQuestionId]: updatedAnswer };
     });
 
