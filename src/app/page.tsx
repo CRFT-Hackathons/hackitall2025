@@ -338,27 +338,6 @@ function HomeContent() {
     // localStorage.removeItem('interviewQuestions');
   };
 
-  // Function to start a new interview with fresh questions
-  const startNewInterview = () => {
-    if (!isClient) return;
-
-    // Generate new random questions
-    const newQuestions = getRandomQuestions();
-    setQuestions(newQuestions);
-
-    // Reset answers and current index
-    setAnswers({});
-    setCurrentQuestionIndex(0);
-    setIsResumedSession(false);
-    setIsSubmitted(false);
-
-    // Update localStorage
-    localStorage.setItem("interviewQuestions", JSON.stringify(newQuestions));
-    localStorage.removeItem("interviewAnswers");
-    localStorage.setItem("currentQuestionIndex", "0");
-    localStorage.removeItem("isSubmitted");
-  };
-
   // Check if submitted when component mounts
   useEffect(() => {
     if (isClient) {
@@ -408,7 +387,7 @@ function HomeContent() {
 
             {/* Main question card */}
             <Card className="overflow-hidden border border-indigo-100 dark:border-indigo-900/50 bg-gradient-to-br from-white via-white to-indigo-50/30 dark:from-[#16161d] dark:via-[#16161d] dark:to-indigo-900/10 rounded-xl">
-              <div className="p-16 pt-16 pb-16 sm:p-6 relative z-10"> 
+              <div className="p-16 pt-16 pb-16 sm:p-6 relative z-10">
                 {isClient ? (
                   <Tabs defaultValue="questions" className="w-full">
                     <TabsList className="mb-4 mt-4  bg-slate-100/80 dark:bg-slate-800/20 p-0 rounded-full w-full h-12 grid grid-cols-3">

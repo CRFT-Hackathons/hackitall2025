@@ -38,47 +38,47 @@ function OnboardingCheck({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-// This component applies accessibility settings from localStorage
-function AccessibilitySettings({ children }: { children: React.ReactNode }) {
-  useEffect(() => {
-    // Apply saved settings on app load
-    try {
-      // Font size
-      const fontSize = localStorage.getItem("fontSize");
-      if (fontSize) {
-        document.documentElement.style.fontSize = `${fontSize}px`;
-      }
+// // This component applies accessibility settings from localStorage
+// function AccessibilitySettings({ children }: { children: React.ReactNode }) {
+//   useEffect(() => {
+//     // Apply saved settings on app load
+//     try {
+//       // Font size
+//       const fontSize = localStorage.getItem("fontSize");
+//       if (fontSize) {
+//         document.documentElement.style.fontSize = `${fontSize}px`;
+//       }
 
-      // Dyslexic font
-      const useDyslexicFont = localStorage.getItem("useDyslexicFont");
-      if (useDyslexicFont === "true") {
-        document.body.classList.add("dyslexic-font");
-      }
+//       // Dyslexic font
+//       const useDyslexicFont = localStorage.getItem("useDyslexicFont");
+//       if (useDyslexicFont === "true") {
+//         document.body.classList.add("dyslexic-font");
+//       }
 
-      // Color blind mode
-      const colorBlindMode = localStorage.getItem("colorBlindMode");
-      if (colorBlindMode && colorBlindMode !== "none") {
-        document.body.setAttribute("data-color-blind-mode", colorBlindMode);
-      }
+//       // Color blind mode
+//       const colorBlindMode = localStorage.getItem("colorBlindMode");
+//       if (colorBlindMode && colorBlindMode !== "none") {
+//         document.body.setAttribute("data-color-blind-mode", colorBlindMode);
+//       }
 
-      // High contrast
-      const highContrast = localStorage.getItem("highContrast");
-      if (highContrast === "true") {
-        document.body.classList.add("high-contrast");
-      }
+//       // High contrast
+//       const highContrast = localStorage.getItem("highContrast");
+//       if (highContrast === "true") {
+//         document.body.classList.add("high-contrast");
+//       }
 
-      // Animations
-      const disableAnimations = localStorage.getItem("disableAnimations");
-      if (disableAnimations === "true") {
-        document.body.classList.add("reduce-motion");
-      }
-    } catch (error) {
-      console.error("Error applying accessibility settings:", error);
-    }
-  }, []);
+//       // Animations
+//       const disableAnimations = localStorage.getItem("disableAnimations");
+//       if (disableAnimations === "true") {
+//         document.body.classList.add("reduce-motion");
+//       }
+//     } catch (error) {
+//       console.error("Error applying accessibility settings:", error);
+//     }
+//   }, []);
 
-  return <>{children}</>;
-}
+//   return <>{children}</>;
+// }
 
 export default function RootLayout({
   children,
@@ -99,50 +99,48 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <OnboardingCheck>
-            <AccessibilitySettings>
-              {/* SVG filters for color blindness */}
-              <svg
-                className="absolute"
-                style={{ height: 0, width: 0, position: "absolute" }}
-              >
-                <defs>
-                  {/* Protanopia Filter */}
-                  <filter id="protanopia-filter">
-                    <feColorMatrix
-                      type="matrix"
-                      values="0.567, 0.433, 0, 0, 0
+            {/* SVG filters for color blindness */}
+            <svg
+              className="absolute"
+              style={{ height: 0, width: 0, position: "absolute" }}
+            >
+              <defs>
+                {/* Protanopia Filter */}
+                <filter id="protanopia-filter">
+                  <feColorMatrix
+                    type="matrix"
+                    values="0.567, 0.433, 0, 0, 0
                                 0.558, 0.442, 0, 0, 0
                                 0, 0.242, 0.758, 0, 0
                                 0, 0, 0, 1, 0"
-                    />
-                  </filter>
+                  />
+                </filter>
 
-                  {/* Deuteranopia Filter */}
-                  <filter id="deuteranopia-filter">
-                    <feColorMatrix
-                      type="matrix"
-                      values="0.625, 0.375, 0, 0, 0
+                {/* Deuteranopia Filter */}
+                <filter id="deuteranopia-filter">
+                  <feColorMatrix
+                    type="matrix"
+                    values="0.625, 0.375, 0, 0, 0
                                 0.7, 0.3, 0, 0, 0
                                 0, 0.3, 0.7, 0, 0
                                 0, 0, 0, 1, 0"
-                    />
-                  </filter>
+                  />
+                </filter>
 
-                  {/* Tritanopia Filter */}
-                  <filter id="tritanopia-filter">
-                    <feColorMatrix
-                      type="matrix"
-                      values="0.95, 0.05, 0, 0, 0
+                {/* Tritanopia Filter */}
+                <filter id="tritanopia-filter">
+                  <feColorMatrix
+                    type="matrix"
+                    values="0.95, 0.05, 0, 0, 0
                                 0, 0.433, 0.567, 0, 0
                                 0, 0.475, 0.525, 0, 0
                                 0, 0, 0, 1, 0"
-                    />
-                  </filter>
-                </defs>
-              </svg>
+                  />
+                </filter>
+              </defs>
+            </svg>
 
-              {children}
-            </AccessibilitySettings>
+            {children}
           </OnboardingCheck>
           <Toaster />
         </ThemeProvider>

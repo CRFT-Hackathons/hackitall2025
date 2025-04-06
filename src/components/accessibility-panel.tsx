@@ -36,6 +36,7 @@ export default function AccessibilityPanel() {
   const [speechRate, setSpeechRate] = useState(1);
   const { theme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const [useDyslexicFont, setUseDyslexicFont] = useState(false);
   const [useProfanityFilter, setUseProfanityFilter] = useState(false);
@@ -74,7 +75,7 @@ export default function AccessibilityPanel() {
       // Load font size
       const savedFontSize = localStorage.getItem("fontSize");
       if (savedFontSize) {
-        setFontSize(parseInt(savedFontSize, 10));
+        setFontSize(parseInt(savedFontSize));
       }
 
       const savedHighlight = localStorage.getItem("isHighlight");
@@ -138,13 +139,16 @@ export default function AccessibilityPanel() {
       if (savedSimplifiedInterface === "true") {
         setSimplifiedInterface(true);
       }
+
+      // Mark settings as loaded
+      setIsLoaded(true);
     }
   }, []);
 
   // Apply dyslexic font when changed
   useEffect(() => {
     try {
-      if (typeof window !== "undefined") {
+      if (typeof window !== "undefined" && isLoaded) {
         if (useDyslexicFont) {
           // Apply dyslexic font to the entire body
           document.body.style.fontFamily = "'OpenDyslexic', sans-serif";
@@ -178,11 +182,11 @@ export default function AccessibilityPanel() {
     } catch (error) {
       console.error("Error applying dyslexic font:", error);
     }
-  }, [useDyslexicFont]);
+  }, [useDyslexicFont, isLoaded]);
 
   // Apply animations setting
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && isLoaded) {
       if (disableAnimations) {
         document.documentElement.classList.add("disable-animations");
       } else {
@@ -190,20 +194,24 @@ export default function AccessibilityPanel() {
       }
       localStorage.setItem("disableAnimations", disableAnimations.toString());
     }
-  }, [disableAnimations]);
+  }, [disableAnimations, isLoaded]);
 
-  // Save font size
+  // Apply font size setting
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && isLoaded) {
       localStorage.setItem("fontSize", fontSize.toString());
-      // Apply font size to root element
-      document.documentElement.style.fontSize = `${fontSize / 16}rem`;
+
+      // Reset any previous font size setting first
+      document.documentElement.style.fontSize = "";
+
+      // Then apply the new font size using pixels directly
+      document.documentElement.style.fontSize = `${fontSize}px`;
     }
-  }, [fontSize]);
+  }, [fontSize, isLoaded]);
 
   // Apply high contrast setting
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && isLoaded) {
       if (highContrast) {
         document.body.classList.add("high-contrast");
       } else {
@@ -211,11 +219,11 @@ export default function AccessibilityPanel() {
       }
       localStorage.setItem("highContrast", highContrast.toString());
     }
-  }, [highContrast]);
+  }, [highContrast, isLoaded]);
 
   // Apply color blind mode
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && isLoaded) {
       document.body.setAttribute("data-color-blind-mode", colorBlindMode);
       localStorage.setItem("colorBlindMode", colorBlindMode);
 
@@ -226,11 +234,11 @@ export default function AccessibilityPanel() {
         document.documentElement.style.filter = "";
       }
     }
-  }, [colorBlindMode]);
+  }, [colorBlindMode, isLoaded]);
 
   // Save all other settings
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && isLoaded) {
       localStorage.setItem("speechRate", speechRate.toString());
       localStorage.setItem("useProfanityFilter", useProfanityFilter.toString());
       localStorage.setItem("textToSpeech", textToSpeech.toString());
@@ -252,6 +260,7 @@ export default function AccessibilityPanel() {
     eyeTracking,
     voiceCommands,
     simplifiedInterface,
+    isLoaded,
   ]);
 
   const handleSaveSettings = () => {
@@ -424,37 +433,49 @@ export default function AccessibilityPanel() {
                   onCheckedChange={(checked) => {
                     setIsHighlight(checked);
                     localStorage.setItem("isHighlight", checked.toString());
-                    
+
                     // Dispatch a custom event that other components can listen for
-                    if (typeof window !== 'undefined') {
-                      const event = new CustomEvent('highlightingChanged', { detail: { isHighlight: checked } });
+                    if (typeof window !== "undefined") {
+                      const event = new CustomEvent("highlightingChanged", {
+                        detail: { isHighlight: checked },
+                      });
                       window.dispatchEvent(event);
                     }
-                    
+
                     // Display toast with meaningful message
                     toast.success(
-                      checked 
-                        ? "Key terms highlighting enabled" 
-                        : "Key terms highlighting disabled", 
+                      checked
+                        ? "Key terms highlighting enabled"
+                        : "Key terms highlighting disabled",
                       {
                         description: checked
                           ? "Important terms will be highlighted to improve focus"
-                          : "Question text will be displayed without highlighting"
+                          : "Question text will be displayed without highlighting",
                       }
                     );
                   }}
                   className="data-[state=checked]:bg-indigo-500 dark:data-[state=checked]:bg-indigo-600"
-                  aria-label={isHighlight ? "Disable key terms highlighting" : "Enable key terms highlighting"}
-                  title={isHighlight ? "Turn off highlighting of key terms in questions" : "Highlight important terms in questions to improve focus"}
+                  aria-label={
+                    isHighlight
+                      ? "Disable key terms highlighting"
+                      : "Enable key terms highlighting"
+                  }
+                  title={
+                    isHighlight
+                      ? "Turn off highlighting of key terms in questions"
+                      : "Highlight important terms in questions to improve focus"
+                  }
                 />
               </div>
-              
+
               {/* Information box about key term highlighting benefits */}
               <div className="p-3 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 text-sm text-indigo-700 dark:text-indigo-300 mt-2">
                 <h4 className="font-medium mb-1">Why highlight key terms?</h4>
                 <ul className="space-y-1 list-disc pl-4 text-xs">
                   <li>Improves focus for users with attention deficits</li>
-                  <li>Helps identify important concepts in complex questions</li>
+                  <li>
+                    Helps identify important concepts in complex questions
+                  </li>
                   <li>Makes interview preparation more effective</li>
                   <li>Particularly useful for cognitive accessibility needs</li>
                 </ul>
