@@ -17,6 +17,7 @@ import {
   Book,
 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
+import WhiteboardModal from "~/components/white-board-modal";
 
 // Sample questions for the interview
 const allInterviewQuestions = [
@@ -258,10 +259,13 @@ export default function Home() {
         const questionsCopy = [...questions];
         setQuestions(questionsCopy);
       };
-      
-      window.addEventListener('highlightingChanged', handleHighlightingChange);
+
+      window.addEventListener("highlightingChanged", handleHighlightingChange);
       return () => {
-        window.removeEventListener('highlightingChanged', handleHighlightingChange);
+        window.removeEventListener(
+          "highlightingChanged",
+          handleHighlightingChange
+        );
       };
     }
   }, [isClient, questions]);
@@ -296,7 +300,9 @@ export default function Home() {
     },
     [isClient]
   );
-  const handleSubmit = (submittedAnswers: Record<string | number, AnswerData>) => {
+  const handleSubmit = (
+    submittedAnswers: Record<string | number, AnswerData>
+  ) => {
     // Store answers directly without type conversion
     setAnswers(submittedAnswers);
 
@@ -552,6 +558,7 @@ export default function Home() {
                 </li>
               </ul>
             </Card>
+            <WhiteboardModal />
           </div>
         </div>
       </div>
