@@ -21,6 +21,9 @@ import {
 import { useState, useEffect, useCallback } from "react";
 import WhiteboardModal from "~/components/white-board-modal";
 import dynamic from "next/dynamic";
+import LanguageSwitcher from "@/components/language-switcher";
+import { speakText } from "@/lib/text-to-speech";
+import SpeechText from "@/components/speech-text";
 
 // Sample questions for the interview
 const allInterviewQuestions = [
@@ -388,12 +391,7 @@ function HomeContent() {
             </div>
 
             <div className="flex gap-2">
-              {/* <button
-                onClick={startNewInterview}
-                className="rounded-xl border border-indigo-200 dark:border-indigo-800 bg-white dark:bg-[#1e1e2d] hover:bg-indigo-50 dark:hover:bg-indigo-900/30 px-4 py-2 text-indigo-600 dark:text-indigo-400 transition-colors"
-              >
-                New Interview
-              </button> */}
+              <LanguageSwitcher />
               <AccessibilityPanel />
             </div>
           </div>
@@ -410,7 +408,7 @@ function HomeContent() {
 
             {/* Main question card */}
             <Card className="overflow-hidden border border-indigo-100 dark:border-indigo-900/50 bg-gradient-to-br from-white via-white to-indigo-50/30 dark:from-[#16161d] dark:via-[#16161d] dark:to-indigo-900/10 rounded-xl">
-              <div className="p-16 pt-16 pb-16 sm:p-6 relative z-10">
+              <div className="p-16 pt-16 pb-16 sm:p-6 relative z-10"> 
                 {isClient ? (
                   <Tabs defaultValue="questions" className="w-full">
                     <TabsList className="mb-4 mt-4  bg-slate-100/80 dark:bg-slate-800/20 p-0 rounded-full w-full h-12 grid grid-cols-3">

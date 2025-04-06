@@ -94,6 +94,9 @@ export function Questionnaire({
   const [modalIndex, setModalIndex] = useState(0);
   const [currentAnswerText, setCurrentAnswerText] = useState(""); // For modal text input
 
+  // Add state for language
+  const [currentLanguage, setCurrentLanguage] = useState(languageCode);
+
   // Add highlighting state and ref
   const [isHighlightMode, setIsHighlightMode] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -252,6 +255,43 @@ export function Questionnaire({
     window.addEventListener("focus", handleFocus);
     return () => window.removeEventListener("focus", handleFocus);
   }, [speechRate]);
+
+  // Listen for language changes from the LanguageSwitcher component
+  useEffect(() => {
+    const handleLanguageChange = (event: CustomEvent) => {
+      if (event.detail && event.detail.language) {
+        // Map language code to voice language code
+        const languageMap: Record<string, string> = {
+          'en': 'en-US',
+          'ro': 'ro-RO',
+          'it': 'it-IT',
+          'es': 'es-ES'
+        };
+        
+        setCurrentLanguage(languageMap[event.detail.language] || 'en-US');
+      }
+    };
+    
+    window.addEventListener('languageChanged', handleLanguageChange as EventListener);
+    
+    // Check for stored language preference
+    if (typeof window !== 'undefined') {
+      const savedLang = localStorage.getItem('preferredLanguage');
+      if (savedLang) {
+        const languageMap: Record<string, string> = {
+          'en': 'en-US',
+          'ro': 'ro-RO',
+          'it': 'it-IT',
+          'es': 'es-ES'
+        };
+        setCurrentLanguage(languageMap[savedLang] || 'en-US');
+      }
+    }
+    
+    return () => {
+      window.removeEventListener('languageChanged', handleLanguageChange as EventListener);
+    };
+  }, []);
 
   // Get current question
   const currentQuestion = questions[currentIndex];
@@ -511,7 +551,7 @@ export function Questionnaire({
               const base64Audio = (reader.result as string).split(",")[1];
               const transcription = await transcribeAudio(
                 base64Audio,
-                languageCode
+                currentLanguage
               );
               if (transcription && currentQuestionId) {
                 setAnswers((prev) => {
@@ -570,46 +610,44 @@ export function Questionnaire({
     }
   };
 
-  // TEXT-TO-SPEECH FUNCTION (Remains the same)
-  const playQuestionAudio = async () => {
-    if (isPlayingAudio) {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-        setIsPlayingAudio(false);
-      }
-      return;
-    }
+  // Function to speak question with TTS
+  const speakQuestion = async () => {
+    if (!currentQuestion) return;
+    
     try {
       setIsTtsLoading(true);
-      const currentSpeechRate = parseFloat(
-        localStorage.getItem("speechRate") || "1.0"
-      );
       const textToRead = `${currentQuestion.title}. ${currentQuestion.description}`;
       const audioUrl = await synthesizeSpeech(
         textToRead,
-        languageCode,
-        currentSpeechRate
+        currentLanguage,
+        speechRate
       );
       if (!audioUrl) throw new Error("Failed to generate speech");
-      audioUrlRef.current = audioUrl;
-      audioRef.current = new Audio(audioUrl);
-      audioRef.current.addEventListener("ended", () =>
-        setIsPlayingAudio(false)
-      );
-      audioRef.current.addEventListener("error", (e) => {
-        console.error("Audio playback error:", e);
-        toast.error("Error playing audio");
-        setIsPlayingAudio(false);
-        audioRef.current = null;
-      });
-      await audioRef.current.play();
-      setIsPlayingAudio(true);
-      toast.success("Playing question audio");
+
+      if (audioRef.current) {
+        // Clean up old audio URL if it exists
+        if (audioUrlRef.current) {
+          URL.revokeObjectURL(audioUrlRef.current);
+        }
+        
+        audioRef.current.src = audioUrl;
+        audioRef.current.onended = () => {
+          setIsPlayingAudio(false);
+        };
+        audioRef.current.onpause = () => {
+          setIsPlayingAudio(false);
+        };
+        audioRef.current.onplay = () => {
+          setIsPlayingAudio(true);
+        };
+        
+        audioRef.current.play();
+        setIsPlayingAudio(true);
+        audioUrlRef.current = audioUrl;
+      }
     } catch (error) {
-      console.error("Text-to-speech error:", error);
-      toast.error("Failed to generate or play audio");
-      audioUrlRef.current = null;
+      console.error("Error generating or playing audio:", error);
+      toast.error("Failed to play audio");
     } finally {
       setIsTtsLoading(false);
     }
@@ -912,7 +950,7 @@ export function Questionnaire({
             )}
           </div>
           <button
-            onClick={() => playQuestionAudio()}
+            onClick={() => speakQuestion()}
             disabled={isTtsLoading || !currentQuestion}
             className={`rounded-full p-2 ${
               isPlayingAudio
