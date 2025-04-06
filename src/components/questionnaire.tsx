@@ -25,6 +25,7 @@ import { toast } from "sonner";
 export interface AnswerData {
   text?: string;
   video?: Blob; // Store video as Blob
+  highlightedText?: string; // Add field for highlighted text
 }
 
 interface Question {
@@ -90,6 +91,11 @@ export function Questionnaire({
   const [showModal, setShowModal] = useState(false);
   const [modalIndex, setModalIndex] = useState(0);
   const [currentAnswerText, setCurrentAnswerText] = useState(""); // For modal text input
+  
+  // Add highlighting state and ref
+  const [isHighlightMode, setIsHighlightMode] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const modalTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Audio states
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
@@ -308,6 +314,52 @@ export function Questionnaire({
       // Remove the direct call to onQuestionAnswered - now handled by the effect
       return { ...prev, [currentQuestionId]: updatedAnswer };
     });
+  };
+
+  // Handle text highlighting
+  const toggleHighlightMode = () => {
+    setIsHighlightMode(!isHighlightMode);
+    
+    // Focus the appropriate textarea
+    if (!isHighlightMode) {
+      if (showModal && modalTextareaRef.current) {
+        modalTextareaRef.current.focus();
+      } else if (textareaRef.current) {
+        textareaRef.current.focus();
+      }
+    }
+  };
+
+  const applyHighlight = () => {
+    if (!currentQuestionId) return;
+    
+    const textarea = showModal ? modalTextareaRef.current : textareaRef.current;
+    if (!textarea) return;
+    
+    const selectedText = textarea.value.substring(
+      textarea.selectionStart,
+      textarea.selectionEnd
+    );
+    
+    if (selectedText) {
+      // Save the highlighted text
+      setAnswers((prev) => {
+        const existingAnswer = prev[currentQuestionId] || {};
+        const updatedAnswer = { 
+          ...existingAnswer, 
+          highlightedText: selectedText 
+        };
+        return { ...prev, [currentQuestionId]: updatedAnswer };
+      });
+      
+      // Show feedback
+      toast.success("Text highlighted");
+      
+      // Exit highlight mode
+      setIsHighlightMode(false);
+    } else {
+      toast.error("No text selected to highlight");
+    }
   };
 
   // Delete both text and video for the current question
