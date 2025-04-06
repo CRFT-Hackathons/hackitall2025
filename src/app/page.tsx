@@ -403,36 +403,36 @@ function HomeContent() {
 
             {/* Main question card */}
             <Card className="overflow-hidden border border-indigo-100 dark:border-indigo-900/50 bg-gradient-to-br from-white via-white to-indigo-50/30 dark:from-[#16161d] dark:via-[#16161d] dark:to-indigo-900/10 rounded-xl">
-              <div className="p-6 relative z-10">
+              <div className="p-16 pt-16 pb-16 sm:p-6 relative z-10">
                 {isClient ? (
                   <Tabs defaultValue="questions" className="w-full">
-                    <TabsList className="mb-6 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-full w-full grid grid-cols-3 gap-1">
+                    <TabsList className="mb-4 mt-4  bg-slate-100/80 dark:bg-slate-800/20 p-0 rounded-full w-full h-12 grid grid-cols-3">
                       <TabsTrigger
                         value="questions"
-                        className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-indigo-900/30 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300 py-1.5 flex items-center justify-center gap-2 text-xs"
+                        className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-indigo-500/10 data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400 py-2.5 px-3 flex items-center justify-center gap-2 text-sm sm:text-base font-medium text-slate-500 dark:text-slate-400 transition-all data-[state=active]:shadow-sm"
                       >
-                        <UserRound className="h-4 w-4 sm:mr-1" />
-                        <span className="hidden sm:inline">Questions</span>
+                        <UserRound className="h-4 w-4 mr-1 sm:mr-2" />
+                        <span className="sm:inline">Questions</span>
                       </TabsTrigger>
                       <TabsTrigger
                         value="instructions"
-                        className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-indigo-900/30 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300 py-1.5 flex items-center justify-center gap-2 text-xs"
+                        className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-indigo-500/10 data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400 py-2.5 px-3 flex items-center justify-center gap-2 text-sm sm:text-base font-medium text-slate-500 dark:text-slate-400 transition-all data-[state=active]:shadow-sm"
                       >
-                        <Book className="h-4 w-4 sm:mr-1" />
-                        <span className="hidden sm:inline">Instructions</span>
+                        <Book className="h-4 w-4 mr-1 sm:mr-2" />
+                        <span className="sm:inline">Instructions</span>
                       </TabsTrigger>
                       <TabsTrigger
                         value="chat"
-                        className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-indigo-900/30 data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300 py-1.5 flex items-center justify-center gap-2 text-xs"
+                        className="rounded-full data-[state=active]:bg-white dark:data-[state=active]:bg-indigo-500/10 data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400 py-2.5 px-3 flex items-center justify-center gap-2 text-sm sm:text-base font-medium text-slate-500 dark:text-slate-400 transition-all data-[state=active]:shadow-sm"
                       >
-                        <MessageSquare className="h-4 w-4 sm:mr-1" />
-                        <span className="hidden sm:inline">Chat</span>
+                        <MessageSquare className="h-4 w-4 mr-1 sm:mr-2" />
+                        <span className="sm:inline">Chat</span>
                       </TabsTrigger>
                     </TabsList>
                     
                     <TabsContent
                       value="questions"
-                      className="space-y-4 focus:outline-none"
+                      className="space-y-6 focus:outline-none"
                     >
                       {!isSubmitted ? (
                         <Questionnaire
