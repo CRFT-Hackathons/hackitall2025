@@ -92,7 +92,7 @@ export function Questionnaire({
   const [showModal, setShowModal] = useState(false);
   const [modalIndex, setModalIndex] = useState(0);
   const [currentAnswerText, setCurrentAnswerText] = useState(""); // For modal text input
-  
+
   // Add highlighting state and ref
   const [isHighlightMode, setIsHighlightMode] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -129,16 +129,16 @@ export function Questionnaire({
 
   // Load highlighting preference from localStorage on mount
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       try {
         const savedHighlight = localStorage.getItem("isHighlight");
         if (savedHighlight === "true") {
           setIsHighlight(true);
         }
-        
+
         // Add event listener for highlighting changes from accessibility panel
         const handleHighlightingChange = (event: CustomEvent) => {
-          if (event.detail && typeof event.detail.isHighlight === 'boolean') {
+          if (event.detail && typeof event.detail.isHighlight === "boolean") {
             setIsHighlight(event.detail.isHighlight);
             // Force regenerate highlighting when turned on
             if (event.detail.isHighlight && questions.length > 0) {
@@ -152,12 +152,18 @@ export function Questionnaire({
             }
           }
         };
-        
-        window.addEventListener('highlightingChanged', handleHighlightingChange as EventListener);
-        
+
+        window.addEventListener(
+          "highlightingChanged",
+          handleHighlightingChange as EventListener
+        );
+
         // Clean up event listener on unmount
         return () => {
-          window.removeEventListener('highlightingChanged', handleHighlightingChange as EventListener);
+          window.removeEventListener(
+            "highlightingChanged",
+            handleHighlightingChange as EventListener
+          );
         };
       } catch (error) {
         console.error("Error loading highlighting preference:", error);
@@ -360,7 +366,7 @@ export function Questionnaire({
   // Handle text highlighting
   const toggleHighlightMode = () => {
     setIsHighlightMode(!isHighlightMode);
-    
+
     // Focus the appropriate textarea
     if (!isHighlightMode) {
       if (showModal && modalTextareaRef.current) {
@@ -373,29 +379,29 @@ export function Questionnaire({
 
   const applyHighlight = () => {
     if (!currentQuestionId) return;
-    
+
     const textarea = showModal ? modalTextareaRef.current : textareaRef.current;
     if (!textarea) return;
-    
+
     const selectedText = textarea.value.substring(
       textarea.selectionStart,
       textarea.selectionEnd
     );
-    
+
     if (selectedText) {
       // Save the highlighted text
       setAnswers((prev) => {
         const existingAnswer = prev[currentQuestionId] || {};
-        const updatedAnswer = { 
-          ...existingAnswer, 
-          highlightedText: selectedText 
+        const updatedAnswer = {
+          ...existingAnswer,
+          highlightedText: selectedText,
         };
         return { ...prev, [currentQuestionId]: updatedAnswer };
       });
-      
+
       // Show feedback
       toast.success("Text highlighted");
-      
+
       // Exit highlight mode
       setIsHighlightMode(false);
     } else {
@@ -806,34 +812,76 @@ export function Questionnaire({
     if (isClient && questions.length > 0) {
       const keywordsToHighlight = [
         // Leadership and management terms
-        "leadership", "team", "challenging", "project", "conflict", "resolution", 
-        "problem-solving", "communication", "techniques", "adaptability", "change", 
-        "time management", "priorities", "ethical", "dilemma", "creative", "career goals", 
-        "teamwork", "collaboration",
-        
+        "leadership",
+        "team",
+        "challenging",
+        "project",
+        "conflict",
+        "resolution",
+        "problem-solving",
+        "communication",
+        "techniques",
+        "adaptability",
+        "change",
+        "time management",
+        "priorities",
+        "ethical",
+        "dilemma",
+        "creative",
+        "career goals",
+        "teamwork",
+        "collaboration",
+
         // Accessibility terms
-        "accessibility", "inclusive", "disability", "screen reader", "WCAG", "a11y", 
-        "assistive technology", "alt text", "aria", "keyboard navigation", "colorblind",
-        "color contrast", "universal design", "accommodations", "captions", "audio description",
-        
+        "accessibility",
+        "inclusive",
+        "disability",
+        "screen reader",
+        "WCAG",
+        "a11y",
+        "assistive technology",
+        "alt text",
+        "aria",
+        "keyboard navigation",
+        "colorblind",
+        "color contrast",
+        "universal design",
+        "accommodations",
+        "captions",
+        "audio description",
+
         // Onboarding terms
-        "onboarding", "orientation", "training", "mentoring", "integration", "culture fit",
-        "learning curve", "documentation", "knowledge transfer", "expectations", "feedback",
-        "new hire", "process", "workflows", "procedures", "tools", "resources"
+        "onboarding",
+        "orientation",
+        "training",
+        "mentoring",
+        "integration",
+        "culture fit",
+        "learning curve",
+        "documentation",
+        "knowledge transfer",
+        "expectations",
+        "feedback",
+        "new hire",
+        "process",
+        "workflows",
+        "procedures",
+        "tools",
+        "resources",
       ];
-      
-      const regex = new RegExp(`(${keywordsToHighlight.join('|')})`, 'gi');
-      
+
+      const regex = new RegExp(`(${keywordsToHighlight.join("|")})`, "gi");
+
       // Process all questions and generate highlighted versions
       questions.forEach((question, index) => {
         // Always regenerate the highlighting to ensure it's consistent
         if (question.description) {
           // Generate highlighted HTML by wrapping matched keywords in span tags
           const highlightedDesc = question.description.replace(
-            regex, 
+            regex,
             '<span class="bg-yellow-100 dark:bg-yellow-800/60 text-yellow-800 dark:text-yellow-200 px-1 rounded">$1</span>'
           );
-          
+
           // Update the question in place
           if (questions[index]) {
             questions[index].descriptionHighlight = highlightedDesc;
@@ -901,7 +949,9 @@ export function Questionnaire({
               <div
                 className="mb-6 text-slate-700 dark:text-slate-300 leading-relaxed"
                 dangerouslySetInnerHTML={{
-                  __html: currentQuestion.descriptionHighlight || currentQuestion.description,
+                  __html:
+                    currentQuestion.descriptionHighlight ||
+                    currentQuestion.description,
                 }}
               />
             ) : (
@@ -919,7 +969,7 @@ export function Questionnaire({
                 />
               </div>
             )}
-            <hr className="my-8" />
+            <div className="mt-6 h-0.5 w-full bg-gradient-to-r from-transparent via-indigo-300 dark:via-indigo-700 to-transparent my-6 max-w-sm m-auto"></div>
 
             {/* --- VIDEO RECORDING SECTION (Conditional Rendering) --- */}
             {currentQuestion?.requireVideoAns && (
@@ -1118,14 +1168,20 @@ export function Questionnaire({
                       onClick={() => {
                         const newValue = !isHighlight;
                         setIsHighlight(newValue);
-                        
+
                         // More robust localStorage saving
                         try {
-                          localStorage.setItem("isHighlight", newValue.toString());
+                          localStorage.setItem(
+                            "isHighlight",
+                            newValue.toString()
+                          );
                         } catch (error) {
-                          console.error("Error saving highlighting preference:", error);
+                          console.error(
+                            "Error saving highlighting preference:",
+                            error
+                          );
                         }
-                        
+
                         // Force regenerate highlighting if it's being turned on
                         if (newValue && questions.length > 0) {
                           // This will trigger the effect to run again
@@ -1136,19 +1192,28 @@ export function Questionnaire({
                             }
                           });
                         }
-                        
-                        toast.success(newValue 
-                          ? "Keywords highlighting enabled for better readability" 
-                          : "Keywords highlighting disabled"
+
+                        toast.success(
+                          newValue
+                            ? "Keywords highlighting enabled for better readability"
+                            : "Keywords highlighting disabled"
                         );
                       }}
                       className={`rounded-xl border ${
-                        isHighlight 
-                          ? "border-yellow-400 bg-yellow-50 text-yellow-700 dark:border-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400" 
+                        isHighlight
+                          ? "border-yellow-400 bg-yellow-50 text-yellow-700 dark:border-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400"
                           : "border-gray-300 bg-white text-gray-600 dark:border-gray-700 dark:bg-[#1e1e2d] dark:text-gray-400"
                       } px-4 py-2 transition-colors flex items-center`}
-                      aria-label={isHighlight ? "Disable keyword highlighting" : "Enable keyword highlighting"}
-                      title={isHighlight ? "Disable keyword highlighting" : "Enable keyword highlighting to improve focus on important terms"}
+                      aria-label={
+                        isHighlight
+                          ? "Disable keyword highlighting"
+                          : "Enable keyword highlighting"
+                      }
+                      title={
+                        isHighlight
+                          ? "Disable keyword highlighting"
+                          : "Enable keyword highlighting to improve focus on important terms"
+                      }
                     >
                       {isHighlight ? "Hide Key Terms" : "Highlight Key Terms"}
                     </button>
@@ -1236,11 +1301,12 @@ export function Questionnaire({
               <div className="flex-1 overflow-y-auto p-6">
                 {questions[modalIndex] && (
                   <>
-                    {isHighlight && questions[modalIndex].descriptionHighlight ? (
-                      <div 
+                    {isHighlight &&
+                    questions[modalIndex].descriptionHighlight ? (
+                      <div
                         className="mb-6 text-slate-700 dark:text-slate-300 leading-relaxed"
-                        dangerouslySetInnerHTML={{ 
-                          __html: questions[modalIndex].descriptionHighlight 
+                        dangerouslySetInnerHTML={{
+                          __html: questions[modalIndex].descriptionHighlight,
                         }}
                       />
                     ) : (

@@ -1,6 +1,14 @@
 "use client";
-import { useState, useEffect, useRef, useCallback } from "react";
-import { Clock, Eye, EyeOff, Coffee, Bath, AlertTriangle } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import {
+  Clock,
+  Eye,
+  EyeOff,
+  Bath,
+  AlertTriangle,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Custom hook for more accurate interval timing
@@ -62,16 +70,126 @@ export function TimeRemaining({
   const [breakStartTime, setBreakStartTime] = useState<number | null>(null);
   const [remainingBreakTime, setRemainingBreakTime] = useState<number>(0);
   const [breakProgress, setBreakProgress] = useState<number>(0);
+  // Track whether the rain sound is muted
+  const [isRainSoundMuted, setIsRainSoundMuted] = useState(false);
+  // Track whether the user has interacted with the document (audio allowed)
+  const [hasInteracted, setHasInteracted] = useState(() => {
+    // Only attempt to read localStorage if running in the browser.
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("hasInteracted") === "true";
+    }
+    return false;
+  });
+  // When play() fails, we mark that a manual interaction is needed.
+  const [needsAudioInteraction, setNeedsAudioInteraction] = useState(false);
 
-  // Load saved state from localStorage on component mount
+  // Global listener to detect user interaction (click or keydown)
   useEffect(() => {
-    // Load time hiding preference
+    if (!hasInteracted) {
+      const handleInteraction = () => {
+        setHasInteracted(true);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("hasInteracted", "true");
+        }
+      };
+      window.addEventListener("click", handleInteraction, { once: true });
+      window.addEventListener("keydown", handleInteraction, { once: true });
+      return () => {
+        window.removeEventListener("click", handleInteraction);
+        window.removeEventListener("keydown", handleInteraction);
+      };
+    }
+  }, [hasInteracted]);
+
+  // Ref for the rain audio during break
+  const breakAudioRef = useRef<HTMLAudioElement>(null);
+
+  // When a break starts, attempt to play the audio only if the user has interacted.
+  useEffect(() => {
+    if (breakType && breakAudioRef.current) {
+      const audio = breakAudioRef.current;
+      // Set initial volume to 0 for smooth fade in.
+      audio.volume = 0;
+      audio.muted = false;
+
+      if (hasInteracted) {
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => setNeedsAudioInteraction(false))
+            .catch((error: any) => {
+              // Suppress NotAllowedError
+              if (error.name !== "NotAllowedError") {
+                console.error(
+                  "Error playing rain sound on break start:",
+                  error
+                );
+              }
+              setNeedsAudioInteraction(true);
+            });
+        }
+      }
+    } else if (!breakType && breakAudioRef.current) {
+      // When break ends: pause and reset the audio.
+      const audio = breakAudioRef.current;
+      audio.pause();
+      audio.currentTime = 0;
+      audio.volume = 0.2;
+    }
+  }, [breakType, hasInteracted]);
+
+  // Smooth fade for audio volume when muting or starting audio.
+  useEffect(() => {
+    if (breakType && breakAudioRef.current && hasInteracted) {
+      const audio = breakAudioRef.current;
+      const targetVolume = isRainSoundMuted ? 0 : 0.2;
+      const fadeDuration = 1000; // ms
+      const fps = 60;
+      const intervalTime = 1000 / fps;
+      const steps = fadeDuration / intervalTime;
+      const volumeStep = (targetVolume - audio.volume) / steps;
+      let currentStep = 0;
+
+      const fadeInterval = setInterval(() => {
+        currentStep++;
+        audio.volume = Math.min(0.2, Math.max(0, audio.volume + volumeStep));
+        if (currentStep >= steps) {
+          audio.volume = targetVolume;
+          clearInterval(fadeInterval);
+        }
+      }, intervalTime);
+
+      return () => clearInterval(fadeInterval);
+    }
+  }, [isRainSoundMuted, breakType, hasInteracted]);
+
+  // Handler to explicitly enable audio.
+  const handleUnmuteClick = () => {
+    setHasInteracted(true);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("hasInteracted", "true");
+    }
+    if (breakAudioRef.current) {
+      breakAudioRef.current
+        .play()
+        .then(() => setNeedsAudioInteraction(false))
+        .catch((error: any) => {
+          if (error.name !== "NotAllowedError") {
+            console.error("Error enabling audio:", error);
+          }
+          setNeedsAudioInteraction(true);
+        });
+    }
+  };
+
+  // Load saved state from localStorage on component mount.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
     const savedIsTimeHidden = localStorage.getItem("isTimeHidden");
     if (savedIsTimeHidden) {
       setIsTimeHidden(savedIsTimeHidden === "true");
     }
 
-    // Load break usage
     const savedHasUsedRegularBreak = localStorage.getItem(
       "hasUsedRegularBreak"
     );
@@ -86,7 +204,6 @@ export function TimeRemaining({
       setHasUsedBathroomBreak(savedHasUsedBathroomBreak === "true");
     }
 
-    // Load active break status if any
     const savedBreakType = localStorage.getItem("breakType") as
       | "regular"
       | "bathroom"
@@ -96,16 +213,13 @@ export function TimeRemaining({
     if (savedBreakType && savedBreakStartTime) {
       const breakStartTime = parseInt(savedBreakStartTime, 10);
       const now = Date.now();
-      const breakDuration = savedBreakType === "regular" ? 300000 : 120000; // 5 min or 2 min in ms
+      const breakDuration = savedBreakType === "regular" ? 300000 : 120000;
 
-      // Check if break is still active
       if (now - breakStartTime < breakDuration) {
         setBreakType(savedBreakType);
         setBreakStartTime(breakStartTime);
         setShowBreakOverlay(true);
         setIsRunning(false);
-
-        // Calculate remaining break time and progress
         const elapsed = now - breakStartTime;
         const remaining = Math.max(
           0,
@@ -114,62 +228,48 @@ export function TimeRemaining({
         setRemainingBreakTime(remaining);
         setBreakProgress(elapsed / breakDuration);
       } else {
-        // Break duration has passed, clear it
         localStorage.removeItem("breakType");
         localStorage.removeItem("breakStartTime");
       }
     }
 
-    // Check if we have a saved timer state
     const savedTimeLeft = localStorage.getItem("timeLeft");
     const lastUpdateTime = localStorage.getItem("lastUpdateTime");
     const savedIsRunning = localStorage.getItem("isRunning");
 
     if (savedTimeLeft && lastUpdateTime) {
-      // We have a saved timer state
       const parsedTimeLeft = parseInt(savedTimeLeft, 10);
       const lastUpdate = parseInt(lastUpdateTime, 10);
       const now = Date.now();
-
-      // Calculate elapsed time in seconds since last update
       const elapsedSeconds = Math.floor((now - lastUpdate) / 1000);
 
-      // Only subtract elapsed time if timer was running and we're not on a break
       if (savedIsRunning === "true" && !breakType) {
-        // Calculate new time left by subtracting elapsed seconds, don't go below 0
         const newTimeLeft = Math.max(0, parsedTimeLeft - elapsedSeconds);
         setTimeLeft(newTimeLeft);
         localStorage.setItem("timeLeft", newTimeLeft.toString());
       } else {
-        // Timer was paused, just use saved time
         setTimeLeft(parsedTimeLeft);
       }
 
-      // Update the last update time to now
       localStorage.setItem("lastUpdateTime", now.toString());
-
-      // Set running state (don't run if time is 0)
       const shouldBeRunning =
         savedIsRunning === "true" && !breakType && parsedTimeLeft > 0;
       setIsRunning(shouldBeRunning);
     } else {
-      // No saved state, initialize with default values
       setTimeLeft(initialTime);
       localStorage.setItem("timeLeft", initialTime.toString());
       localStorage.setItem("lastUpdateTime", Date.now().toString());
       setIsRunning(true);
       localStorage.setItem("isRunning", "true");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialTime]);
 
-  // Main timer effect using our custom useInterval hook
+  // Main timer effect
   useInterval(
     () => {
       if (timeLeft > 0) {
         setTimeLeft((prevTime) => {
           const newTime = prevTime - 1;
-          // Update localStorage with current time and update timestamp
           localStorage.setItem("timeLeft", newTime.toString());
           localStorage.setItem("lastUpdateTime", Date.now().toString());
           return newTime;
@@ -183,28 +283,22 @@ export function TimeRemaining({
     isRunning ? 1000 : null
   );
 
-  // Update isRunning in localStorage when it changes
   useEffect(() => {
     localStorage.setItem("isRunning", isRunning.toString());
   }, [isRunning]);
 
-  // Update break timer using our custom useInterval hook
+  // Break timer effect
   useInterval(
     () => {
       if (!breakStartTime || !breakType) return;
-
-      const breakDuration = breakType === "regular" ? 300000 : 120000; // 5 min or 2 min in ms
+      const breakDuration = breakType === "regular" ? 300000 : 120000;
       const now = Date.now();
       const elapsedTime = now - breakStartTime;
-
-      // Calculate remaining time in seconds
       const remaining = Math.max(
         0,
         Math.floor((breakDuration - elapsedTime) / 1000)
       );
       setRemainingBreakTime(remaining);
-
-      // Calculate progress (0 to 1)
       const progress = Math.min(1, elapsedTime / breakDuration);
       setBreakProgress(progress);
 
@@ -215,7 +309,6 @@ export function TimeRemaining({
     breakStartTime ? 1000 : null
   );
 
-  // Format time as MM:SS
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -225,7 +318,6 @@ export function TimeRemaining({
   const toggleTimeVisibility = () => {
     const newValue = !isTimeHidden;
     setIsTimeHidden(newValue);
-    // Save the preference to localStorage
     localStorage.setItem("isTimeHidden", String(newValue));
   };
 
@@ -234,13 +326,10 @@ export function TimeRemaining({
     setBreakType(type);
     const now = Date.now();
     setBreakStartTime(now);
-
-    // Initialize break time values
-    const breakDuration = type === "regular" ? 300000 : 120000; // 5 min or 2 min in ms
+    const breakDuration = type === "regular" ? 300000 : 120000;
     setRemainingBreakTime(Math.floor(breakDuration / 1000));
     setBreakProgress(0);
 
-    // Mark break as used in state and localStorage
     if (type === "regular") {
       setHasUsedRegularBreak(true);
       localStorage.setItem("hasUsedRegularBreak", "true");
@@ -249,7 +338,6 @@ export function TimeRemaining({
       localStorage.setItem("hasUsedBathroomBreak", "true");
     }
 
-    // Pause the main timer while on break
     setIsRunning(false);
     localStorage.setItem("isRunning", "false");
     localStorage.setItem("breakStartTime", now.toString());
@@ -262,8 +350,6 @@ export function TimeRemaining({
     setBreakStartTime(null);
     setRemainingBreakTime(0);
     setBreakProgress(0);
-
-    // Resume the main timer
     setIsRunning(true);
     localStorage.setItem("isRunning", "true");
     localStorage.removeItem("breakStartTime");
@@ -292,21 +378,15 @@ export function TimeRemaining({
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <Clock className="h-5 w-5 text-indigo-600 dark:text-indigo-400 mr-2" />
-
             <div
               className={`text-2xl font-medium text-indigo-600 dark:text-gray-200 font-mono tabular-nums ${
                 isTimeHidden ? "blur-[6px]" : ""
               }`}
-              onClick={() => {
-                const newValue = !isTimeHidden;
-                setIsTimeHidden(newValue);
-                localStorage.setItem("isTimeHidden", String(newValue));
-              }}
+              onClick={toggleTimeVisibility}
             >
               {formatTime(timeLeft)}
             </div>
           </div>
-
           {showBreakButtons && !breakType && (
             <div className="flex space-x-2">
               <button
@@ -344,6 +424,14 @@ export function TimeRemaining({
         </div>
       </div>
 
+      {/* Hidden audio element for rain sound during break */}
+      {breakType && (
+        <audio ref={breakAudioRef} loop>
+          <source src="/rain.mp3" type="audio/mpeg" />
+          Your browser does not support the audio element.
+        </audio>
+      )}
+
       {/* Full-page break overlay */}
       <AnimatePresence>
         {breakType && (
@@ -354,6 +442,28 @@ export function TimeRemaining({
             className="fixed inset-0 bg-[#0f0f13]/95 backdrop-blur-md flex flex-col items-center justify-center z-50"
             style={{ zIndex: 9999 }}
           >
+            {/* Mute toggle button */}
+            <button
+              onClick={() => setIsRainSoundMuted((prev) => !prev)}
+              className="absolute top-4 right-4 p-2 rounded-full bg-white bg-opacity-10 hover:bg-opacity-20"
+              aria-label={
+                isRainSoundMuted ? "Unmute rain sound" : "Mute rain sound"
+              }
+            >
+              {isRainSoundMuted ? (
+                <VolumeX size={24} className="text-white" />
+              ) : (
+                <Volume2 size={24} className="text-white" />
+              )}
+            </button>
+
+            {/* Show Unmute/Enable Audio button if needed */}
+            {(!hasInteracted || needsAudioInteraction) && (
+              <div className="absolute top-20 right-4 bg-black bg-opacity-50 text-white px-4 py-2 rounded-lg">
+                <button onClick={handleUnmuteClick}>Tap to enable audio</button>
+              </div>
+            )}
+
             <div className="relative">
               <div className="w-24 h-24 rounded-full bg-indigo-500/10 flex items-center justify-center mb-6">
                 {breakType === "regular" ? (
