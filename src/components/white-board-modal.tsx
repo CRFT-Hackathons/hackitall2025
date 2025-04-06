@@ -15,10 +15,13 @@ import {
 import { Tldraw } from "@tldraw/tldraw";
 import type { Editor } from "@tldraw/tldraw";
 import "@tldraw/tldraw/tldraw.css";
+import { useTheme } from "next-themes";
 
 export default function WhiteboardModal() {
   const [open, setOpen] = useState(false);
   const editorRef = useRef<Editor | null>(null);
+  const { theme } = useTheme();
+  const isDarkMode = theme === "dark";
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -39,6 +42,9 @@ export default function WhiteboardModal() {
           <Tldraw
             onMount={(editor) => {
               editorRef.current = editor;
+              editor.user.updateUserPreferences({
+                colorScheme: isDarkMode ? "dark" : "light",
+              });
             }}
           />
         </div>
