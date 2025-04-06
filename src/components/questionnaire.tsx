@@ -35,6 +35,7 @@ interface Question {
   required?: boolean;
   image?: string;
   requireVideoAns?: boolean; // Flag for video requirement
+  descriptionHighlight?: string; // Optional field for highlighted description
 }
 
 interface QuestionnaireProps {
@@ -123,6 +124,15 @@ export function Questionnaire({
   const liveVideoRef = useRef<HTMLVideoElement | null>(null);
   const recordedVideoRef = useRef<HTMLVideoElement | null>(null);
   const currentObjectUrl = useRef<string | null>(null); // Ref to manage object URL lifecycle
+
+  const [isHighlight, setIsHighlight] = useState(false);
+
+  useEffect(() => {
+    const savedHighlight = localStorage.getItem("isHighlight");
+    if (savedHighlight === "true") {
+      setIsHighlight(true);
+    }
+  }, []);
 
   // Prevent hydration mismatch
   const [isClient, setIsClient] = useState(false);
@@ -281,7 +291,7 @@ export function Questionnaire({
             console.error("Error in onQuestionAnswered callback:", error);
           }
         }, 0);
-        
+
         // Clear timeout on cleanup
         return () => clearTimeout(timerId);
       }
@@ -473,7 +483,7 @@ export function Questionnaire({
                     ? `${currentText}\n${transcription}`
                     : transcription;
                   const updatedAnswer = { ...existingAnswer, text: newText };
-                  
+
                   // Don't directly call onQuestionAnswered here, it will be handled by the useEffect
                   return { ...prev, [currentQuestionId]: updatedAnswer };
                 });
@@ -659,14 +669,16 @@ export function Questionnaire({
           setAnswers((prev) => {
             const existingAnswer = prev[currentQuestionId] || {};
             const updatedAnswer = { ...existingAnswer, video: blob };
-            
+
             // Don't call onQuestionAnswered directly here anymore, the useEffect will handle it safely
             return { ...prev, [currentQuestionId]: updatedAnswer };
           });
 
           toast.success("Recording complete. Preview ready.");
         } else {
-          console.error("No current question ID available when recording stopped");
+          console.error(
+            "No current question ID available when recording stopped"
+          );
           toast.error("Could not save recording to current question");
         }
       };
@@ -707,7 +719,7 @@ export function Questionnaire({
       // Create a new object without the video property
       const { video, ...rest } = existingAnswer;
       const updatedAnswer = { ...rest };
-      
+
       // Don't call onQuestionAnswered directly here anymore, the useEffect will handle it safely
       return { ...prev, [currentQuestionId]: updatedAnswer };
     });
@@ -807,9 +819,18 @@ export function Questionnaire({
 
         {currentQuestion ? (
           <>
-            <p className="mb-6 text-slate-700 dark:text-slate-300 leading-relaxed">
-              {currentQuestion.description}
-            </p>
+            {isHighlight ? (
+              <div
+                className="mb-6 text-slate-700 dark:text-slate-300 leading-relaxed"
+                dangerouslySetInnerHTML={{
+                  __html: currentQuestion.descriptionHighlight ?? "",
+                }}
+              />
+            ) : (
+              <p className="mb-6 text-slate-700 dark:text-slate-300 leading-relaxed">
+                {currentQuestion.description}
+              </p>
+            )}
 
             {isClient && currentQuestion.image && (
               <div className="mb-6 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
