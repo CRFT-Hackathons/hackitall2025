@@ -28,6 +28,7 @@ import {
   Home,
   ArrowRight,
   Shield,
+  AlertTriangle,
 } from "lucide-react";
 import { PersonIcon } from "@radix-ui/react-icons";
 
@@ -521,6 +522,17 @@ export default function OnboardingPage() {
             Your accessibility preferences have been saved. You can always
             change them later from the Accessibility panel.
           </p>
+          
+          {/* Important disclaimer - smaller version */}
+          <div className="w-full max-w-lg mb-6 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800/50 overflow-hidden">
+            <div className="flex items-center p-2.5 gap-2">
+              <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-500 shrink-0" />
+              <div className="text-xs text-amber-800 dark:text-amber-300">
+                <span className="font-medium">Before you start:</span> Ensure stable internet, charged device, quiet space, and 45min availability. Each break option can be used <span className="font-medium underline">once</span> only.
+              </div>
+            </div>
+          </div>
+          
           <div className="flex gap-4">
             <Button
               onClick={() => router.push("/")}
