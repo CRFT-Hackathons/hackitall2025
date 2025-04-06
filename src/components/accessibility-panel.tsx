@@ -48,6 +48,7 @@ export default function AccessibilityPanel() {
   const [eyeTracking, setEyeTracking] = useState(false);
   const [voiceCommands, setVoiceCommands] = useState(false);
   const [simplifiedInterface, setSimplifiedInterface] = useState(false);
+  const [isHighlight, setIsHighlight] = useState(false);
 
   // Load settings from localStorage on component mount
   useEffect(() => {
@@ -74,6 +75,11 @@ export default function AccessibilityPanel() {
       const savedFontSize = localStorage.getItem("fontSize");
       if (savedFontSize) {
         setFontSize(parseInt(savedFontSize, 10));
+      }
+
+      const savedHihglight = localStorage.getItem("isHighlight");
+      if (savedHihglight === "true") {
+        setIsHighlight(true);
       }
 
       // Load speech rate
@@ -271,6 +277,7 @@ export default function AccessibilityPanel() {
     setEyeTracking(false);
     setVoiceCommands(false);
     setSimplifiedInterface(false);
+    setIsHighlight(false);
 
     // Clear the applied styles
     document.body.style.fontFamily = "";
@@ -299,6 +306,7 @@ export default function AccessibilityPanel() {
     localStorage.removeItem("eyeTracking");
     localStorage.removeItem("voiceCommands");
     localStorage.removeItem("simplifiedInterface");
+    localStorage.removeItem("isHighlight");
 
     toast("Settings reset!", {
       description: "Your settings have been reset to defaults.",
@@ -402,13 +410,35 @@ export default function AccessibilityPanel() {
                 />
               </div>
 
+              <div className="flex items-center justify-between">
+                <Label htmlFor="highlightMode" className="flex items-center">
+                  <div className="w-1 h-4 bg-indigo-500 dark:bg-indigo-400 mr-2 rounded-full"></div>
+                  Highlight
+                </Label>
+                <Switch
+                  id="highlightMode"
+                  checked={isHighlight}
+                  onCheckedChange={(checked) => {
+                    setIsHighlight(checked);
+                    localStorage.setItem("isHighlight", checked.toString());
+                  }}
+                  className="data-[state=checked]:bg-indigo-500 dark:data-[state=checked]:bg-indigo-600"
+                />
+              </div>
+
               <div className="space-y-4">
                 {/* High Contrast Mode */}
                 <div className="flex items-center justify-between border border-border rounded-lg p-4 bg-card hover:bg-accent/10 transition-colors">
                   <div className="space-y-0.5">
-                    <Label htmlFor="high-contrast" className="text-base font-semibold">High Contrast Mode</Label>
+                    <Label
+                      htmlFor="high-contrast"
+                      className="text-base font-semibold"
+                    >
+                      High Contrast Mode
+                    </Label>
                     <p className="text-sm text-muted-foreground">
-                      Enhances visibility with maximum contrast for better readability
+                      Enhances visibility with maximum contrast for better
+                      readability
                     </p>
                   </div>
                   <Switch
