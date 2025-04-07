@@ -19,6 +19,10 @@ InAble is an innovative interview platform designed to provide an accessible and
 - **Customizable Interface**: Adjustable font sizes, contrast modes, and other visual preferences
 - **Break Options**: Scheduled breaks during interviews to reduce fatigue
 
+### Cross Platform (Web, Descktop, Mobile):
+![image](https://github.com/user-attachments/assets/bc6ac65d-c0df-40c9-84a6-adb4a52ef465)
+
+
 ## Technologies Used
 
 ### Frontend
