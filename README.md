@@ -12,14 +12,14 @@ InAble is an innovative interview platform designed to provide an accessible and
 - **Whiteboard Tool**: Visual collaboration space for problem-solving exercises
 
 ### Accessibility Features
-- **Multi-language Support**: Interview content available in English, Romanian, Italian, and Spanish
+- **Multi-language Support**: Interview content available in English, Romanian, Italian, and Spanish (with many more to be added!)
 - **Text-to-Speech**: Questions can be read aloud in multiple languages
 - **Speech-to-Text**: Voice input for answering questions
 - **Keyword Highlighting**: Visual emphasis on important terms in questions
 - **Customizable Interface**: Adjustable font sizes, contrast modes, and other visual preferences
 - **Break Options**: Scheduled breaks during interviews to reduce fatigue
 
-### Cross Platform (Web, Descktop, Mobile):
+### Cross Platform (Web, Desktop, Mobile):
 ![image](https://github.com/user-attachments/assets/bc6ac65d-c0df-40c9-84a6-adb4a52ef465)
 
 
@@ -33,7 +33,7 @@ InAble is an innovative interview platform designed to provide an accessible and
 - Framer Motion for animations
 - Lucide React for icons
 
-### Backend 
+### Backend
 - Next.js Server Components and API Routes
 - Google Cloud Speech-to-Text API for transcription
 - Google Cloud Text-to-Speech API for audio synthesis
@@ -48,7 +48,7 @@ InAble is an innovative interview platform designed to provide an accessible and
 ## Getting Started
 
 ### Prerequisites
-- Node.js 18+ 
+- Node.js 18+
 - PNPM package manager
 - Google Cloud Platform account with Speech-to-Text, Text-to-Speech, and Gemini AI APIs enabled
 
@@ -99,8 +99,20 @@ InAble complies with GDPR regulations regarding user data:
 
 ## License
 
-[MIT License](LICENSE)
+[Proprietary License](LICENSE)
 
-## Acknowledgements
+Copyright (c) [Year] [Your Team Name]
 
-Special thanks to all contributors who have helped make InAble an accessible and inclusive interview platform.
+All rights reserved.
+
+This code is the proprietary and confidential information of [Your Team Name]
+and may not be used, disclosed, reproduced, or distributed without express
+written permission from [Your Team Name].
+
+THIS CODE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE CODE OR THE USE OR OTHER DEALINGS IN THE
+CODE.
