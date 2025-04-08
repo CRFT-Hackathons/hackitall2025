@@ -101,13 +101,13 @@ InAble complies with GDPR regulations regarding user data:
 
 [Proprietary License](LICENSE)
 
-Copyright (c) [Year] [Your Team Name]
+Copyright (c) 2025 CRFT
 
 All rights reserved.
 
-This code is the proprietary and confidential information of [Your Team Name]
+This code is the proprietary and confidential information of CRFT
 and may not be used, disclosed, reproduced, or distributed without express
-written permission from [Your Team Name].
+written permission from every member of the team CRFT (Dincă Robert, Huzum Petrișor, Ștefan Gateh).
 
 THIS CODE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
