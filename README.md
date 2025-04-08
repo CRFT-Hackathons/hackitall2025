@@ -107,7 +107,7 @@ All rights reserved.
 
 This code is the proprietary and confidential information of CRFT
 and may not be used, disclosed, reproduced, or distributed without express
-written permission from every member of the team CRFT (Dincă Robert, Huzum Petrișor, Ștefan Gateh).
+written permission from every member of the team CRFT (Dincă Robert, Huzum Petrișor, Ștefan Gătej).
 
 THIS CODE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
